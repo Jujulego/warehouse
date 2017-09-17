@@ -39,6 +39,13 @@ else()
 endif()
 
 #
+# Options
+#
+set(CMAKE_CXX_FLAGS    "${CMAKE_CXX_FLAGS} -Wall -Wextra -g3")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+#
 # Dépendances
 #
 # Qt5

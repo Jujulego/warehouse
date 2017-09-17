@@ -29,11 +29,10 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-O0" />
 			<Add option="-g3" />
 			<Add option="-Wall" />
 			<Add option="-Wextra" />
-			<Add option="-std=c++11" />
+			<Add option="-std=c++14" />
 		</Compiler>
 		@SOURCES@<Extensions>
 			<code_completion />
