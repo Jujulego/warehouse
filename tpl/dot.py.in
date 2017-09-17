@@ -1,0 +1,141 @@
+#!/usr/bin/python3.5
+# Importations
+import re
+import sys
+
+# Classe
+RE_NOEUD = re.compile("^\tNode0x([0-9a-f]{12}) \[(.+)\];$")
+RE_LIEN  = re.compile("^\tNode0x([0-9a-f]{12}) -> Node0x([0-9a-f]{12});$")
+
+class Noeud:
+	# Constructeur
+	def __init__(self, val, infos):
+		self.val   = val
+		self.infos = infos
+		self.fils  = {}
+	
+	# Méthodes statiques
+	@staticmethod
+	def analyse(fichier):
+		# Déclarations
+		liens  = list()
+		noeuds = dict()
+		
+		# Lecture
+		ligne = fichier.readline()
+		
+		while len(ligne) != 0:
+			# Analyse
+			res = RE_NOEUD.match(ligne)
+			if res != None:
+				n = Noeud(*res.groups())
+				noeuds[res.groups()[0]] = n
+				
+				# Parcours des liens connus
+				nouv_liens = []
+				for p, f in liens:
+					if (p == n.val) and (noeuds.get(f, None) != None):
+						n.ajouter_fils(noeuds[f])
+					
+					elif (f == n.val) and (noeuds.get(p, None) != None):
+						noeuds[p].ajouter_fils(n)
+					
+					else:
+						nouv_liens.append((p, f))
+			
+			res = RE_LIEN.match(ligne)
+			if res != None:
+				p, f = res.groups()
+				if (noeuds.get(f, None) != None) and (noeuds.get(p, None) != None):
+					noeuds[p].ajouter_fils(noeuds[f])
+				
+				else:
+					liens.append((p, f))
+			
+			ligne = fichier.readline()
+		
+		return list(noeuds.values())
+	
+	# Méthodes
+	def ajouter_fils(self, *noeuds):
+		for n in noeuds:
+			self.fils[n.val] = n
+
+# Execution
+if __name__ == "__main__":
+	# Lecture des fichiers
+	ns = {}
+	if len(sys.argv) > 1:
+		for nom in sys.argv[1:]:
+			with open(nom, "r") as f:
+				ns[nom] = Noeud.analyse(f)
+	
+	else:
+		ns["stdin"] = Noeud.analyse(sys.stdin)
+	
+	# Fusion:
+	liens  = list()
+	noeuds = dict()
+	
+	for ln in ns.values():
+		for n in ln:
+			# Création des noeuds
+			if n.infos not in noeuds:
+				noeuds[n.infos] = Noeud(n.val, n.infos)
+				
+				# Création des liens
+				nouvliens = []
+				for p, f in liens:
+					if (p == n.infos) and (f in noeuds):
+						noeuds[p].ajouter_fils(noeuds[f])
+					
+					elif (p in noeuds) and (f == n.infos):
+						noeuds[p].ajouter_fils(noeuds[f])
+					
+					else:
+						nouvliens.append((p, f))
+				
+				liens = nouvliens
+			
+			# Création des liens
+			for f in n.fils.values():
+				if f.infos in noeuds:
+					noeuds[n.infos].ajouter_fils(noeuds[f.infos])
+				
+				else:
+					liens.append((n.infos, f.infos))
+	
+	# Filtre !
+	res = dict()
+	for n in noeuds.values():
+		if ("{std::"          not in n.infos) and \
+		   ("{boost::"        not in n.infos) and \
+		   ("{_GLOBAL_"       not in n.infos) and \
+		   ("operator delete" not in n.infos) and \
+		   ("operator new"    not in n.infos) and \
+		   ("$_"              not in n.infos) and \
+		   ("::~"             not in n.infos) and \
+		   ("{__clang"        not in n.infos) and \
+		   ("{__cxa"          not in n.infos) and \
+		   ("{__cxx"          not in n.infos) and \
+		   ("{__gthread"      not in n.infos) and \
+		   ("{__pthread"      not in n.infos) and \
+		   ("{pthread"        not in n.infos) and \
+		   ("{external node}" not in n.infos) and \
+		   ("llvm."           not in n.infos) and \
+		   ("{__gxx"          not in n.infos) and \
+		   ("{__gnu_cxx::"    not in n.infos):
+			res[n.val] = n
+	
+	# Sortie du nouveau fichier
+	print("digraph \"@CMAKE_PROJECT_NAME@\" {")
+	print("	label=\"@CMAKE_PROJECT_NAME@\";")
+	
+	for n in res.values():
+		print("	Node0x%s [%s];" % (n.val, n.infos))
+		
+		for nf in n.fils.values():
+			if nf.val in res:
+				print("	Node0x%s -> Node0x%s;" % (n.val, nf.val))
+	
+	print("}")

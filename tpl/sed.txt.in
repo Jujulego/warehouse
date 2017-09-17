@@ -1,0 +1,46 @@
+# string :
+s/std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >/std::string/g
+
+# ratios :
+s/std::ratio<1l*, 1000000000000000000000000l*>/std::yocto/g
+s/std::ratio<1l*, 1000000000000000000000l*>/std::zepto/g
+s/std::ratio<1l*, 1000000000000000000l*>/std::atto/g
+s/std::ratio<1l*, 1000000000000000l*>/std::femto/g
+s/std::ratio<1l*, 1000000000000l*>/std::pico/g
+s/std::ratio<1l*, 1000000000l*>/std::nano/g
+s/std::ratio<1l*, 1000000l*>/std::micro/g
+s/std::ratio<1l*, 1000l*l*>/std::milli/g
+s/std::ratio<1l*, 100l*>/std::centi/g
+s/std::ratio<1l*, 10l*>/std::deci/g
+s/std::ratio<10l*, 1l*>/std::deca/g
+s/std::ratio<100l*, 1l*>/std::hecto/g
+s/std::ratio<1000l*, 1l*>/std::kilo/g
+s/std::ratio<1000000l*, 1l*>/std::mega/g
+s/std::ratio<1000000000l*, 1l*>/std::giga/g
+s/std::ratio<1000000000000l*, 1l*>/std::tera/g
+s/std::ratio<1000000000000000l*, 1l*>/std::peta/g
+s/std::ratio<1000000000000000000l*, 1l*>/std::exa/g
+s/std::ratio<1000000000000000000000l*, 1l*>/std::zetta/g
+s/std::ratio<1000000000000000000000000l*, 1l*>/std::yotta/g
+
+# durations :
+s/std::chrono::duration<long, std::nano >/std::nanoseconds/g
+s/std::chrono::duration<long, std::micro >/std::microseconds/g
+s/std::chrono::duration<long, std::milli >/std::milliseconds/g
+s/std::chrono::duration<long>/std::seconds/g
+s/std::chrono::duration<long, std::ratio<60> >/std::minutes/g
+s/std::chrono::duration<long, std::ratio<3600> >/std::hours/g
+
+# Chars inutiles
+s/\[abi:cxx11\]//g
+s/ >/>/g
+
+s/(.*)//g
+
+# Syntaxe
+s/\([}>]\)/\\\1/g
+s/ -\\>/ ->/g
+s/\([<{]\)/\\\1/g
+
+s/\"\\{/\"{/g
+s/\\}\"/}\"/g
