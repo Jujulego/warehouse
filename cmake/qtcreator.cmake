@@ -3,8 +3,8 @@
 #
 
 # Fonction générale
-function(generer_cbp target)
-	message(STATUS "Génération ${target}.cbp")
+function(generer_pro target)
+	message(STATUS "Génération ${target}.pro")
 	
 	# Récupération de la liste des sources
 	get_target_property(nom     ${target} NAME)
@@ -14,18 +14,25 @@ function(generer_cbp target)
 	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" src_dir "${src_dir}")
 	
 	# Texte pour les sources
+	set(HEADERS)
 	set(SOURCES)
 	
 	foreach(src ${srcs})
-		string(APPEND SOURCES "<Unit filename=\"" ${src_dir}/${src} "\" />\n\t\t")
+		get_source_file_property(est_header "${src_dir}/${src}" HEADER_FILE_ONLY)
+		
+		if (est_header)
+			string(APPEND HEADERS ${src_dir}/${src})
+		else()
+			string(APPEND SOURCES ${src_dir}/${src})
+		endif()
 	endforeach(src)
 	
 	# Fichier CodeBlocks !
 	configure_file(
-		${CMAKE_CURRENT_SOURCE_DIR}/tpl/${nom}.cbp.in
-		${CMAKE_CURRENT_SOURCE_DIR}/${nom}.cbp
+		${CMAKE_CURRENT_SOURCE_DIR}/tpl/${nom}.pro.in
+		${CMAKE_CURRENT_SOURCE_DIR}/${nom}.pro
 	)
 	
 	# Fini !
-	message(STATUS "Génération ${target}.cbp - done")
+	message(STATUS "Génération ${target}.pro - done")
 endfunction()

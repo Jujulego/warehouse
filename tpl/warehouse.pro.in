@@ -1,0 +1,8 @@
+QT += widgets
+
+HEADERS += @HEADERS@
+SOURCES += @SOURCES@
+
+QMAKE_CXXFLAGS += -std=c++14 -g3 -Wall -Wextra
+
+INCLUDEPATH += src

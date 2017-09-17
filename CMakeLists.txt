@@ -62,8 +62,13 @@ endif()
 include_directories(src)
 add_subdirectory(src)
 
-include(codeblocks)
-generer_cbp(warehouse)
+if (QT_ENABLE)
+	include(qtcreator)
+	generer_pro(warehouse)
+else()
+	include(codeblocks)
+	generer_cbp(warehouse)
+endif()
 
 #
 # Cibles custom
