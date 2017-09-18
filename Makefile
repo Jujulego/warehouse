@@ -4,7 +4,7 @@ LIB   = lib
 BIN   = bin
 SRCS  = src
 TPLS  = tpl
-EXEC  = run
+EXEC  = warehouse
 
 VALGRIND_OPTS  = --num-callers=500 #--leak-check=full #--show-leak-kinds=all --gen-suppressions=yes
 HELGRIND_OPTS  = --num-callers=500 #--gen-suppressions=yes

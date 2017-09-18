@@ -1,8 +1,11 @@
 # Fichiers
 warehouse
+warehouse.pro.user
+warehouse.layout
 
 # Extensions
 *.swp
 
 # Dossier
 build
+docs
