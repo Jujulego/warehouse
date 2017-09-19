@@ -43,7 +43,7 @@ function(add_graphe_appel target)
 		string(REGEX MATCH "\.cpp$" CXX_SRC ${src})
 		
 		if(NOT (C_SRC OR CXX_SRC))
-			message(WARNING "'${src}' n'est ni une source C (.c), ni une soure C++ (.cpp)")
+#			message(WARNING "'${src}' n'est ni une source C (.c), ni une soure C++ (.cpp)")
 			continue() # Suivant !
 		endif()
 		

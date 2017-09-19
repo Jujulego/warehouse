@@ -35,6 +35,12 @@
 			<Add option="-std=c++14" />
 		</Compiler>
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/outils/console.cpp" />
+		<Unit filename="src/outils/console.hpp" />
+		<Unit filename="src/outils/manip.cpp" />
+		<Unit filename="src/outils/manip.hpp" />
+		<Unit filename="src/outils/style.cpp" />
+		<Unit filename="src/outils/style.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />
