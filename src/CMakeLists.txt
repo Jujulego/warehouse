@@ -9,6 +9,7 @@ add_executable(warehouse
 	moteur/objet.cpp
 	
 	# Executable !
+	macros.hpp
 	main.cpp
 	
 	# Outils
