@@ -1,16 +1,18 @@
 #pragma once
 
+// Importations
+#include <string>
+
 // Min et Max
-#ifndef MIN
-#define MIN(x1, x2) ((x1) < (x2) ? (x1) : (x2))
-#endif
+template<class T>
+T min(T const& t1, T const& t2) {
+	return t1 < t2 ? t1 : t2;
+}
 
-#ifndef MAX
-#define MAX(x1, x2) ((x1) < (x2) ? (x2) : (x1))
-#endif
-
-// Paramètres
-// Y en a pas !
+template<class T>
+T max(T const& t1, T const& t2) {
+	return t1 > t2 ? t1 : t2;
+}
 
 // Caractètres
 /* Le nom des constantes contient les directions incluses au charactère :
@@ -22,7 +24,6 @@
  *   B
  */
 
-#include <string>
 #ifndef __gnu_linux__ // Pour Windows
 // Tableau
 static const std::string TAB_HB   = "\xb3";
@@ -38,11 +39,11 @@ static const std::string TAB_GHD  = "\xc1";
 static const std::string TAB_HDBG = "\xc5";
 
 // Touches
-# define ENTREE    13
-# define FL_DROITE 57421
-# define FL_GAUCHE 57419
-# define FL_HAUT   57416
-# define FL_BAS    57424
+static const std::string ENTREE    = "\r";
+static const std::string FL_DROITE = "\xe0M";
+static const std::string FL_GAUCHE = "\xe0K";
+static const std::string FL_HAUT   = "\xe0H";
+static const std::string FL_BAS    = "\xe0P";
 
 #else // Pour Linux
 // Tableau
@@ -58,10 +59,10 @@ static const std::string TAB_BGH  = "\xe2\x94\xa4";
 static const std::string TAB_GHD  = "\xe2\x94\xb4";
 static const std::string TAB_HDBG = "\xe2\x94\xbc";
 
-// Commandes
-# define ENTREE    10
-# define FL_DROITE 1792835
-# define FL_GAUCHE 1792836
-# define FL_HAUT   1792833
-# define FL_BAS    1792834
+// Touches
+static const std::string ENTREE    = "\n"
+static const std::string FL_DROITE = "\x1b[C"
+static const std::string FL_GAUCHE = "\x1b[D"
+static const std::string FL_HAUT   = "\x1b[A"
+static const std::string FL_BAS    = "\x1b[B"
 #endif
