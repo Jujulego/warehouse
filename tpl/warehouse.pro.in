@@ -3,6 +3,6 @@ QT += widgets
 HEADERS += @HEADERS@
 SOURCES += @SOURCES@
 
-QMAKE_CXXFLAGS += -std=c++14 -g3 -Wall -Wextra
+QMAKE_CXXFLAGS += -std=c++14 -g3 -Wall -Wextra -I src
 
 INCLUDEPATH += src

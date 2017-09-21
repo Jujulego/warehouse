@@ -10,6 +10,7 @@ namespace moteur {
 class Objet {
 	public:
 		// Constructeur
+		Objet(int x, int y);
 		Objet(Coord const& c);
 		
 		// Destructeur

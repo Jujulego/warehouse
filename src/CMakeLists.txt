@@ -3,6 +3,8 @@
 #
 add_executable(warehouse
 	# Moteur de jeu
+	moteur/carte.hpp
+	moteur/carte.cpp
 	moteur/objet.hpp
 	moteur/objet.cpp
 	

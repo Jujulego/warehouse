@@ -33,7 +33,10 @@
 			<Add option="-Wall" />
 			<Add option="-Wextra" />
 			<Add option="-std=c++14" />
+			<Add option="-I src" />
 		</Compiler>
+		<Unit filename="src/moteur/carte.hpp" />
+		<Unit filename="src/moteur/carte.cpp" />
 		<Unit filename="src/moteur/objet.hpp" />
 		<Unit filename="src/moteur/objet.cpp" />
 		<Unit filename="src/main.cpp" />
