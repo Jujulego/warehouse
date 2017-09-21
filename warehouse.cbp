@@ -39,6 +39,8 @@
 		<Unit filename="src/moteur/carte.cpp" />
 		<Unit filename="src/moteur/objet.hpp" />
 		<Unit filename="src/moteur/objet.cpp" />
+		<Unit filename="src/carte.hpp" />
+		<Unit filename="src/carte.cpp" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/outils.hpp" />
 		<Unit filename="src/outils/console.cpp" />

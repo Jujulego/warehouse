@@ -9,6 +9,8 @@ add_executable(warehouse
 	moteur/objet.cpp
 	
 	# Executable !
+	carte.hpp
+	carte.cpp
 	main.cpp
 	
 	# Outils

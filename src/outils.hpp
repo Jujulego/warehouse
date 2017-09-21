@@ -60,9 +60,9 @@ static const std::string TAB_GHD  = "\xe2\x94\xb4";
 static const std::string TAB_HDBG = "\xe2\x94\xbc";
 
 // Touches
-static const std::string ENTREE    = "\n"
-static const std::string FL_DROITE = "\x1b[C"
-static const std::string FL_GAUCHE = "\x1b[D"
-static const std::string FL_HAUT   = "\x1b[A"
-static const std::string FL_BAS    = "\x1b[B"
+static const std::string ENTREE    = "\n";
+static const std::string FL_DROITE = "\x1b[C";
+static const std::string FL_GAUCHE = "\x1b[D";
+static const std::string FL_HAUT   = "\x1b[A";
+static const std::string FL_BAS    = "\x1b[B";
 #endif
