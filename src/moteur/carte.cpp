@@ -1,11 +1,15 @@
 // Importations
+#include <fstream>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "outils.hpp"
 #include "outils/coord.hpp"
 
 #include "carte.hpp"
 #include "objet.hpp"
+#include "obstacle.hpp"
 
 // Namespace
 using namespace moteur;
@@ -25,6 +29,41 @@ std::shared_ptr<Objet>& Carte::operator [] (Coord const& c) {
 
 std::shared_ptr<Objet> const& Carte::operator [] (Coord const& c) const {
 	return m_objets[c.x() * m_ty + c.y()];
+}
+
+// Méthodes statiques
+Carte Carte::charger(std::string const& fichier) {
+	// Ouverture du fichier
+	std::ifstream ifs(fichier);
+	
+	// Création de la carte
+	unsigned tx, ty;
+	ifs >> tx; ifs >> ty;
+	
+	Carte carte(tx, ty);
+	
+	// Ajout des blocs
+	std::string buf;
+	std::getline(ifs, buf);
+	
+	for (unsigned y = 0; y < ty; ++y) {
+		// Lecture du fichier
+		std::getline(ifs, buf);
+		
+		// Création des blocs
+		for (unsigned x = 0; x < min(buf.size(), tx); ++x) {
+			switch (buf[x]) {
+			case '#':
+				carte.set(x, y, std::make_shared<Obstacle>(x, y, Obstacle::mur));
+				break;
+			
+			default:
+				carte.set(x, y, std::make_shared<Objet>(x, y));
+			}
+		}
+	}
+	
+	return carte;
 }
 
 // Méthodes

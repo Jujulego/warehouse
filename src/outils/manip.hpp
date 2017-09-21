@@ -25,12 +25,7 @@ class ClearManip : public BaseManip {
 };
 
 // ------------- CoordManip ------------
-class CoordManip : public BaseManip {
-	protected:
-		// Attributs
-		int m_x;
-		int m_y;
-
+class CoordManip : public BaseManip, public Coord {
 	public:
 		// Constructeur
 		CoordManip(int x = 0, int y = 0);
@@ -38,14 +33,14 @@ class CoordManip : public BaseManip {
 		// Opérateurs
 		CoordManip  operator +  () const;
 		CoordManip  operator -  () const;
-		CoordManip  operator +  (CoordManip const& cm) const;
-		CoordManip  operator -  (CoordManip const& cm) const;
-		CoordManip  operator *  (int const& k)         const;
-		CoordManip  operator /  (int const& k)         const;
-		CoordManip& operator += (CoordManip const& cm);
-		CoordManip& operator -= (CoordManip const& cm);
-		CoordManip& operator *= (int const& k);
-		CoordManip& operator /= (int const& k);
+		CoordManip  operator +  (Coord const& c) const;
+		CoordManip  operator -  (Coord const& c) const;
+		CoordManip  operator *  (int k)          const;
+		CoordManip  operator /  (int k)          const;
+		CoordManip& operator += (Coord const& c);
+		CoordManip& operator -= (Coord const& c);
+		CoordManip& operator *= (int k);
+		CoordManip& operator /= (int k);
 
 		// Méthodes
 		virtual std::ostream& appliquer(std::ostream& stream) const override;
@@ -63,21 +58,21 @@ class MouvManip : public CoordManip {
 		// Opérateurs
 		MouvManip  operator +  () const;
 		MouvManip  operator -  () const;
-		MouvManip  operator +  (MouvManip const& cm) const;
-		MouvManip  operator -  (MouvManip const& cm) const;
-		MouvManip  operator *  (int const& k)        const;
-		MouvManip  operator /  (int const& k)        const;
-		MouvManip& operator += (MouvManip const& cm);
-		MouvManip& operator -= (MouvManip const& cm);
-		MouvManip& operator *= (int const& k);
-		MouvManip& operator /= (int const& k);
+		MouvManip  operator +  (Coord const& c) const;
+		MouvManip  operator -  (Coord const& c) const;
+		MouvManip  operator *  (int k)          const;
+		MouvManip  operator /  (int k)          const;
+		MouvManip& operator += (Coord const& c);
+		MouvManip& operator -= (Coord const& c);
+		MouvManip& operator *= (int k);
+		MouvManip& operator /= (int k);
 
 		// Méthodes
 		virtual std::ostream& appliquer(std::ostream& stream) const override;
 };
 
 // Opérateur externe
-MouvManip operator * (int const& k, MouvManip const& cm);
+MouvManip operator * (int const& k, MouvManip const& mm);
 
 // ----------- EffLigneManip -----------
 class EffLigneManip : public BaseManip {

@@ -2,8 +2,9 @@
 
 // Importations
 #include <memory>
-#include <vector>
+#include <string>
 #include <type_traits>
+#include <vector>
 
 #include "outils/coord.hpp"
 
@@ -25,6 +26,9 @@ class Carte {
 		// Opérateurs
 		std::shared_ptr<Objet>&       operator [] (Coord const& c);       //! Accès aux objets : carte[Coord(5, 5)] => pt sur Objet
 		std::shared_ptr<Objet> const& operator [] (Coord const& c) const;
+		
+		// Méthodes statiques
+		static Carte charger(std::string const& fichier);
 		
 		// Méthodes
 		template<class T = Objet>

@@ -4,13 +4,13 @@
 #include <string>
 
 // Min et Max
-template<class T>
-T min(T const& t1, T const& t2) {
+template<class T, class U>
+auto min(T const& t1, U const& t2) {
 	return t1 < t2 ? t1 : t2;
 }
 
-template<class T>
-T max(T const& t1, T const& t2) {
+template<class T, class U>
+auto max(T const& t1, U const& t2) {
 	return t1 > t2 ? t1 : t2;
 }
 

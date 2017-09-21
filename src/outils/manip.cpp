@@ -2,6 +2,7 @@
 #include <ostream>
 #include <string>
 
+#include "coord.hpp"
 #include "manip.hpp"
 
 #ifndef __gnu_linux__
@@ -26,21 +27,19 @@ std::ostream& ClearManip::appliquer(std::ostream& stream) const {
 
 // ------------- CoordManip ------------
 // Constructeur
-CoordManip::CoordManip(int x, int y)
-	: m_x(x), m_y(y) {
-}
+CoordManip::CoordManip(int x, int y) : Coord(x, y) {}
 
 // Opérateurs
-CoordManip  CoordManip::operator +  ()                     const { return CoordManip(+m_x, +m_y); }
-CoordManip  CoordManip::operator -  ()                     const { return CoordManip(-m_x, -m_y); }
-CoordManip  CoordManip::operator +  (CoordManip const& cm) const { return CoordManip(m_x + cm.m_x, m_y + cm.m_y); }
-CoordManip  CoordManip::operator -  (CoordManip const& cm) const { return CoordManip(m_x - cm.m_x, m_y - cm.m_y); }
-CoordManip  CoordManip::operator *  (int const& k)         const { return CoordManip(k*m_x, k*m_y); }
-CoordManip  CoordManip::operator /  (int const& k)         const { return CoordManip(m_x/k, m_y/k); }
-CoordManip& CoordManip::operator += (CoordManip const& cm)       { m_x += cm.m_x; m_y += cm.m_y; return *this; }
-CoordManip& CoordManip::operator -= (CoordManip const& cm)       { m_x -= cm.m_x; m_y -= cm.m_y; return *this; }
-CoordManip& CoordManip::operator *= (int const& k)               { m_x *= k;      m_y *= k;      return *this; }
-CoordManip& CoordManip::operator /= (int const& k)               { m_x /= k;      m_y /= k;      return *this; }
+CoordManip  CoordManip::operator +  ()               const { return CoordManip(+x(),       +y()); }
+CoordManip  CoordManip::operator -  ()               const { return CoordManip(-x(),       -y()); }
+CoordManip  CoordManip::operator +  (Coord const& c) const { return CoordManip(x() + c.x(), y() + c.y()); }
+CoordManip  CoordManip::operator -  (Coord const& c) const { return CoordManip(x() - c.x(), y() - c.y()); }
+CoordManip  CoordManip::operator *  (int k)          const { return CoordManip(x() * k,     y() * k); }
+CoordManip  CoordManip::operator /  (int k)          const { return CoordManip(x() / k,     y() / k); }
+CoordManip& CoordManip::operator += (Coord const& c)       { x() += c.x(); y() += c.y(); return *this; }
+CoordManip& CoordManip::operator -= (Coord const& c)       { x() -= c.x(); y() -= c.y(); return *this; }
+CoordManip& CoordManip::operator *= (int k)                { x() *= k;     y() *= k;     return *this; }
+CoordManip& CoordManip::operator /= (int k)                { x() /= k;     y() /= k;     return *this; }
 
 // Opérateurs externes
 CoordManip operator * (int const& k, CoordManip const& cm)       { return cm * k; }
@@ -48,11 +47,11 @@ CoordManip operator * (int const& k, CoordManip const& cm)       { return cm * k
 // Méthodes
 std::ostream& CoordManip::appliquer(std::ostream& stream) const {
 #ifdef __gnu_linux__
-	return stream << "\x1b[" << m_y+1 << ";" << m_x+1 << "H";
+	return stream << "\x1b[" << y()+1 << ";" << x()+1 << "H";
 #else
 	COORD coord;
-    coord.X = m_x;
-    coord.Y = m_y;
+    coord.X = x();
+    coord.Y = y();
 
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 	return stream;
@@ -61,41 +60,40 @@ std::ostream& CoordManip::appliquer(std::ostream& stream) const {
 
 // ------------- MouvManip -------------
 // Constructeur
-MouvManip::MouvManip(int dx, int dy) : CoordManip(dx, dy) {
-}
+MouvManip::MouvManip(int dx, int dy) : CoordManip(dx, dy) {}
 
 // Opérateurs
-MouvManip  MouvManip::operator +  ()                    const { return MouvManip(+m_x, +m_y); }
-MouvManip  MouvManip::operator -  ()                    const { return MouvManip(-m_x, -m_y); }
-MouvManip  MouvManip::operator +  (MouvManip const& cm) const { return MouvManip(m_x + cm.m_x, m_y + cm.m_y); }
-MouvManip  MouvManip::operator -  (MouvManip const& cm) const { return MouvManip(m_x - cm.m_x, m_y - cm.m_y); }
-MouvManip  MouvManip::operator *  (int const& k)        const { return MouvManip(k*m_x, k*m_y); }
-MouvManip  MouvManip::operator /  (int const& k)        const { return MouvManip(m_x/k, m_y/k); }
-MouvManip& MouvManip::operator += (MouvManip const& cm)       { m_x += cm.m_x; m_y += cm.m_y; return *this; }
-MouvManip& MouvManip::operator -= (MouvManip const& cm)       { m_x -= cm.m_x; m_y -= cm.m_y; return *this; }
-MouvManip& MouvManip::operator *= (int const& k)              { m_x *= k;      m_y *= k;      return *this; }
-MouvManip& MouvManip::operator /= (int const& k)              { m_x /= k;      m_y /= k;      return *this; }
+MouvManip  MouvManip::operator +  ()               const { return MouvManip(+x(),       +y()); }
+MouvManip  MouvManip::operator -  ()               const { return MouvManip(-x(),       -y()); }
+MouvManip  MouvManip::operator +  (Coord const& c) const { return MouvManip(x() + c.x(), y() + c.y()); }
+MouvManip  MouvManip::operator -  (Coord const& c) const { return MouvManip(x() - c.x(), y() - c.y()); }
+MouvManip  MouvManip::operator *  (int k)          const { return MouvManip(x() * k,     y() * k); }
+MouvManip  MouvManip::operator /  (int k)          const { return MouvManip(x() / k,     y() / k); }
+MouvManip& MouvManip::operator += (Coord const& c)       { x() += c.x(); y() += c.y(); return *this; }
+MouvManip& MouvManip::operator -= (Coord const& c)       { x() -= c.x(); y() -= c.y(); return *this; }
+MouvManip& MouvManip::operator *= (int k)                { x() *= k;     y() *= k;     return *this; }
+MouvManip& MouvManip::operator /= (int k)                { x() /= k;     y() /= k;     return *this; }
 
 // Opérateurs externes
-MouvManip operator * (int const& k, MouvManip const& cm)      { return cm * k; }
+MouvManip operator * (int const& k, MouvManip const& mm)      { return mm * k; }
 
 // Méthodes
 std::ostream& MouvManip::appliquer(std::ostream& stream) const {
 #ifdef __gnu_linux__
 	// Verticalement
-	if (m_y < 0) stream << "\x1b[" << (-m_y) << "A";
-	if (m_y > 0) stream << "\x1b[" <<   m_y  << "B";
+	if (y() < 0) stream << "\x1b[" << (-y()) << "A";
+	if (y() > 0) stream << "\x1b[" <<   y()  << "B";
 
-	if (m_x < 0) stream << "\x1b[" << (-m_x) << "D";
-	if (m_x > 0) stream << "\x1b[" <<   m_x  << "C";
+	if (x() < 0) stream << "\x1b[" << (-x()) << "D";
+	if (x() > 0) stream << "\x1b[" <<   x()  << "C";
 #else
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
 	GetConsoleScreenBufferInfo(h, &csbi);
 
 	COORD coord = csbi.dwCursorPosition;
-    coord.X += m_x;
-    coord.Y += m_y;
+    coord.X += x();
+    coord.Y += y();
 
 	SetConsoleCursorPosition(h, coord);
 #endif
