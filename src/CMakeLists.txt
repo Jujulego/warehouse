@@ -2,6 +2,8 @@
 # Ajout de l'executable
 #
 add_executable(warehouse
+	coord.hpp
+	coord.cpp
 	main.cpp
 	
 	# Outils
