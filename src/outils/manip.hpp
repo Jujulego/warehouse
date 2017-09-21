@@ -1,10 +1,11 @@
-#ifndef __UTILS_MANIP
-#define __UTILS_MANIP
+#pragma once
 
 // Importations
 #include <ostream>
 #include <sstream>
 #include <string>
+
+#include "coord.hpp"
 
 // -------------- BaseManip ------------
 class BaseManip {
@@ -64,8 +65,8 @@ class MouvManip : public CoordManip {
 		MouvManip  operator -  () const;
 		MouvManip  operator +  (MouvManip const& cm) const;
 		MouvManip  operator -  (MouvManip const& cm) const;
-		MouvManip  operator *  (int const& k)         const;
-		MouvManip  operator /  (int const& k)         const;
+		MouvManip  operator *  (int const& k)        const;
+		MouvManip  operator /  (int const& k)        const;
 		MouvManip& operator += (MouvManip const& cm);
 		MouvManip& operator -= (MouvManip const& cm);
 		MouvManip& operator *= (int const& k);
@@ -116,6 +117,7 @@ namespace manip {
 	static CoordManip x(1, 0);
 	static CoordManip y(0, 1);
 	inline CoordManip coord(int x, int y) { return CoordManip(x, y); }
+	inline CoordManip coord(Coord c)      { return CoordManip(c.x(), c.y()); }
 
 	// Basiques
 	static EffLigneManip eff_ligne;  // Efface la ligne
@@ -128,7 +130,6 @@ namespace manip {
 	static MouvManip dy(0, 1);
 };
 
-#ifdef __gnu_linux__
 // ------------- posstream -------------
 template<class Stream>
 class posstream {
@@ -199,6 +200,3 @@ class posstream {
 			m_flux->flush();
 		}
 };
-#endif
-
-#endif // __UTILS_MANIP

@@ -1,5 +1,4 @@
-#ifndef __STYLE
-#define __STYLE
+#pragma once
 
 // Importations
 #include <ostream>
@@ -147,5 +146,3 @@ namespace style {
 
 // Opérateurs externes
 std::ostream& operator << (std::ostream& stream, Style const& style);
-
-#endif // __STYLE

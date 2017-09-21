@@ -34,11 +34,13 @@
 			<Add option="-Wextra" />
 			<Add option="-std=c++14" />
 		</Compiler>
-		<Unit filename="src/coord.hpp" />
-		<Unit filename="src/coord.cpp" />
+		<Unit filename="src/moteur/objet.hpp" />
+		<Unit filename="src/moteur/objet.cpp" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/outils/console.cpp" />
 		<Unit filename="src/outils/console.hpp" />
+		<Unit filename="src/outils/coord.hpp" />
+		<Unit filename="src/outils/coord.cpp" />
 		<Unit filename="src/outils/manip.cpp" />
 		<Unit filename="src/outils/manip.hpp" />
 		<Unit filename="src/outils/style.cpp" />
