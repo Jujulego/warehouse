@@ -4,6 +4,8 @@
 
 #include "moteur/carte.hpp"
 #include "moteur/obstacle.hpp"
+#include "moteur/poussable.hpp"
+
 #include "outils.hpp"
 #include "outils/coord.hpp"
 #include "outils/manip.hpp"
@@ -12,11 +14,13 @@
 #include "carte.hpp"
 
 #ifdef __gnu_linux__
-# define MUR  "\xe2\x96\x88\xe2\x96\x88"
-# define PERS "\xe2\x98\xba"
+# define MUR   "\xe2\x96\x88\xe2\x96\x88"
+# define PERS  "\xe2\x98\xba"
+# define BOITE "\xe2\x9a\x84"
 #else
-# define MUR  "\xdb\xdb"
-# define PERS ";)"
+# define MUR   "\xdb\xdb"
+# define PERS  ";)"
+# define BOITE "##"
 #endif
 
 // Prototype
@@ -48,7 +52,11 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 		auto dobj = obj->get();
 		
 		if (dobj) {
-			std::cout << style::vert << PERS << style::defaut;
+			if (std::dynamic_pointer_cast<moteur::Poussable>(dobj)) {
+				std::cout << style::jaune << BOITE << style::defaut;
+			} else {
+				std::cout << style::vert << PERS << style::defaut;
+			}
 		} else {
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
 				std::cout << MUR;

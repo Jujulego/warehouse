@@ -4,6 +4,8 @@
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
+#include "moteur/poussable.hpp"
+
 #include "outils.hpp"
 #include "outils/console.hpp"
 #include "outils/coord.hpp"
@@ -21,6 +23,8 @@ int main() {
 	moteur::Carte carte = moteur::Carte::charger("carte.txt");
 	auto pers = std::make_shared<moteur::Deplacable>(&carte);
 	carte.set(0, 0, pers);
+	carte.set(5, 5, std::make_shared<moteur::Poussable>(&carte));
+	carte.set(2, 3, std::make_shared<moteur::Poussable>(&carte));
 
 	// Stream erreurs
 	std::cout << manip::clear;

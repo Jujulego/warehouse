@@ -45,6 +45,8 @@
 		<Unit filename="src/moteur/objet.cpp" />
 		<Unit filename="src/moteur/obstacle.hpp" />
 		<Unit filename="src/moteur/obstacle.cpp" />
+		<Unit filename="src/moteur/poussable.hpp" />
+		<Unit filename="src/moteur/poussable.cpp" />
 		<Unit filename="src/carte.hpp" />
 		<Unit filename="src/carte.cpp" />
 		<Unit filename="src/main.cpp" />

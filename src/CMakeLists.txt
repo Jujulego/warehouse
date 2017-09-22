@@ -13,6 +13,8 @@ add_executable(warehouse
 	moteur/objet.cpp
 	moteur/obstacle.hpp
 	moteur/obstacle.cpp
+	moteur/poussable.hpp
+	moteur/poussable.cpp
 	
 	# Executable !
 	carte.hpp

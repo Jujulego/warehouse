@@ -10,6 +10,7 @@
 #include "carte.hpp"
 #include "immuable.hpp"
 #include "obstacle.hpp"
+#include "poussable.hpp"
 
 // Namespace
 using namespace moteur;
@@ -103,7 +104,13 @@ bool Carte::deplacer(Coord const& c, Coord const& vecteur) {
 	if (!obj) return true;
 	
 	// Check accessiblité
-	if (!get<Immuable>(nc)->accessible()) return true;
+	if (!get<Immuable>(nc)->accessible()) {
+		// Y a 1 truc ...
+		if (!get<Poussable>(nc)) return true;
+		
+		// ... qu'on peut (peut-être) pousser !
+		if (deplacer(nc, vecteur)) return true; // ou pas ;)
+	}
 	
 	// Mouvement !
 	get<Immuable>(nc)->set(get<Immuable>(c)->pop());
