@@ -37,6 +37,10 @@
 		</Compiler>
 		<Unit filename="src/moteur/carte.hpp" />
 		<Unit filename="src/moteur/carte.cpp" />
+		<Unit filename="src/moteur/deplacable.hpp" />
+		<Unit filename="src/moteur/deplacable.cpp" />
+		<Unit filename="src/moteur/immuable.hpp" />
+		<Unit filename="src/moteur/immuable.cpp" />
 		<Unit filename="src/moteur/objet.hpp" />
 		<Unit filename="src/moteur/objet.cpp" />
 		<Unit filename="src/moteur/obstacle.hpp" />

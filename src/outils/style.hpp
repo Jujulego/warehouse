@@ -88,7 +88,7 @@ class Style : public BaseManip {
 		// Accesseurs
 		style::Couleur txt() const;
 		style::Couleur fnd() const;
-		style::Effet  effet() const;
+		style::Effet effet() const;
 
 		void txt(style::Couleur const& txt);
 		void fnd(style::Couleur const& fnd);

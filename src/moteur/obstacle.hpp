@@ -3,13 +3,13 @@
 // Importations
 #include "outils/coord.hpp"
 
-#include "objet.hpp"
+#include "immuable.hpp"
 
 // Namespace
 namespace moteur {
 
 // Classe
-class Obstacle : public Objet {
+class Obstacle : public Immuable {
 	public:
 		// Enumération
 		enum Type { mur };

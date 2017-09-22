@@ -33,3 +33,9 @@ class Coord {
 
 // Opérateurs externes
 Coord operator * (int k, Coord const& c);
+
+// Directions
+static const Coord HAUT(   0, -1);
+static const Coord DROITE( 1,  0);
+static const Coord BAS(    0,  1);
+static const Coord GAUCHE(-1,  0);

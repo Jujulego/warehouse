@@ -27,7 +27,8 @@ std::ostream& ClearManip::appliquer(std::ostream& stream) const {
 
 // ------------- CoordManip ------------
 // Constructeur
-CoordManip::CoordManip(int x, int y) : Coord(x, y) {}
+CoordManip::CoordManip(Coord const& c) : Coord(c) {}
+CoordManip::CoordManip(int x, int y)   : Coord(x, y) {}
 
 // Opérateurs
 CoordManip  CoordManip::operator +  ()               const { return CoordManip(+x(),       +y()); }
@@ -60,6 +61,7 @@ std::ostream& CoordManip::appliquer(std::ostream& stream) const {
 
 // ------------- MouvManip -------------
 // Constructeur
+MouvManip::MouvManip(Coord const& c) : CoordManip(c) {}
 MouvManip::MouvManip(int dx, int dy) : CoordManip(dx, dy) {}
 
 // Opérateurs

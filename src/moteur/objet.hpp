@@ -16,14 +16,10 @@ class Objet {
 		// Destructeur
 		virtual ~Objet() = default;
 		
-		// Méthodes
-		virtual bool accessible() const; //! Indique s'il est possible de marcher sur l'objet.
-		
 		// Accesseurs
-		Coord&       coord();
 		Coord const& coord() const;
 	
-	private:
+	protected:
 		// Attributs
 		Coord m_coord;
 };

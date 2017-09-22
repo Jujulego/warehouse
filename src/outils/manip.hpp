@@ -1,10 +1,6 @@
 #pragma once
 
 // Importations
-#include <ostream>
-#include <sstream>
-#include <string>
-
 #include "coord.hpp"
 
 // -------------- BaseManip ------------
@@ -28,6 +24,7 @@ class ClearManip : public BaseManip {
 class CoordManip : public BaseManip, public Coord {
 	public:
 		// Constructeur
+		CoordManip(Coord const& c);
 		CoordManip(int x = 0, int y = 0);
 
 		// Opérateurs
@@ -53,6 +50,7 @@ CoordManip operator * (int const& k, CoordManip const& cm);
 class MouvManip : public CoordManip {
 	public:
 		// Constructeur
+		MouvManip(Coord const& c);
 		MouvManip(int dx, int dy);
 
 		// Opérateurs
@@ -123,75 +121,4 @@ namespace manip {
 	// Mouv
 	static MouvManip dx(1, 0);       // Décalage du curseur
 	static MouvManip dy(0, 1);
-};
-
-// ------------- posstream -------------
-template<class Stream>
-class posstream {
-	private:
-		// Attributs
-		int m_nb = 0;
-		int m_lig = 0;
-		Stream* m_flux;
-		CoordManip m_coord;
-
-	public:
-		// Constructeur
-		posstream(Stream* flux, CoordManip coord) : m_flux(flux), m_coord(coord)  {}
-		posstream(Stream* flux, int x, int y) : posstream(flux, CoordManip(x, y)) {}
-
-		// Opérateurs
-		template<class T>
-		posstream<Stream>& operator << (T const& obj) {
-			// Convertion string
-			std::ostringstream oss;
-			oss << obj;
-
-			// Affichage & decompte
-			*m_flux << manip::sauve << m_coord + m_nb * manip::x + m_lig * manip::y << oss.str() << manip::restore;
-
-			for (char c : oss.str()) {
-				m_nb++;
-				if (c == '\n') m_lig++;
-			}
-
-			return *this;
-		}
-
-		posstream<Stream>& operator << (Stream& (*manip)(Stream&)) {
-			// Génération du string
-			std::ostringstream oss;
-			oss << manip;
-
-			// Affichage
-			*m_flux << manip::sauve << m_coord + m_nb * manip::x + m_lig * manip::y << oss.str() << manip::restore;
-
-			for (char c : oss.str()) {
-				m_nb++;
-				if (c == '\n') {
-					m_lig++;
-					m_nb = 0;
-				}
-			}
-
-			return *this;
-		}
-
-		posstream<Stream>& operator << (EffLigneManip const&) {
-			*m_flux << manip::sauve << m_coord + m_lig * manip::y;
-
-			for (int i = 0; i < m_nb; ++i) {
-				*m_flux << ' ';
-			}
-
-			*m_flux << manip::restore;
-			m_nb = 0;
-
-			return *this;
-		}
-
-		// Méthodes
-		void flush() {
-			m_flux->flush();
-		}
 };

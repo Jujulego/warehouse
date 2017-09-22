@@ -5,6 +5,10 @@ add_executable(warehouse
 	# Moteur de jeu
 	moteur/carte.hpp
 	moteur/carte.cpp
+	moteur/deplacable.hpp
+	moteur/deplacable.cpp
+	moteur/immuable.hpp
+	moteur/immuable.cpp
 	moteur/objet.hpp
 	moteur/objet.cpp
 	moteur/obstacle.hpp
