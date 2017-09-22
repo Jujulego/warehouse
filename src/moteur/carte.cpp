@@ -93,7 +93,7 @@ void Carte::set(int x, int y, std::shared_ptr<Objet> obj) {
 	}
 }
 
-bool Carte::deplacer(Coord const& c, Coord const& vecteur) {
+bool Carte::deplacer(Coord const& c, Coord const& vecteur, int force) {
 	// Check coordonnees
 	Coord nc = c + vecteur;
 	if (!coord_valides(c))  return true;
@@ -106,10 +106,11 @@ bool Carte::deplacer(Coord const& c, Coord const& vecteur) {
 	// Check accessiblité
 	if (!get<Immuable>(nc)->accessible()) {
 		// Y a 1 truc ...
-		if (!get<Poussable>(nc)) return true;
+		auto pobj = get<Poussable>(nc);
+		if (!pobj || (force < pobj->poids())) return true;
 		
 		// ... qu'on peut (peut-être) pousser !
-		if (deplacer(nc, vecteur)) return true; // ou pas ;)
+		if (deplacer(nc, vecteur, force - pobj->poids())) return true; // ou pas ;)
 	}
 	
 	// Mouvement !

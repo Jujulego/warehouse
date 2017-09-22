@@ -21,16 +21,27 @@ int main() {
 	Console console;
 	
 	moteur::Carte carte = moteur::Carte::charger("carte.txt");
-	auto pers = std::make_shared<moteur::Deplacable>(&carte);
+	auto pers = std::make_shared<moteur::Deplacable>(&carte, 5);
 	carte.set(0, 0, pers);
-	carte.set(5, 5, std::make_shared<moteur::Poussable>(&carte));
-	carte.set(2, 3, std::make_shared<moteur::Poussable>(&carte));
-
-	// Stream erreurs
+	
+	// Objets
+	carte.set(2, 2, std::make_shared<moteur::Poussable>(&carte, 1));
+	carte.set(3, 3, std::make_shared<moteur::Poussable>(&carte, 2));
+	carte.set(4, 4, std::make_shared<moteur::Poussable>(&carte, 3));
+	carte.set(5, 5, std::make_shared<moteur::Poussable>(&carte, 4));
+	carte.set(6, 6, std::make_shared<moteur::Poussable>(&carte, 5));
+	carte.set(7, 7, std::make_shared<moteur::Poussable>(&carte, 6));
+	
 	std::cout << manip::clear;
-	posstream<std::ostream> erreurs(&std::cout, 10 + carte.taille_x() * 2, 4);
+	
+	// Streams
+	posstream<std::ostream> infos(  &std::cout, 6 + carte.taille_x() * 2, 6);
+	posstream<std::ostream> erreurs(&std::cout, 6 + carte.taille_x() * 2, 4);
 	erreurs.style(style::erreur);
-
+	
+	// Informations
+	infos << "Force : " << pers->force();
+	
 	bool fin = false;
 	while (!fin) {
 		afficher_carte(carte, 2, 1);

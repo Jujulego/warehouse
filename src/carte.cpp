@@ -16,11 +16,11 @@
 #ifdef __gnu_linux__
 # define MUR   "\xe2\x96\x88\xe2\x96\x88"
 # define PERS  "\xe2\x98\xba"
-# define BOITE "\xe2\x9a\x84"
+# define BOITE "\xe2\x9a"
 #else
 # define MUR   "\xdb\xdb"
 # define PERS  ";)"
-# define BOITE "##"
+# define BOITE "#"
 #endif
 
 // Prototype
@@ -52,8 +52,20 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 		auto dobj = obj->get();
 		
 		if (dobj) {
-			if (std::dynamic_pointer_cast<moteur::Poussable>(dobj)) {
-				std::cout << style::jaune << BOITE << style::defaut;
+			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
+			if (pobj) {
+				#ifdef __gnu_linux__
+				if (pobj->poids() <= 6) {
+					std::string s = BOITE;
+					s.append(1, '\x7f' + pobj->poids());
+					
+					std::cout << style::jaune << s << style::defaut;
+				} else {
+					std::cout << style::jaune << "#" << pobj->poids() << style::defaut;
+				}
+				#else
+				std::cout << style::jaune << BOITE << pobj->poids() << style::defaut;
+				#endif
 			} else {
 				std::cout << style::vert << PERS << style::defaut;
 			}

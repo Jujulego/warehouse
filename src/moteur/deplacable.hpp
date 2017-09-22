@@ -14,16 +14,18 @@ class Carte;
 class Deplacable : public Objet {
 	public:
 		// Construteur
-		Deplacable(Carte* carte);
+		Deplacable(Carte* carte, int force);
 		
 		// Méthodes
 		virtual bool deplacer(Coord const& vecteur); //! Renvoie true en cas d'erreur (le mouvement n'est alors pas réalisé)
 		
 		// Accesseurs
 		Coord& coord();
+		int force() const;
 	
 	private:
 		// Attributs
+		int m_force;
 		Carte* m_carte;
 };
 

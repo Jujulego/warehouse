@@ -10,7 +10,14 @@ namespace moteur {
 class Poussable : public Deplacable {
 	public:
 		// Constructeur
-		Poussable(Carte* carte);
+		Poussable(Carte* carte, int poids);
+		
+		// Accesseur
+		int poids() const;
+	
+	private:
+		// Attributs
+		int m_poids;
 };
 
 } // moteur
