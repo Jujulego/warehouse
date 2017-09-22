@@ -12,11 +12,11 @@
 #include "carte.hpp"
 
 #ifdef __gnu_linux__
-# define MUR  "\xe2\x96\x88"
-# define PERS "P"
+# define MUR  "\xe2\x96\x88\xe2\x96\x88"
+# define PERS "\xe2\x98\xba"
 #else
-# define MUR  "#"
-# define PERS "P"
+# define MUR  "\xdb\xdb"
+# define PERS ";)"
 #endif
 
 // Prototype
@@ -27,25 +27,24 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 	// Cadre :
 	std::cout << ref << TAB_DB;
 	for (int i = 0; i < carte.taille_x(); ++i) {
-		std::cout << TAB_DG;
+		std::cout << TAB_DG << TAB_DG;
 	}
 	std::cout << TAB_BG << std::endl;
 	
 	for (int i = 0; i < carte.taille_y(); ++i) {
-		std::cout << manip::dx * x << TAB_HB << manip::dx * carte.taille_x() << TAB_HB << std::endl;
+		std::cout << manip::dx * x << TAB_HB << manip::dx * carte.taille_x() * 2 << TAB_HB << std::endl;
 	}
 	
 	std::cout << manip::dx * x << TAB_HD;
 	for (int i = 0; i < carte.taille_x(); ++i) {
-		std::cout << TAB_DG;
+		std::cout << TAB_DG << TAB_DG;
 	}
 	std::cout << TAB_GH << std::endl;
 	
 	// Affichage des objets
 	ref += Coord(1, 1);
 	for (auto obj : carte) {
-		std::cout << ref + obj->coord();
-		
+		std::cout << ref + obj->coord() + manip::x * obj->coord().x();
 		auto dobj = obj->get();
 		
 		if (dobj) {
@@ -54,7 +53,7 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
 				std::cout << MUR;
 			} else {
-				std::cout << " ";
+				std::cout << "  ";
 			}
 		}
 	}

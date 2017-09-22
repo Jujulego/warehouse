@@ -1,17 +1,18 @@
-#pragma once
+#ifndef CONSOLE_H_INCLUDED
+#define CONSOLE_H_INCLUDED
 
-// Importations
-#include <string>
+// Dépendances
+#include <iostream>
 
 // Classe
+/// Gestion de la console
 class Console {
-	public:
-		// Méthodes
-		void gotoLigCol(int lig, int col);
-		void clear();
-		
-		// Clavier
-		bool kbhit();        /// Renvoie vrai si on appuye sur une touche
-		std::string getch(); /// Récupere la touche du clavier
-		static void reset();
+    public:
+        // Méthodes publiques
+        void gotoLigCol(int lig, int col);
+        void clear();
+        int  kbhit();
+        int  getch();
 };
+
+#endif // CONSOLE_H_INCLUDED

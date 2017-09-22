@@ -19,6 +19,9 @@ class Coord {
 		Coord& operator *= (int k);
 		Coord& operator /= (int k);
 		
+		bool operator == (Coord const& c) const;
+		bool operator != (Coord const& c) const;
+		
 		// Accesseurs
 		int& x();
 		int& y();

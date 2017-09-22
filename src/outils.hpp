@@ -39,11 +39,11 @@ static const std::string TAB_GHD  = "\xc1";
 static const std::string TAB_HDBG = "\xc5";
 
 // Touches
-static const std::string ENTREE    = "\r";
-static const std::string FL_DROITE = "\xe0M";
-static const std::string FL_GAUCHE = "\xe0K";
-static const std::string FL_HAUT   = "\xe0H";
-static const std::string FL_BAS    = "\xe0P";
+static const int ENTREE    = '\r';
+static const int FL_DROITE = 57421;
+static const int FL_GAUCHE = 57419;
+static const int FL_HAUT   = 57416;
+static const int FL_BAS    = 57424;
 
 #else // Pour Linux
 // Tableau
@@ -60,9 +60,9 @@ static const std::string TAB_GHD  = "\xe2\x94\xb4";
 static const std::string TAB_HDBG = "\xe2\x94\xbc";
 
 // Touches
-static const std::string ENTREE    = "\n";
-static const std::string FL_DROITE = "\x1b[C";
-static const std::string FL_GAUCHE = "\x1b[D";
-static const std::string FL_HAUT   = "\x1b[A";
-static const std::string FL_BAS    = "\x1b[B";
+static const int ENTREE    = '\n';
+static const int FL_DROITE = 1792835;
+static const int FL_GAUCHE = 1792836;
+static const int FL_HAUT   = 1792833;
+static const int FL_BAS    = 1792834;
 #endif

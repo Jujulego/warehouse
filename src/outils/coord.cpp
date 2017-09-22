@@ -57,6 +57,14 @@ Coord& Coord::operator /= (int k) {
 	return *this;
 }
 
+bool Coord::operator == (Coord const& c) const {
+	return (m_x == c.x()) && (m_y == c.y());
+}
+
+bool Coord::operator != (Coord const& c) const {
+	return (m_x != c.x()) || (m_y != c.y());
+}
+
 // Accesseurs
 int& Coord::x() {
 	return m_x;
