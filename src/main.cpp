@@ -4,6 +4,7 @@
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
+#include "moteur/emplacement.hpp"
 #include "moteur/poussable.hpp"
 
 #include "outils.hpp"
@@ -25,22 +26,23 @@ int main() {
 	carte.set(0, 0, pers);
 	
 	// Objets
-	carte.set(2, 2, std::make_shared<moteur::Poussable>(&carte, 1));
-	carte.set(3, 3, std::make_shared<moteur::Poussable>(&carte, 2));
-	carte.set(4, 4, std::make_shared<moteur::Poussable>(&carte, 3));
-	carte.set(5, 5, std::make_shared<moteur::Poussable>(&carte, 4));
-	carte.set(6, 6, std::make_shared<moteur::Poussable>(&carte, 5));
-	carte.set(7, 7, std::make_shared<moteur::Poussable>(&carte, 6));
+	carte.set(1, 1, std::make_shared<moteur::Poussable>(&carte, 1));
+	carte.set(2, 2, std::make_shared<moteur::Poussable>(&carte, 2));
+	carte.set(3, 3, std::make_shared<moteur::Poussable>(&carte, 3));
+	carte.set(4, 4, std::make_shared<moteur::Poussable>(&carte, 4));
+	carte.set(5, 5, std::make_shared<moteur::Poussable>(&carte, 3));
+	carte.set(6, 6, std::make_shared<moteur::Poussable>(&carte, 2));
+	carte.set(7, 7, std::make_shared<moteur::Poussable>(&carte, 1));
 	
 	std::cout << manip::clear;
 	
 	// Streams
-	posstream<std::ostream> infos(  &std::cout, 6 + carte.taille_x() * 2, 6);
+	posstream<std::ostream> infos(  &std::cout, 6 + carte.taille_x() * 2, 8);
 	posstream<std::ostream> erreurs(&std::cout, 6 + carte.taille_x() * 2, 4);
 	erreurs.style(style::erreur);
 	
 	// Informations
-	infos << "Force : " << pers->force();
+	std::cout << manip::coord(6 + carte.taille_x() * 2, 6) << "Force : " << pers->force();
 	
 	bool fin = false;
 	while (!fin) {
@@ -75,9 +77,24 @@ int main() {
 		
 		// Action !
 		if ((dir != Coord(0, 0)) && pers->deplacer(dir)) {
-			erreurs << manip::buzz << style::souligne << "Mouvement impossible !";
+			std::cout << manip::buzz;
+			erreurs << style::souligne << "Mouvement impossible !";
 			erreurs.flush();
 		}
+		
+		// Etat des emplacements
+		int nb = 0, i = 0;
+		for (auto obj : carte) {
+			auto pt = std::dynamic_pointer_cast<moteur::Emplacement>(obj);
+			
+			if (pt) {
+				nb++;
+				
+				if (pt->a_bloc()) i++;
+			}
+		}
+		
+		infos << manip::eff_ligne << i << " / " << nb;
 	}
 
 	std::cout << std::endl;

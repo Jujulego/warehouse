@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "moteur/carte.hpp"
+#include "moteur/emplacement.hpp"
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
 
@@ -15,12 +16,14 @@
 
 #ifdef __gnu_linux__
 # define MUR   "\xe2\x96\x88\xe2\x96\x88"
-# define PERS  "\xe2\x98\xba"
+# define PERS  "\xe2\x98\xba "
 # define BOITE "\xe2\x9a"
+# define EMPL  "\xe2\x9b\xb6 "
 #else
 # define MUR   "\xdb\xdb"
 # define PERS  ";)"
 # define BOITE "#"
+# define EMPL  "><"
 #endif
 
 // Prototype
@@ -59,7 +62,7 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 					std::string s = BOITE;
 					s.append(1, '\x7f' + pobj->poids());
 					
-					std::cout << style::jaune << s << style::defaut;
+					std::cout << style::jaune << s << ' ' << style::defaut;
 				} else {
 					std::cout << style::jaune << "#" << pobj->poids() << style::defaut;
 				}
@@ -72,6 +75,8 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 		} else {
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
 				std::cout << MUR;
+			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
+				std::cout << EMPL;
 			} else {
 				std::cout << "  ";
 			}

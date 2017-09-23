@@ -7,6 +7,8 @@ add_executable(warehouse
 	moteur/carte.cpp
 	moteur/deplacable.hpp
 	moteur/deplacable.cpp
+	moteur/emplacement.hpp
+	moteur/emplacement.cpp
 	moteur/immuable.hpp
 	moteur/immuable.cpp
 	moteur/objet.hpp

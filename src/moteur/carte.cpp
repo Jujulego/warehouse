@@ -8,6 +8,7 @@
 #include "outils/coord.hpp"
 
 #include "carte.hpp"
+#include "emplacement.hpp"
 #include "immuable.hpp"
 #include "obstacle.hpp"
 #include "poussable.hpp"
@@ -56,6 +57,10 @@ Carte Carte::charger(std::string const& fichier) {
 			switch (buf[x]) {
 			case '#':
 				carte.set(x, y, std::make_shared<Obstacle>(x, y, Obstacle::mur));
+				break;
+			
+			case 'E':
+				carte.set(x, y, std::make_shared<Emplacement>(x, y));
 				break;
 			
 			default:
