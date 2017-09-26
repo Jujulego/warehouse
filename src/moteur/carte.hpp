@@ -2,6 +2,7 @@
 
 // Importations
 #include <memory>
+#include <list>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -61,6 +62,19 @@ class Carte {
 		template<class T>
 		typename est_deplacable<T>::type get(int x, int y) const {
 			return std::dynamic_pointer_cast<T>(get<Immuable>(x, y)->get());
+		}
+		
+		template<class T>
+		std::list<std::shared_ptr<T>> liste() const {
+			std::list<std::shared_ptr<T>> liste;
+			
+			for (int i = 0; i < m_tx * m_ty; i++) {
+				auto pt = get<T>(i / m_ty, i % m_ty);
+				
+				if (pt) liste.push_back(pt);
+			}
+			
+			return liste;
 		}
 		
 		void set(Coord const& c, std::shared_ptr<Objet> obj);

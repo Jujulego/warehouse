@@ -53,6 +53,10 @@
 		<Unit filename="src/moteur/poussable.cpp" />
 		<Unit filename="src/moteur/sortie.hpp" />
 		<Unit filename="src/moteur/sortie.cpp" />
+		<Unit filename="src/ia/ia.hpp" />
+		<Unit filename="src/ia/ia.cpp" />
+		<Unit filename="src/ia/chemin.hpp" />
+		<Unit filename="src/ia/chemin.cpp" />
 		<Unit filename="src/carte.hpp" />
 		<Unit filename="src/carte.cpp" />
 		<Unit filename="src/main.cpp" />

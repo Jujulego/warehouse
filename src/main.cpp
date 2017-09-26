@@ -46,14 +46,11 @@ int main() {
 		
 		// Etat des emplacements
 		int nb = 0, i = 0;
-		for (auto obj : *carte) {
-			auto pt = std::dynamic_pointer_cast<moteur::Emplacement>(obj);
+		for (auto empl : carte->liste<moteur::Emplacement>()) {
+			nb++;
 			
-			if (pt) {
-				nb++;
-				
-				if (pt->a_bloc()) i++;
-			}
+			if (empl->a_bloc())
+				i++;
 		}
 		
 		infos << manip::eff_ligne << i << " / " << nb;

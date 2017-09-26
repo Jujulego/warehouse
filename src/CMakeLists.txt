@@ -22,6 +22,12 @@ add_executable(warehouse
 	moteur/sortie.hpp
 	moteur/sortie.cpp
 	
+	# IAs
+	ia/ia.hpp
+	ia/ia.cpp
+	ia/chemin.hpp
+	ia/chemin.cpp
+	
 	# Executable !
 	carte.hpp
 	carte.cpp
