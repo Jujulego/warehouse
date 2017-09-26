@@ -27,6 +27,13 @@ Carte::Carte(int tx, int ty) : m_tx(tx), m_ty(ty) {
 	}}
 }
 
+Carte::Carte(Carte const& carte) : m_tx(carte.m_tx), m_ty(carte.m_ty) {
+	// Copie du tableau
+	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
+		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
+	}}
+}
+
 // Opérateurs
 std::shared_ptr<Immuable>& Carte::operator [] (Coord const& c) {
 	return m_objets[c.x() * m_ty + c.y()];

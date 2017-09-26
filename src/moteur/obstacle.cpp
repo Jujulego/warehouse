@@ -16,6 +16,13 @@ bool Obstacle::accessible() const {
 	return false;
 }
 
+std::shared_ptr<Immuable> Obstacle::copie(Carte* carte) const {
+	auto pt = std::make_shared<Obstacle>(m_coord, m_type);
+	pt->set(get()->copie(carte));
+	
+	return pt;
+}
+
 // Accesseurs
 Obstacle::Type Obstacle::type() const {
 	return m_type;

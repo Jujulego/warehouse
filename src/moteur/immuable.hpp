@@ -11,6 +11,8 @@
 // Namespace
 namespace moteur {
 
+class Carte;
+
 // Classe
 class Immuable : public Objet {
 	public:
@@ -20,6 +22,7 @@ class Immuable : public Objet {
 		
 		// Méthodes
 		virtual bool accessible() const;
+		virtual std::shared_ptr<Immuable> copie(Carte* carte) const;
 		
 		// Accesseurs
 		std::shared_ptr<Deplacable> pop();

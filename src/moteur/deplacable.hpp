@@ -1,6 +1,8 @@
 #pragma once
 
 // Importations
+#include <memory>
+
 #include "outils/coord.hpp"
 
 #include "objet.hpp"
@@ -18,6 +20,7 @@ class Deplacable : public Objet {
 		
 		// Méthodes
 		virtual bool deplacer(Coord const& vecteur, bool fake = false); //! Renvoie true en cas d'erreur (le mouvement n'est alors pas réalisé)
+		virtual std::shared_ptr<Deplacable> copie(Carte* carte) const;
 		
 		// Accesseurs
 		Coord& coord();

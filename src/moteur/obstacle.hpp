@@ -1,6 +1,8 @@
 #pragma once
 
 // Importations
+#include <memory>
+
 #include "outils/coord.hpp"
 
 #include "immuable.hpp"
@@ -20,6 +22,7 @@ class Obstacle : public Immuable {
 		
 		// Méthodes
 		virtual bool accessible() const override;
+		virtual std::shared_ptr<Immuable> copie(Carte* carte) const override;
 		
 		// Accesseurs
 		Type type() const;

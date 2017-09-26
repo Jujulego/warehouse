@@ -33,6 +33,7 @@ class Carte {
 		
 		// Constructeur
 		Carte(int tx, int ty);
+		Carte(Carte const& carte);
 		
 		// Opérateurs
 		std::shared_ptr<Immuable>&       operator [] (Coord const& c);       //! Accès aux objets : carte[Coord(5, 5)] => pt sur Objet

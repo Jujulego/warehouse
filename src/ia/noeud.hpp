@@ -3,6 +3,7 @@
 // Importations
 #include <memory>
 
+#include "moteur/carte.hpp"
 #include "outils/coord.hpp"
 
 #include "chemin.hpp"
@@ -15,10 +16,12 @@ class Noeud {
 	public:
 		// Constructeur
 		Noeud();
-		Noeud(std::shared_ptr<Noeud> const& pere, Coord const& mvt);
+		Noeud(int x, int y, std::shared_ptr<Noeud> const& pere);
+		Noeud(Coord const& mvt, std::shared_ptr<Noeud> const& pere);
 		
 		// Méthodes
 		Chemin chemin() const;
+		std::shared_ptr<moteur::Carte> carte(std::shared_ptr<moteur::Carte> const& base, Coord& obj, int force);
 		
 		// Accesseur
 		Coord mvt() const;
@@ -26,8 +29,9 @@ class Noeud {
 	
 	private:
 		// Attributs
+		Coord m_mvt, m_coord;
 		std::shared_ptr<Noeud> m_pere;
-		Coord m_mvt;
+		std::shared_ptr<moteur::Carte> m_carte = nullptr;
 };
 
 } // ia
