@@ -17,6 +17,7 @@ class Sortie : public Immuable {
 		
 		// Méthodes
 		bool a_pers() const;
+		virtual std::shared_ptr<Immuable> copie(Carte* carte) const override;
 };
 
 } // moteur

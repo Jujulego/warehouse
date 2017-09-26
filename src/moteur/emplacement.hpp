@@ -17,6 +17,7 @@ class Emplacement : public Immuable {
 		
 		// Méthodes
 		bool a_bloc() const;
+		virtual std::shared_ptr<Immuable> copie(Carte* carte) const override;
 };
 
 } // moteur

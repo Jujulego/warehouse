@@ -59,6 +59,8 @@
 		<Unit filename="src/ia/chemin.cpp" />
 		<Unit filename="src/ia/noeud.hpp" />
 		<Unit filename="src/ia/noeud.cpp" />
+		<Unit filename="src/ia/solveur.hpp" />
+		<Unit filename="src/ia/solveur.cpp" />
 		<Unit filename="src/carte.hpp" />
 		<Unit filename="src/carte.cpp" />
 		<Unit filename="src/main.cpp" />

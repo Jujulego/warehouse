@@ -29,6 +29,8 @@ add_executable(warehouse
 	ia/chemin.cpp
 	ia/noeud.hpp
 	ia/noeud.cpp
+	ia/solveur.hpp
+	ia/solveur.cpp
 	
 	# Executable !
 	carte.hpp

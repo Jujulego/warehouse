@@ -21,7 +21,7 @@ bool Immuable::accessible() const {
 
 std::shared_ptr<Immuable> Immuable::copie(Carte* carte) const {
 	auto pt = std::make_shared<Immuable>(m_coord);
-	pt->set(m_objet->copie(carte));
+	if (m_objet) pt->set(m_objet->copie(carte));
 	
 	return pt;
 }

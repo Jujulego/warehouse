@@ -20,6 +20,9 @@ class Chemin {
 		// Méthodes
 		void ajouter(int x, int y);
 		void ajouter(Coord const& c);
+		Coord pop();
+		
+		int longueur() const;
 		
 		bool appliquer(std::shared_ptr<moteur::Deplacable> const& obj) const;
 		

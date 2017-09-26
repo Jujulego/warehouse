@@ -1,6 +1,8 @@
 #pragma once
 
 // Importations
+#include <ostream>
+
 #include "coord.hpp"
 
 // -------------- BaseManip ------------

@@ -19,6 +19,16 @@ void Chemin::ajouter(Coord const& c) {
 	m_actions.push_back(c);
 }
 
+Coord Chemin::pop() {
+	Coord c = m_actions.front();
+	m_actions.pop_front();
+	return c;
+}
+
+int Chemin::longueur() const {
+	return m_actions.size();
+}
+
 bool Chemin::appliquer(std::shared_ptr<moteur::Deplacable> const& obj) const {
 	for (auto a : m_actions) {
 		if (obj->deplacer(a)) return true;

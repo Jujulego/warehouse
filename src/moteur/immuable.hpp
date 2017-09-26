@@ -20,6 +20,9 @@ class Immuable : public Objet {
 		Immuable(Coord const& c);
 		Immuable(int x, int y);
 		
+		// Destructeur
+		virtual ~Immuable() = default;
+		
 		// Méthodes
 		virtual bool accessible() const;
 		virtual std::shared_ptr<Immuable> copie(Carte* carte) const;

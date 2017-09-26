@@ -1,7 +1,12 @@
 // Importations
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
+
+#include "ia/chemin.hpp"
+#include "ia/solveur.hpp"
 
 #include "moteur/carte.hpp"
 #include "moteur/emplacement.hpp"
@@ -15,6 +20,9 @@
 #include "outils/style.hpp"
 
 #include "carte.hpp"
+
+// Namespaces
+using namespace std::literals::chrono_literals;
 
 // Main !
 int main() {
@@ -30,15 +38,19 @@ int main() {
 		return 0;
 	}
 	
-	std::cout << manip::clear;
-	
 	// Streams
-	posstream<std::ostream> infos(  &std::cout, 6 + carte->taille_x() * 2, 8);
-	posstream<std::ostream> erreurs(&std::cout, 6 + carte->taille_x() * 2, 4);
+	posstream<std::ostream> infos(  &std::cout, 6 + carte->taille_x() * 2, 5);
+	posstream<std::ostream> erreurs(&std::cout, 6 + carte->taille_x() * 2, 6);
 	erreurs.style(style::erreur);
 	
+	// Solveur
+	ia::Solveur solveur(carte, pers);
+	ia::Chemin chemin;
+	
 	// Informations
-	std::cout << manip::coord(6 + carte->taille_x() * 2, 6) << "Force : " << pers->force();
+	std::cout << manip::clear;
+	std::cout << manip::coord(6 + carte->taille_x() * 2, 2) << "Force :    " << pers->force();
+	std::cout << manip::coord(6 + carte->taille_x() * 2, 3) << "Solution : -";
 	
 	bool fin = false;
 	while (!fin) {
@@ -59,32 +71,43 @@ int main() {
 		// Touche
 		Coord dir(0, 0);
 		
-		switch (console.getch()) {
-		case FL_HAUT:
-			dir = HAUT;
-			break;
+		if (chemin.longueur() != 0) {
+			dir = chemin.pop();
+			std::this_thread::sleep_for(500ms);
 		
-		case FL_BAS:
-			dir = BAS;
-			break;
-		
-		case FL_GAUCHE:
-			dir = GAUCHE;
-			break;
-		
-		case FL_DROITE:
-			dir = DROITE;
-			break;
-		
-		case 'q':
-			fin = true;
-			break;
-		
-		case 'r':
-			carte = moteur::Carte::charger("carte.txt");
-			pers  = carte->personnage();
+		} else {
+			switch (console.getch()) {
+			case FL_HAUT:
+				dir = HAUT;
+				break;
 			
-			break;
+			case FL_BAS:
+				dir = BAS;
+				break;
+			
+			case FL_GAUCHE:
+				dir = GAUCHE;
+				break;
+			
+			case FL_DROITE:
+				dir = DROITE;
+				break;
+			
+			case 'q':
+				fin = true;
+				break;
+			
+			case 's':
+				chemin = solveur.resoudre();
+				std::cout << manip::coord(17 + carte->taille_x() * 2, 3) << chemin.longueur();
+				break;
+			
+			case 'r':
+				carte = moteur::Carte::charger("carte.txt");
+				pers  = carte->personnage();
+				
+				break;
+			}
 		}
 		
 		// Effacement des erreurs précedantes
