@@ -1,5 +1,6 @@
 // Importations
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -11,6 +12,7 @@
 #include "emplacement.hpp"
 #include "immuable.hpp"
 #include "obstacle.hpp"
+#include "personnage.hpp"
 #include "poussable.hpp"
 #include "sortie.hpp"
 
@@ -35,7 +37,7 @@ std::shared_ptr<Immuable> const& Carte::operator [] (Coord const& c) const {
 }
 
 // Méthodes statiques
-Carte Carte::charger(std::string const& fichier) {
+std::shared_ptr<Carte> Carte::charger(std::string const& fichier) {
 	// Ouverture du fichier
 	std::ifstream ifs(fichier);
 	
@@ -43,11 +45,13 @@ Carte Carte::charger(std::string const& fichier) {
 	unsigned tx, ty;
 	ifs >> tx; ifs >> ty;
 	
-	Carte carte(tx, ty);
+	auto carte = std::make_shared<Carte>(tx, ty);
 	
-	// Ajout des blocs
+	// Remplissage de la carte
 	std::string buf;
 	std::getline(ifs, buf);
+	
+	Coord pers(-1, -1);
 	
 	for (unsigned y = 0; y < ty; ++y) {
 		// Lecture du fichier
@@ -57,21 +61,47 @@ Carte Carte::charger(std::string const& fichier) {
 		for (unsigned x = 0; x < min(buf.size(), tx); ++x) {
 			switch (buf[x]) {
 			case '#':
-				carte.set(x, y, std::make_shared<Obstacle>(x, y, Obstacle::mur));
+				carte->set(x, y, std::make_shared<Obstacle>(x, y, Obstacle::mur));
 				break;
 			
 			case 'E':
-				carte.set(x, y, std::make_shared<Emplacement>(x, y));
+				carte->set(x, y, std::make_shared<Emplacement>(x, y));
 				break;
 			
 			case 'S':
-				carte.set(x, y, std::make_shared<Sortie>(x, y));
+				carte->set(x, y, std::make_shared<Sortie>(x, y));
+				pers.x() = x;
+				pers.y() = y;
 				break;
 			
 			default:
-				carte.set(x, y, std::make_shared<Immuable>(x, y));
+				carte->set(x, y, std::make_shared<Immuable>(x, y));
 			}
 		}
+	}
+	
+	// Ajout du personnage
+	int x, y, p;
+	ifs >> x;
+	ifs >> y;
+	ifs >> p;
+	
+	if (pers.x() == -1) pers.x() = x;
+	if (pers.y() == -1) pers.y() = y;
+	
+	std::cout << pers.x() << " " << pers.y() << std::endl;
+	carte->set(pers, std::make_shared<Personnage>(carte.get(), p));
+	
+	// Ajout des boites
+	int nb;
+	ifs >> nb;
+	
+	for (int i = 0; i < nb; i++) {
+		ifs >> x;
+		ifs >> y;
+		ifs >> p;
+		
+		carte->set(x, y, std::make_shared<Poussable>(carte.get(), p));
 	}
 	
 	return carte;
@@ -154,6 +184,15 @@ int Carte::taille_x() const {
 
 int Carte::taille_y() const {
 	return m_ty;
+}
+
+std::shared_ptr<Personnage> Carte::personnage() const {
+	for (int i = 0; i < m_tx * m_ty; i++) {
+		auto pers = get<Personnage>(i / m_ty, i % m_ty);
+		if (pers) return pers;
+	}
+	
+	return nullptr;
 }
 
 // Iterateurs

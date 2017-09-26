@@ -11,6 +11,7 @@
 #include "immuable.hpp"
 #include "deplacable.hpp"
 #include "objet.hpp"
+#include "personnage.hpp"
 
 // Namespace
 namespace moteur {
@@ -37,7 +38,7 @@ class Carte {
 		std::shared_ptr<Immuable> const& operator [] (Coord const& c) const;
 		
 		// Méthodes statiques
-		static Carte charger(std::string const& fichier);
+		static std::shared_ptr<Carte> charger(std::string const& fichier);
 		
 		// Méthodes
 		bool coord_valides(int x, int y)   const;
@@ -72,6 +73,7 @@ class Carte {
 		// Accesseurs
 		int taille_x() const;
 		int taille_y() const;
+		std::shared_ptr<Personnage> personnage() const;
 		
 		// Itérateurs
 		iterator begin();

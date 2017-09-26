@@ -20,40 +20,40 @@
 # define PERS   "\xe2\x98\xba "
 # define BOITE  "\xe2\x9a"
 # define EMPL   "\xe2\x9b\xb6 "
-# define SORTIE "S "
+# define SORTIE style::fvert << "  " << style::defaut
 #else
 # define MUR    "\xdb\xdb"
 # define PERS   ";)"
 # define BOITE  "#"
 # define EMPL   "[]"
-# define SORTIE "S "
+# define SORTIE style::fvert << "  " << style::defaut
 #endif
 
 // Prototype
-void afficher_carte(moteur::Carte const& carte, int x, int y) {
+void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y) {
 	// Initialisation
 	auto ref = manip::coord(x, y);
 	
 	// Cadre :
 	std::cout << ref << TAB_DB;
-	for (int i = 0; i < carte.taille_x(); ++i) {
+	for (int i = 0; i < carte->taille_x(); ++i) {
 		std::cout << TAB_DG << TAB_DG;
 	}
 	std::cout << TAB_BG << std::endl;
 	
-	for (int i = 0; i < carte.taille_y(); ++i) {
-		std::cout << manip::dx * x << TAB_HB << manip::dx * carte.taille_x() * 2 << TAB_HB << std::endl;
+	for (int i = 0; i < carte->taille_y(); ++i) {
+		std::cout << manip::dx * x << TAB_HB << manip::dx * carte->taille_x() * 2 << TAB_HB << std::endl;
 	}
 	
 	std::cout << manip::dx * x << TAB_HD;
-	for (int i = 0; i < carte.taille_x(); ++i) {
+	for (int i = 0; i < carte->taille_x(); ++i) {
 		std::cout << TAB_DG << TAB_DG;
 	}
 	std::cout << TAB_GH << std::endl;
 	
 	// Affichage des objets
 	ref += Coord(1, 1);
-	for (auto obj : carte) {
+	for (auto obj : *carte) {
 		std::cout << ref + obj->coord() + manip::x * obj->coord().x();
 		auto dobj = obj->get();
 		
@@ -89,6 +89,6 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 	}
 }
 
-void afficher_carte(moteur::Carte const& carte, Coord const& c) {
+void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, Coord const& c) {
 	afficher_carte(carte, c.x(), c.y());
 }

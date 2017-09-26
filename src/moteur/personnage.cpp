@@ -11,5 +11,5 @@ using namespace moteur;
 
 // Constructeur
 Personnage::Personnage(Carte* carte, int force) : Deplacable(carte, force) {
-	if (force <= 0) std::cout << style::warning << "Attention création d'un personnage de force nulle !" << std::endl;
+	if (force <= 0) std::cout << style::warning << "Attention création d'un personnage de force nulle !" << style::defaut << std::endl;
 }
