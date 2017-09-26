@@ -11,8 +11,8 @@ using namespace moteur;
 Deplacable::Deplacable(Carte* carte, int force) : Objet(-1, -1), m_carte(carte), m_force(force) {}
 
 // Méthodes
-bool Deplacable::deplacer(Coord const& vecteur) {
-	return m_carte->deplacer(coord(), vecteur, m_force);
+bool Deplacable::deplacer(Coord const& vecteur, bool fake) {
+	return m_carte->deplacer(coord(), vecteur, m_force, fake);
 }
 
 // Accesseur

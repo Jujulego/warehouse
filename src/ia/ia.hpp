@@ -1,10 +1,12 @@
 #pragma once
 
 // Importations
+#include <list>
 #include <memory>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
+#include "outils/coord.hpp"
 
 #include "chemin.hpp"
 
@@ -25,6 +27,7 @@ class IA {
 	
 	protected:
 		// Outils
+		std::list<Coord> mouvements(std::shared_ptr<moteur::Deplacable> const& obj) const;
 		bool comparer(std::shared_ptr<moteur::Carte> const& c1, std::shared_ptr<moteur::Carte> const& c2) const;
 	
 	private:

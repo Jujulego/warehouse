@@ -17,7 +17,7 @@ class Deplacable : public Objet {
 		Deplacable(Carte* carte, int force);
 		
 		// Méthodes
-		virtual bool deplacer(Coord const& vecteur); //! Renvoie true en cas d'erreur (le mouvement n'est alors pas réalisé)
+		virtual bool deplacer(Coord const& vecteur, bool fake = false); //! Renvoie true en cas d'erreur (le mouvement n'est alors pas réalisé)
 		
 		// Accesseurs
 		Coord& coord();

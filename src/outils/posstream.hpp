@@ -78,6 +78,13 @@ class posstream {
 
 			return *this;
 		}
+		
+		posstream<Stream>& operator << (MouvManip const& mm) {
+			m_nb  += mm.x();
+			m_lig += mm.y();
+			
+			return *this;
+		}
 
 		posstream<Stream>& operator << (Style const& s) {
 			if (s.txt() != style::ACTUELLE) m_style.txt(s.txt());

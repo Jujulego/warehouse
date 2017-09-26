@@ -1,10 +1,12 @@
 // Importations
 #include <memory>
+#include <list>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
 #include "moteur/personnage.hpp"
 #include "moteur/poussable.hpp"
+#include "outils/coord.hpp"
 
 #include "ia.hpp"
 
@@ -22,6 +24,16 @@ IA::IA(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Depl
 	: m_carte(carte), m_obj(obj) {};
 
 // Outils
+std::list<Coord> IA::mouvements(std::shared_ptr<moteur::Deplacable> const& obj) const {
+	std::list<Coord> mvts;
+	
+	for (Coord m : {HAUT, BAS, GAUCHE, DROITE}) {
+		if (!obj->deplacer(m, true)) mvts.push_back(m);
+	}
+	
+	return mvts;
+}
+
 bool IA::comparer(std::shared_ptr<moteur::Carte> const& c1, std::shared_ptr<moteur::Carte> const& c2) const {
 	// Je suppose que les immuables sont les memes dans les 2 cartes
 	bool equiv = true;
