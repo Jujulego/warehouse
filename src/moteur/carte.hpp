@@ -65,7 +65,9 @@ class Carte {
 		void set(Coord const& c, std::shared_ptr<Objet> obj);
 		void set(int x, int y,   std::shared_ptr<Objet> obj);
 		
+		// interaction jeu
 		bool deplacer(Coord const& c, Coord const& vecteur, int force);
+		bool test_fin() const;
 		
 		// Accesseurs
 		int taille_x() const;

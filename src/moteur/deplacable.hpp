@@ -25,8 +25,8 @@ class Deplacable : public Objet {
 	
 	private:
 		// Attributs
-		int m_force;
 		Carte* m_carte;
+		int m_force;
 };
 
 } // moteur

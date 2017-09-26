@@ -5,6 +5,8 @@
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
 #include "moteur/emplacement.hpp"
+#include "moteur/obstacle.hpp"
+#include "moteur/personnage.hpp"
 #include "moteur/poussable.hpp"
 
 #include "outils.hpp"
@@ -22,7 +24,7 @@ int main() {
 	Console console;
 	
 	moteur::Carte carte = moteur::Carte::charger("carte.txt");
-	auto pers = std::make_shared<moteur::Deplacable>(&carte, 5);
+	auto pers = std::make_shared<moteur::Personnage>(&carte, 5);
 	carte.set(0, 0, pers);
 	
 	// Objets
@@ -47,9 +49,25 @@ int main() {
 	bool fin = false;
 	while (!fin) {
 		afficher_carte(carte, 2, 1);
-		Coord dir(0, 0);
+		
+		// Etat des emplacements
+		int nb = 0, i = 0;
+		for (auto obj : carte) {
+			auto pt = std::dynamic_pointer_cast<moteur::Emplacement>(obj);
+			
+			if (pt) {
+				nb++;
+				
+				if (pt->a_bloc()) i++;
+			}
+		}
+		
+		infos << manip::eff_ligne << i << " / " << nb;
+		infos.flush();
 		
 		// Touche
+		Coord dir(0, 0);
+		
 		switch (console.getch()) {
 		case FL_HAUT:
 			dir = HAUT;
@@ -82,25 +100,16 @@ int main() {
 			erreurs.flush();
 		}
 		
-		// Etat des emplacements
-		int nb = 0, i = 0;
-		for (auto obj : carte) {
-			auto pt = std::dynamic_pointer_cast<moteur::Emplacement>(obj);
-			
-			if (pt) {
-				nb++;
-				
-				if (pt->a_bloc()) i++;
-			}
+		// Test de fin
+		if (carte.test_fin()) {
+			afficher_carte(carte, 2, 1);
+			infos << manip::eff_ligne << style::vert << "Bien joué !";
+			break;
 		}
-		
-		infos << manip::eff_ligne << i << " / " << nb;
 	}
-
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;
-	std::cout << std::endl;
-
+	
+	std::cout << manip::coord(0, carte.taille_y() + 4);
+	std::cout.flush();
+	
 	return 0;
 }

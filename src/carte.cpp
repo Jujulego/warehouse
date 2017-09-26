@@ -6,6 +6,7 @@
 #include "moteur/emplacement.hpp"
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
+#include "moteur/sortie.hpp"
 
 #include "outils.hpp"
 #include "outils/coord.hpp"
@@ -15,15 +16,17 @@
 #include "carte.hpp"
 
 #ifdef __gnu_linux__
-# define MUR   "\xe2\x96\x88\xe2\x96\x88"
-# define PERS  "\xe2\x98\xba "
-# define BOITE "\xe2\x9a"
-# define EMPL  "\xe2\x9b\xb6 "
+# define MUR    "\xe2\x96\x88\xe2\x96\x88"
+# define PERS   "\xe2\x98\xba "
+# define BOITE  "\xe2\x9a"
+# define EMPL   "\xe2\x9b\xb6 "
+# define SORTIE "S "
 #else
-# define MUR   "\xdb\xdb"
-# define PERS  ";)"
-# define BOITE "#"
-# define EMPL  "><"
+# define MUR    "\xdb\xdb"
+# define PERS   ";)"
+# define BOITE  "#"
+# define EMPL   "[]"
+# define SORTIE "S "
 #endif
 
 // Prototype
@@ -77,6 +80,8 @@ void afficher_carte(moteur::Carte const& carte, int x, int y) {
 				std::cout << MUR;
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				std::cout << EMPL;
+			} else if (std::dynamic_pointer_cast<moteur::Sortie>(obj)) {
+				std::cout << SORTIE;
 			} else {
 				std::cout << "  ";
 			}

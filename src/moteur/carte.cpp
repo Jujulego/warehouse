@@ -12,6 +12,7 @@
 #include "immuable.hpp"
 #include "obstacle.hpp"
 #include "poussable.hpp"
+#include "sortie.hpp"
 
 // Namespace
 using namespace moteur;
@@ -61,6 +62,10 @@ Carte Carte::charger(std::string const& fichier) {
 			
 			case 'E':
 				carte.set(x, y, std::make_shared<Emplacement>(x, y));
+				break;
+			
+			case 'S':
+				carte.set(x, y, std::make_shared<Sortie>(x, y));
 				break;
 			
 			default:
@@ -122,6 +127,24 @@ bool Carte::deplacer(Coord const& c, Coord const& vecteur, int force) {
 	get<Immuable>(nc)->set(get<Immuable>(c)->pop());
 	
 	return false;
+}
+
+bool Carte::test_fin() const {
+	bool ok = true;
+	
+	// Parcours des cases
+	for (auto obj : *this) {
+		auto empl   = std::dynamic_pointer_cast<Emplacement>(obj);
+		auto sortie = std::dynamic_pointer_cast<Sortie>(obj);
+		
+		if (empl) {
+			ok &= empl->a_bloc();
+		} else if (sortie) {
+			ok &= sortie->a_pers();
+		}
+	}
+	
+	return ok;
 }
 
 // Accesseurs
