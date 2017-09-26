@@ -24,8 +24,8 @@ int main() {
 	std::shared_ptr<moteur::Carte> carte     = moteur::Carte::charger("carte.txt");
 	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
 	
+	// Check personnage
 	if (!pers) {
-		std::cout << carte->get<moteur::Personnage>(0, 0) << std::endl;
 		std::cout << style::erreur << "Pas de personnage sur la carte ..." << style::defaut << std::endl;
 		return 0;
 	}
@@ -81,6 +81,12 @@ int main() {
 		
 		case 'q':
 			fin = true;
+			break;
+		
+		case 'r':
+			carte = moteur::Carte::charger("carte.txt");
+			pers  = carte->personnage();
+			
 			break;
 		}
 		

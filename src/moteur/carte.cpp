@@ -89,7 +89,6 @@ std::shared_ptr<Carte> Carte::charger(std::string const& fichier) {
 	if (pers.x() == -1) pers.x() = x;
 	if (pers.y() == -1) pers.y() = y;
 	
-	std::cout << pers.x() << " " << pers.y() << std::endl;
 	carte->set(pers, std::make_shared<Personnage>(carte.get(), p));
 	
 	// Ajout des boites
