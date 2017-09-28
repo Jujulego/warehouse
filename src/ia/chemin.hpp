@@ -4,6 +4,7 @@
 #include <list>
 #include <memory>
 
+#include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
 #include "outils/coord.hpp"
 
@@ -25,6 +26,7 @@ class Chemin {
 		int longueur() const;
 		
 		bool appliquer(std::shared_ptr<moteur::Deplacable> const& obj) const;
+		bool appliquer(std::shared_ptr<moteur::Carte> const& carte, Coord& obj, int force) const;
 		
 		// Itérateurs
 		iterator begin();

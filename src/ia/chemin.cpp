@@ -2,6 +2,7 @@
 #include <list>
 #include <memory>
 
+#include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
 #include "outils/coord.hpp"
 
@@ -12,11 +13,11 @@ using namespace ia;
 
 // Méthodes
 void Chemin::ajouter(int x, int y) {
-	ajouter(Coord(x, y));
+	if (x != 0 && y != 0) ajouter(Coord(x, y));
 }
 
 void Chemin::ajouter(Coord const& c) {
-	m_actions.push_back(c);
+	if (c != ORIGINE) m_actions.push_back(c);
 }
 
 Coord Chemin::pop() {
@@ -32,6 +33,15 @@ int Chemin::longueur() const {
 bool Chemin::appliquer(std::shared_ptr<moteur::Deplacable> const& obj) const {
 	for (auto a : m_actions) {
 		if (obj->deplacer(a)) return true;
+	}
+	
+	return false;
+}
+
+bool Chemin::appliquer(std::shared_ptr<moteur::Carte> const& carte, Coord& obj, int force) const {
+	for (auto a : m_actions) {
+		if (carte->deplacer(obj, a, force)) return true;
+		obj += a;
 	}
 	
 	return false;

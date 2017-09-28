@@ -29,9 +29,8 @@ class Noeud {
 	
 	private:
 		// Attributs
-		Coord m_mvt, m_coord;
+		Coord m_mvt;
 		std::shared_ptr<Noeud> m_pere;
-		std::shared_ptr<moteur::Carte> m_carte = nullptr;
 };
 
 } // ia

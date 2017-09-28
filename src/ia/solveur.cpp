@@ -1,6 +1,8 @@
 // Importations
 #include <memory>
 #include <queue>
+#include <set>
+#include <vector>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
@@ -12,6 +14,19 @@
 // Namespace
 using namespace ia;
 
+// Outils
+bool ordre(std::vector<int> const& r1, std::vector<int> const& r2) {
+	bool r = r1[0] < r2[0];
+	unsigned i = 0;
+	
+	while (i < (r1.size()-1) && r1[i] == r2[i]) {
+		++i;
+		r = r1[i] < r2[i];
+	}
+	
+	return r;
+}
+
 // Constructeur
 Solveur::Solveur(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Deplacable> const& obj)
 	: IA(carte, obj) {}
@@ -19,6 +34,7 @@ Solveur::Solveur(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<mo
 // Méthodes
 Chemin Solveur::resoudre() {
 	// Initialisation
+	std::set<std::vector<int>,bool(*)(std::vector<int> const&,std::vector<int> const&)> historique(&ordre);
 	std::queue<std::shared_ptr<Noeud>> file;
 	file.push(std::make_shared<Noeud>());
 	
@@ -34,6 +50,12 @@ Chemin Solveur::resoudre() {
 		
 		// A-t-on (enfin) trouvé ?
 		if (carte->test_fin()) return noeud->chemin();
+		
+		// Ajout à l'historique
+		auto p = historique.insert(reduire(carte));
+		if (!p.second) { // Si la carte à déjà été traitée ...
+			continue;
+		}
 		
 		// Préparation des noeuds suivants
 		for (Coord m : mouvements(carte->get<moteur::Deplacable>(obj))) {

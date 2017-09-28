@@ -3,6 +3,7 @@
 // Importations
 #include <list>
 #include <memory>
+#include <vector>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
@@ -31,6 +32,7 @@ class IA {
 		std::shared_ptr<moteur::Deplacable> m_obj;
 		
 		// Outils
+		std::vector<int> reduire(std::shared_ptr<moteur::Carte> const& c) const;
 		std::list<Coord> mouvements(std::shared_ptr<moteur::Deplacable> const& obj) const;
 		bool comparer(std::shared_ptr<moteur::Carte> const& c1, std::shared_ptr<moteur::Carte> const& c2) const;
 };

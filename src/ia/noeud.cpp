@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "moteur/carte.hpp"
+#include "moteur/deplacable.hpp"
 #include "outils/coord.hpp"
 
 #include "chemin.hpp"
@@ -26,24 +27,10 @@ Chemin Noeud::chemin() const {
 }
 
 std::shared_ptr<moteur::Carte> Noeud::carte(std::shared_ptr<moteur::Carte> const& base, Coord& obj, int force) {
-	// Check calcul
-	if (m_carte) {
-		obj = m_coord;
-		return m_carte;
-	}
+	auto carte = std::make_shared<moteur::Carte>(*base);
+	chemin().appliquer(carte, obj, force);
 	
-	// Copie de la carte
-	if (m_pere) {
-		m_carte = std::make_shared<moteur::Carte>(*(m_pere->carte(base, obj, force)));
-	} else {
-		m_carte = std::make_shared<moteur::Carte>(*base);
-	}
-	
-	// Application du mouvement
-	m_carte->deplacer(obj, m_mvt, force);
-	m_coord = obj += m_mvt;
-	
-	return m_carte;
+	return carte;
 }
 
 // Accesseur

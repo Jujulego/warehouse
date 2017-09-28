@@ -1,6 +1,8 @@
 // Importations
-#include <memory>
+#include <algorithm>
 #include <list>
+#include <memory>
+#include <vector>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
@@ -24,6 +26,26 @@ IA::IA(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Depl
 	: m_carte(carte), m_obj(obj) {};
 
 // Outils
+std::vector<int> IA::reduire(std::shared_ptr<moteur::Carte> const& carte) const {
+	// Déclarations
+	int ty = carte->taille_y(), tc = carte->taille_x() * ty;
+	std::vector<int> reduction(1, 0);
+	
+	// Personnage
+	for (auto pt : carte->liste<moteur::Deplacable>()) {
+		Coord c = pt->coord();
+		
+		// Réduction !
+		     if (cast<moteur::Personnage>(pt) != nullptr) reduction[0] = c.x() * ty + c.y();
+		else if (cast<moteur::Poussable>( pt) != nullptr) reduction.push_back(cast<moteur::Poussable>(pt)->poids() * tc + c.x() * ty + c.y());
+	}
+	
+	// Tri !
+	std::sort(reduction.begin()+1, reduction.end());
+	
+	return reduction;
+}
+
 std::list<Coord> IA::mouvements(std::shared_ptr<moteur::Deplacable> const& obj) const {
 	std::list<Coord> mvts;
 	
