@@ -14,8 +14,7 @@ class Menu {
 		void ajouter(std::string const& nom, std::function<void()> const& fonc);
 		void supprimer(std::string const& nom);
 		
-		void afficher(int x, int y) const;
-		void afficher(Coord const& c) const;
+		void afficher() const;
 		
 		// Templates
 		template<class F>

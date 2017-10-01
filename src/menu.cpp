@@ -8,6 +8,7 @@
 #include "outils/coord.hpp"
 #include "outils/console.hpp"
 #include "outils/manip.hpp"
+#include "outils/posstream.hpp"
 #include "outils/style.hpp"
 
 #include "menu.hpp"
@@ -21,11 +22,7 @@ void Menu::supprimer(std::string const& nom) {
 	m_entrees.erase(nom);
 }
 
-void Menu::afficher(int x, int y) const {
-	afficher(Coord(x, y));
-}
-
-void Menu::afficher(Coord const& c) const {
+void Menu::afficher() const {
 	// Initialisation
 	std::vector<std::string> entrees;
 	unsigned item = 0, larg = 0;
@@ -38,23 +35,37 @@ void Menu::afficher(Coord const& c) const {
 	
 	entrees.push_back("Quitter");
 	
+	posstream<std::ostream> stream(&std::cout, 20, 9);
+	auto maj_aff = [&] () -> void {
+		std::cout << manip::clear << manip::coord(ORIGINE);
+		
+		// Entete
+		std::cout << "__          __                      __   __" << std::endl;
+		std::cout << "\\ \\        / /                     / /  / /" << std::endl;
+		std::cout << " \\ \\  /\\  / / ___    ____  ___    / /__/ / ___    __  __  _____  ___" << std::endl;
+		std::cout << "  \\ \\/  \\/ / ___ \\  / __/ / _ \\  / ___  / / _ \\  / / / / / ___/ / _ \\" << std::endl;
+		std::cout << "   \\  /\\  / / _  / / /   /  __/ / /  / / / // / / /_/ / /__  / /  __/" << std::endl;
+		std::cout << "    \\/  \\/  \\___/ /_/    \\___/ /_/  /_/  \\___/  \\____/ /____/  \\___/" << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
+		std::cout << std::endl;
+		
+		for (unsigned i = 0; i < entrees.size(); i++) {
+			// "selection"
+			if (i == item) stream << style::inverse;
+			
+			stream << manip::y*i << "- " << entrees[i];
+			std::cout << std::endl;
+			
+			// "deselection"
+			if (i == item) stream << style::noninverse;
+		}
+		
+		std::cout << std::endl;
+	};
+	
 	// Affichage
-	std::cout << manip::clear;
-	std::cout << manip::coord(c);
-	
-	for (unsigned i = 0; i < entrees.size(); i++) {
-		// "selection"
-		if (i == item) std::cout << style::inverse;
-		
-		std::cout << manip::sauve << "- " << entrees[i];
-		std::cout << manip::restore << manip::dy;
-		
-		// "deselection"
-		if (i == item) std::cout << style::noninverse;
-	}
-	
-	std::cout << std::endl;
-	std::cout << manip::sauve;
+	maj_aff();
 	
 	// Interactions
 	bool fin = false;
@@ -63,20 +74,18 @@ void Menu::afficher(Coord const& c) const {
 		switch (console.getch()) {
 		case FL_BAS:
 			if (item != entrees.size() -1) {
-				std::cout << manip::y*item + c << "- " << entrees[item];
+				stream << manip::y * item << "- " << entrees[item];
 				item++;
-				std::cout << manip::y*item + c << style::inverse << "- " << entrees[item] << style::noninverse;
-				std::cout << manip::restore;
+				stream << manip::y * item << style::inverse << "- " << entrees[item] << style::noninverse;
 			}
 			
 			break;
 		
 		case FL_HAUT:
 			if (item != 0) {
-				std::cout << manip::y*item + c << "- " << entrees[item];
+				stream << manip::y * item << "- " << entrees[item];
 				item--;
-				std::cout << manip::y*item + c << style::inverse << "- " << entrees[item] << style::noninverse;
-				std::cout << manip::restore;
+				stream << manip::y * item << style::inverse << "- " << entrees[item] << style::noninverse;
 			}
 			
 			break;
@@ -86,6 +95,7 @@ void Menu::afficher(Coord const& c) const {
 				fin = true;
 			} else {
 				m_entrees.at(entrees[item])();
+				maj_aff();
 			}
 			
 			break;
