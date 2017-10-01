@@ -64,6 +64,10 @@
 		<Unit filename="src/carte.hpp" />
 		<Unit filename="src/carte.cpp" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/menu.hpp" />
+		<Unit filename="src/menu.cpp" />
+		<Unit filename="src/niveau.hpp" />
+		<Unit filename="src/niveau.cpp" />
 		<Unit filename="src/outils.hpp" />
 		<Unit filename="src/outils/console.cpp" />
 		<Unit filename="src/outils/console.hpp" />

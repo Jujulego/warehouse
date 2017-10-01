@@ -36,6 +36,10 @@ add_executable(warehouse
 	carte.hpp
 	carte.cpp
 	main.cpp
+	menu.hpp
+	menu.cpp
+	niveau.hpp
+	niveau.cpp
 	
 	# Outils
 	outils.hpp
