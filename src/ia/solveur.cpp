@@ -5,7 +5,10 @@
 #include <vector>
 
 #include "moteur/carte.hpp"
+#include "moteur/emplacement.hpp"
 #include "moteur/deplacable.hpp"
+#include "moteur/obstacle.hpp"
+#include "moteur/poussable.hpp"
 
 #include "chemin.hpp"
 #include "noeud.hpp"
@@ -56,6 +59,32 @@ Chemin Solveur::resoudre() {
 		if (!p.second) { // Si la carte à déjà été traitée ...
 			continue;
 		}
+		
+		// Si une boite touche 2 murs en angle sans etre sur un emplacement => deadlock !
+		bool deadlock = false;
+		for (auto pt : carte->liste<moteur::Poussable>()) {
+			if (carte->get<moteur::Emplacement>(pt->coord())) continue;
+			
+			bool mur = false;
+			for (Coord dir : {HAUT, BAS}) {
+				if (carte->get<moteur::Obstacle>(pt->coord() + dir)) mur = true;
+			}
+			
+			if (mur) {
+				mur = false;
+				
+				for (Coord dir : {GAUCHE, DROITE}) {
+					if (carte->get<moteur::Obstacle>(pt->coord() + dir)) mur = true;
+				}
+				
+				if (mur) {
+					deadlock = true;
+					break;
+				}
+			}
+		}
+		
+		if (deadlock) continue;
 		
 		// Préparation des noeuds suivants
 		for (Coord m : mouvements(carte->get<moteur::Deplacable>(obj))) {

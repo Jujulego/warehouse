@@ -56,9 +56,7 @@ bool Niveau::jouer() {
 	std::cout << manip::coord(9 + carte->taille_x() * 2, 13) << "Mouvements : -";
 	
 	if (!m_infos.empty()) {
-		auto dep = manip::coord(5, 14 + carte->taille_y());
-		std::cout << dep - manip::coord(2, 2) << style::souligne << "Informations :" << style::nonsouligne;
-		
+		auto dep = manip::coord(5, max(12 + carte->taille_y(), 20));
 		for (auto p : m_infos) {
 			if (p.first != "Title") {
 				std::cout << dep << p.first << ": " << style::italique << p.second << style::nonitalique;
@@ -98,7 +96,7 @@ bool Niveau::jouer() {
 		
 		if (chemin.longueur() != 0) {
 			dir = chemin.pop();
-			std::this_thread::sleep_for(500ms);
+			std::this_thread::sleep_for(250ms);
 		
 		} else {
 			switch (console::getch()) {
@@ -131,10 +129,11 @@ bool Niveau::jouer() {
 				break;
 			
 			case 'r':
-				carte = this->carte();
-				pers  = carte->personnage();
-				nb_mouv = 0;
+				carte   = this->carte();
+				pers    = carte->personnage();
+				solveur = ia::Solveur(carte, pers);
 				
+				nb_mouv = 0;
 				mouvstream << manip::eff_ligne << nb_mouv;
 				
 				break;
