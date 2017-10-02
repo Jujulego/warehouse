@@ -24,7 +24,7 @@
 # define EMPL   "\xe2\x9b\xb6 "
 # define SORTIE style::fvert << "  " << style::defaut
 #else
-# define MUR    "\xde\xdd"
+# define MUR    "\xc4\xc4"
 # define PERS   ";)"
 # define BOITE  "#"
 # define EMPL   "[]"
@@ -51,43 +51,43 @@ std::string select_mur(std::shared_ptr<moteur::Carte> const& carte, std::shared_
 		TAB_BGH  + TAB_HB,   // HGB-
 		TAB_HDBG + TAB_HDBG, // HGBD
 	};
-	
+
 	// Selection
 	int cas = 0;
-	
+
 	if (carte->get<moteur::Obstacle>(mur->coord() + HAUT))   cas |= 0b1000;
 	if (carte->get<moteur::Obstacle>(mur->coord() + BAS))    cas |= 0b0010;
 	if (carte->get<moteur::Obstacle>(mur->coord() + GAUCHE)) cas |= 0b0100;
 	if (carte->get<moteur::Obstacle>(mur->coord() + DROITE)) cas |= 0b0001;
-	
+
 	return murs[cas];
 }
 
 void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y) {
 	// Initialisation
 	auto ref = manip::coord(x, y);
-	
+
 	// Affichage des objets
 	ref += Coord(1, 1);
 	for (auto obj : *carte) {
 		std::cout << ref + obj->coord() + manip::x * obj->coord().x();
 		auto dobj = obj->get();
-		
+
 		if (dobj) {
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
-			
+
 			if (pobj) {
 				if (carte->get<moteur::Emplacement>(pobj->coord())) {
 					std::cout << style::vert;
 				} else {
 					std::cout << style::jaune;
 				}
-				
+
 				#ifdef __gnu_linux__
 				if (pobj->poids() <= 6) {
 					std::string s = BOITE;
 					s.append(1, '\x7f' + pobj->poids());
-					
+
 					std::cout << s << ' ' << style::defaut;
 				} else {
 					std::cout << "#" << pobj->poids() << style::defaut;
@@ -123,7 +123,7 @@ void afficher_entete(int x, int y) {
 void afficher_entete(Coord const& c) {
 	// Entete
 	posstream<std::ostream> stream(&std::cout, c);
-	
+
 	stream << "__          __                      __   __" << std::endl;
 	stream << "\\ \\        / /                     / /  / /" << std::endl;
 	stream << " \\ \\  /\\  / / ___    ____  ___    / /__/ / ___    __  __  _____  ___" << std::endl;
