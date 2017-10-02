@@ -8,6 +8,18 @@
 // -------------- BaseManip ------------
 class BaseManip {
 	public:
+		// Constructeur
+		BaseManip() = default;
+		
+		// Destructeur
+		virtual ~BaseManip() = default;
+		
+		// Regle de 5
+		BaseManip(BaseManip const&) = default;
+		BaseManip(BaseManip&&)      = default;
+		BaseManip& operator = (BaseManip const&) = default;
+		BaseManip& operator = (BaseManip&&)      = default;
+		
 		// Méthodes
 		virtual std::ostream& appliquer(std::ostream& stream) const = 0;
 };

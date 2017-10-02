@@ -12,6 +12,7 @@
 #include "outils.hpp"
 #include "outils/coord.hpp"
 #include "outils/manip.hpp"
+#include "outils/posstream.hpp"
 #include "outils/style.hpp"
 
 #include "carte.hpp"
@@ -113,4 +114,20 @@ void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y) {
 
 void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, Coord const& c) {
 	afficher_carte(carte, c.x(), c.y());
+}
+
+void afficher_entete(int x, int y) {
+	afficher_entete(Coord(x, y));
+}
+
+void afficher_entete(Coord const& c) {
+	// Entete
+	posstream<std::ostream> stream(&std::cout, c);
+	
+	stream << "__          __                      __   __" << std::endl;
+	stream << "\\ \\        / /                     / /  / /" << std::endl;
+	stream << " \\ \\  /\\  / / ___    ____  ___    / /__/ / ___    __  __  _____  ___" << std::endl;
+	stream << "  \\ \\/  \\/ / ___ \\  / __/ / _ \\  / ___  / / _ \\  / / / / / ___/ / _ \\" << std::endl;
+	stream << "   \\  /\\  / / _  / / /   /  __/ / /  / / / // / / /_/ / /__  / /  __/" << std::endl;
+	stream << "    \\/  \\/  \\___/ /_/    \\___/ /_/  /_/  \\___/  \\____/ /____/  \\___/" << std::endl;
 }

@@ -1,0 +1,183 @@
+// These levels are copyrighted by François Marques <sokoban@online.fr> //
+// The original file is downloadable at http://sokoban.online.fr/ //
+
+########
+#@     #
+# $..* #
+# .$$  #
+# $..$ #
+#  $$. #
+# *..$ #
+#      #
+########
+Title: * -> S
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+#  **$ #
+# *  . #
+# .$$. #
+# .  * #
+# $**  #
+#      #
+########
+Title: S -> O
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# .$$. #
+# * .$ #
+# *. $ #
+# * .$ #
+# .$$. #
+#      #
+########
+Title: O -> K
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# $..$ #
+# * $. #
+# *$ . #
+# * $. #
+# $..$ #
+#      #
+########
+Title: K -> O
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# .*$  #
+# * .$ #
+# *. $ #
+# * .$ #
+# .*$  #
+#      #
+########
+Title: O -> B
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# $$.  #
+# $.$. #
+# $*.. #
+# $.$. #
+# $* . #
+#      #
+########
+Title: B -> A
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# . $. #
+# .* * #
+# .$** #
+# .$ * #
+#  $ $ #
+#      #
+########
+Title: A -> N
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# *  * #
+# $*.$ #
+# * $* #
+# $..$ #
+# .  . #
+#      #
+########
+Title: N -> *
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# $..$ #
+# .$$. #
+# *  * #
+# .$$. #
+# $..$ #
+#      #
+########
+Title: * -> O
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+#  $$  #
+# *  * #
+# *. * #
+# * .* #
+# .$$. #
+#      #
+########
+Title: O -> N
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# ..   #
+# $. $ #
+# $* $ #
+# $.$* #
+# *..* #
+#      #
+########
+Title: N -> L
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# $*.. #
+#  $.  #
+#  $.  #
+#  $.$ #
+# **** #
+#      #
+########
+Title: L -> I
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# .$$* #
+# ..$. #
+# . *. #
+# . $. #
+# $$$$ #
+#      #
+########
+Title: I -> N
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# *..$ #
+# *$ $ #
+# *.$$ #
+# *  $ #
+# ...  #
+#      #
+########
+Title: N -> E
+Comment: © 08/2001 François Marques
+
+########
+#@     #
+# *$$. #
+# $..  #
+# *$ . #
+# $..  #
+# *$$. #
+#      #
+########
+Title: E -> *
+Comment: © 08/2001 François Marques
+

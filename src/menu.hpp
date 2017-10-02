@@ -23,6 +23,12 @@ class Menu {
 		}
 	
 	private:
+		// Structure
+		struct Entree {
+			std::function<void()> fonc;
+			size_t ordre;
+		};
+		
 		// Attributs
-		std::map<std::string,std::function<void()>> m_entrees;
+		std::map<std::string,Entree> m_entrees;
 };

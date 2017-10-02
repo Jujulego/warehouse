@@ -33,8 +33,6 @@ Niveau::Niveau(std::shared_ptr<moteur::Carte> const& carte) : m_carte(carte) {}
 // Méthodes
 bool Niveau::jouer() {
 	// Init
-	Console console;
-	
 	std::shared_ptr<moteur::Carte> carte     = this->carte();
 	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
 	
@@ -44,23 +42,45 @@ bool Niveau::jouer() {
 		return 0;
 	}
 	
-	// Streams
-	posstream<std::ostream> infos(  &std::cout, 6 + carte->taille_x() * 2, 5);
-	posstream<std::ostream> erreurs(&std::cout, 6 + carte->taille_x() * 2, 6);
-	erreurs.style(style::erreur);
-	
 	// Solveur
 	ia::Solveur solveur(carte, pers);
 	ia::Chemin chemin;
 	
 	// Informations
 	std::cout << manip::clear;
-	std::cout << manip::coord(6 + carte->taille_x() * 2, 2) << "Force :    " << pers->force();
-	std::cout << manip::coord(6 + carte->taille_x() * 2, 3) << "Solution : -";
+	afficher_entete(ORIGINE);
 	
+	std::cout << manip::coord(8 + carte->taille_x() * 2, 9) << style::souligne << "Statistiques :" << style::nonsouligne;
+	std::cout << manip::coord(9 + carte->taille_x() * 2, 11) << "Force :      " << pers->force();
+	std::cout << manip::coord(9 + carte->taille_x() * 2, 12) << "Solution :   -";
+	std::cout << manip::coord(9 + carte->taille_x() * 2, 13) << "Mouvements : -";
+	
+	if (!m_infos.empty()) {
+		auto dep = manip::coord(5, 14 + carte->taille_y());
+		std::cout << dep - manip::coord(2, 2) << style::souligne << "Informations :" << style::nonsouligne;
+		
+		for (auto p : m_infos) {
+			if (p.first != "Title") {
+				std::cout << dep << p.first << ": " << style::italique << p.second << style::nonitalique;
+				dep += manip::y;
+			} else {
+				std::cout << style::souligne << manip::coord(2, 7) << p.second << " :" << style::nonsouligne;
+			}
+		}
+	}
+	
+	// Streams
+	posstream<std::ostream> mouvstream(&std::cout, 22 + carte->taille_x() * 2, 13);
+	posstream<std::ostream> infos(     &std::cout, 9  + carte->taille_x() * 2, 16);
+	posstream<std::ostream> erreurs(   &std::cout, 9  + carte->taille_x() * 2, 17);
+	erreurs.style(style::erreur);
+	
+	// Boucle de jeu
 	bool fin = false, victoire = false;
+	unsigned nb_mouv = 0;
+	
 	while (!fin) {
-		afficher_carte(carte, 2, 1);
+		afficher_carte(carte, 4, 8);
 		
 		// Etat des emplacements
 		int nb = 0, i = 0;
@@ -72,7 +92,6 @@ bool Niveau::jouer() {
 		}
 		
 		infos << manip::eff_ligne << i << " / " << nb;
-		infos.flush();
 		
 		// Touche
 		Coord dir(0, 0);
@@ -82,7 +101,7 @@ bool Niveau::jouer() {
 			std::this_thread::sleep_for(500ms);
 		
 		} else {
-			switch (console.getch()) {
+			switch (console::getch()) {
 			case FL_HAUT:
 				dir = HAUT;
 				break;
@@ -104,13 +123,19 @@ bool Niveau::jouer() {
 				break;
 			
 			case 's':
+				infos << manip::eff_ligne << style::jaune << "Calcul en cours ...";
 				chemin = solveur.resoudre();
-				std::cout << manip::coord(17 + carte->taille_x() * 2, 3) << chemin.longueur();
+				infos << manip::eff_ligne << style::defaut;
+				
+				std::cout << manip::coord(22 + carte->taille_x() * 2, 12) << chemin.longueur();
 				break;
 			
 			case 'r':
 				carte = this->carte();
 				pers  = carte->personnage();
+				nb_mouv = 0;
+				
+				mouvstream << manip::eff_ligne << nb_mouv;
 				
 				break;
 			}
@@ -120,19 +145,24 @@ bool Niveau::jouer() {
 		erreurs << manip::eff_ligne;
 		
 		// Action !
-		if ((dir != Coord(0, 0)) && pers->deplacer(dir)) {
-			std::cout << manip::buzz;
-			erreurs << style::souligne << "Mouvement impossible !";
-			erreurs.flush();
+		if (dir != Coord(0, 0)) {
+			if (pers->deplacer(dir)) {
+				std::cout << manip::buzz;
+				erreurs << style::souligne << "Mouvement impossible !";
+				erreurs.flush();
+			} else {
+				mouvstream << manip::eff_ligne << ++nb_mouv;
+			}
 		}
 		
 		// Test de fin
 		if (carte->test_fin()) {
-			afficher_carte(carte, 2, 1);
+			afficher_carte(carte, 4, 8);
+			
 			infos << manip::eff_ligne << style::vert << "Bien joué !" << std::endl;
 			infos << std::endl;
 			infos << style::defaut << "[ Appuyez sur ENTREE ]";
-			while (console.getch() != ENTREE) {}
+			while (console::getch() != ENTREE) {}
 			
 			victoire = true;
 			

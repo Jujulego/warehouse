@@ -63,6 +63,8 @@
 		<Unit filename="src/ia/solveur.cpp" />
 		<Unit filename="src/carte.hpp" />
 		<Unit filename="src/carte.cpp" />
+		<Unit filename="src/fichierxsb.cpp" />
+		<Unit filename="src/fichierxsb.hpp" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/menu.hpp" />
 		<Unit filename="src/menu.cpp" />

@@ -35,6 +35,8 @@ add_executable(warehouse
 	# Executable !
 	carte.hpp
 	carte.cpp
+	fichierxsb.cpp
+	fichierxsb.hpp
 	main.cpp
 	menu.hpp
 	menu.cpp

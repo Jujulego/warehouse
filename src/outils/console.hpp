@@ -1,18 +1,15 @@
-#ifndef CONSOLE_H_INCLUDED
-#define CONSOLE_H_INCLUDED
+#pragma once
 
 // Dépendances
 #include <iostream>
 
 // Classe
-/// Gestion de la console
-class Console {
-    public:
-        // Méthodes publiques
-        void gotoLigCol(int lig, int col);
-        void clear();
-        int  kbhit();
-        int  getch();
-};
+namespace console {
 
-#endif // CONSOLE_H_INCLUDED
+// Prototypes
+void gotoLigCol(int lig, int col);
+void clear();
+int kbhit();
+int getch();
+
+} // console

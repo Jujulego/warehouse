@@ -1,6 +1,7 @@
 #pragma once
 
 // Importations
+#include <sstream>
 #include <string>
 
 // Min et Max
@@ -13,6 +14,18 @@ template<class T, class U>
 auto max(T const& t1, U const& t2) {
 	return t1 > t2 ? t1 : t2;
 }
+
+#ifdef __gnu_linux__
+using std::to_string;
+#else
+template<class T>
+std::string to_string(T const& val) {
+    std::ostringstream oss;
+    oss << val;
+
+    return oss.str();
+}
+#endif
 
 // Caractètres
 /* Le nom des constantes contient les directions incluses au charactère :

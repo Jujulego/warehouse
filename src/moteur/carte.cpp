@@ -34,7 +34,53 @@ Carte::Carte(Carte const& carte) : m_tx(carte.m_tx), m_ty(carte.m_ty) {
 	}}
 }
 
+Carte::Carte(Carte&& carte) : m_tx(carte.m_tx), m_ty(carte.m_ty) {
+	// Copie du tableau
+	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
+		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
+	}}
+	
+	// Vidage de l'autre
+	carte.m_tx = 0;
+	carte.m_ty = 0;
+	carte.m_objets.clear();
+}
+
 // Opérateurs
+Carte& Carte::operator = (Carte const& carte) {
+	if (this == &carte) return *this;
+	
+	// Copie du tableau
+	m_tx = carte.m_tx;
+	m_ty = carte.m_ty;
+	
+	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
+		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
+	}}
+	
+	return *this;
+}
+
+Carte& Carte::operator = (Carte&& carte) {
+	if (this == &carte) return *this;
+	
+	// Copie
+	m_tx = carte.m_tx;
+	m_ty = carte.m_ty;
+	m_objets = carte.m_objets;
+	
+	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
+		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
+	}}
+	
+	// Vidage de l'autre
+	carte.m_tx = 0;
+	carte.m_ty = 0;
+	carte.m_objets.clear();
+	
+	return *this;
+}
+
 std::shared_ptr<Immuable>& Carte::operator [] (Coord const& c) {
 	return m_objets[c.x() * m_ty + c.y()];
 }

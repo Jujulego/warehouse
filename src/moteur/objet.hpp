@@ -13,6 +13,12 @@ class Objet {
 		Objet(int x, int y);
 		Objet(Coord const& c);
 		
+		// Regle de 5
+		Objet(Objet const& obj) = default;
+		Objet(Objet&& obj)      = default;
+		Objet& operator = (Objet const& obj) = default;
+		Objet& operator = (Objet&& obj)      = default;
+		
 		// Destructeur
 		virtual ~Objet() = default;
 		
