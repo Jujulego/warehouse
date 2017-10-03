@@ -37,21 +37,30 @@ void Menu::supprimer(std::string const& nom) {
 void Menu::afficher() const {
 	// Initialisation
 	std::vector<std::string> entrees(m_entrees.size());
-	unsigned item = 0, larg = 0;
-
+	unsigned item = 0, larg = 0, nb_lignes = NB_LIGNES;
+	
+	// Ajout des entrées & évaluation de la largeur max des entrees
 	for (auto p : m_entrees) {
 		entrees[p.second.ordre] = p.first;
 		larg = max(larg, p.first.size());
 	}
-
+	
+	larg += 2 + MARGE;
 	entrees.push_back("Quitter");
-
-	auto calcul_pos = [&] (int i) -> auto { return manip::coord(i/NB_LIGNES * (larg + MARGE), i % NB_LIGNES); };
-
-	larg += 2;
-	posstream<std::ostream> stream(&std::cout, (LARGEUR - ((larg + MARGE) * ((entrees.size() / NB_LIGNES) + 1))) / 2, 9);
+	
+	// Evaluation du nombre necessaire de lignes
+	nb_lignes = max((larg * entrees.size()) / (LARGEUR - larg), NB_LIGNES);
+	
+	if (nb_lignes > NB_LIGNES) {
+		nb_lignes = entrees.size() / (entrees.size() / nb_lignes +1) +1; // optimisation
+	}
+	
+	// Fonctions utiles
+	auto calcul_pos = [&] (int i) -> auto { return manip::coord(i/nb_lignes * larg, i % nb_lignes); };
+	
+	posstream<std::ostream> stream(&std::cout, (LARGEUR - (larg * ((entrees.size() / nb_lignes) + 1))) / 2, 9);
 	auto maj_aff = [&] () -> void {
-		std::cout << manip::clear << manip::coord(0, 9 + min(entrees.size(), NB_LIGNES));
+		std::cout << manip::clear << manip::coord(0, 9 + min(entrees.size(), nb_lignes));
 
 		// Entete
 		afficher_entete(ORIGINE);
@@ -93,11 +102,11 @@ void Menu::afficher() const {
 			break;
 
 		case FL_DROITE:
-			if (entrees.size() > NB_LIGNES) {
+			if (entrees.size() > nb_lignes) {
 				stream << calcul_pos(item) << "- " << entrees[item];
 
-				item += NB_LIGNES;
-				if (item >= entrees.size()) item %= NB_LIGNES;
+				item += nb_lignes;
+				if (item >= entrees.size()) item %= nb_lignes;
 
 				stream << calcul_pos(item) << style::inverse << "- " << entrees[item] << style::noninverse;
 			}
@@ -105,18 +114,18 @@ void Menu::afficher() const {
 			break;
 
 		case FL_GAUCHE:
-			if (entrees.size() > NB_LIGNES) {
+			if (entrees.size() > nb_lignes) {
 				stream << calcul_pos(item) << "- " << entrees[item];
 
-				if (item < NB_LIGNES) {
-					unsigned tmp = (entrees.size() / NB_LIGNES) * NB_LIGNES;
+				if (item < nb_lignes) {
+					unsigned tmp = (entrees.size() / nb_lignes) * nb_lignes;
 
-					if (item >= entrees.size() % NB_LIGNES) {
-						tmp -= NB_LIGNES;
+					if (item >= entrees.size() % nb_lignes) {
+						tmp -= nb_lignes;
 					}
 					item += tmp;
 				} else {
-					item -= NB_LIGNES;
+					item -= nb_lignes;
 				}
 
 				stream << calcul_pos(item) << style::inverse << "- " << entrees[item] << style::noninverse;
