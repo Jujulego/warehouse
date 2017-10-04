@@ -2,6 +2,9 @@
 #include <functional>
 #include <iostream>
 
+#include "outils/manip.hpp"
+
+#include "carte.hpp"
 #include "fichierxsb.hpp"
 #include "menu.hpp"
 #include "niveau.hpp"
@@ -23,9 +26,13 @@ int main() {
 }
 
 void charger() {
+	// Nettoyage de l'ecran
+	std::cout << manip::clear;
+	afficher_entete(0, 0);
+	
 	// Lecture du nom de fichier
 	std::string fichier;
-	std::cout << "Entrez le nom du fichier : "; std::cin >> fichier;
+	std::cout << manip::coord(0, 9) << "Entrez le nom du fichier : "; std::cin >> fichier;
 	
 	// Lecture du fichier
 	FichierXSB fxsb(fichier);

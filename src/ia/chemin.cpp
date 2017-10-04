@@ -20,6 +20,12 @@ void Chemin::ajouter(Coord const& c) {
 	if (c != ORIGINE) m_actions.push_back(c);
 }
 
+void Chemin::ajouter(Chemin const& c) {
+	for (auto a : c) {
+		ajouter(a);
+	}
+}
+
 Coord Chemin::pop() {
 	Coord c = m_actions.front();
 	m_actions.pop_front();

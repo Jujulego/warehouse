@@ -1,7 +1,7 @@
 // Importations
 #include <memory>
 #include <queue>
-#include <set>
+#include <unordered_set>
 #include <vector>
 
 #include "moteur/carte.hpp"
@@ -18,17 +18,31 @@
 using namespace ia;
 
 // Outils
-bool ordre(std::vector<int> const& r1, std::vector<int> const& r2) {
-	bool r = r1[0] < r2[0];
-	unsigned i = 0;
-	
-	while (i < (r1.size()-1) && r1[i] == r2[i]) {
-		++i;
-		r = r1[i] < r2[i];
+struct Hash {
+	// Opérateur d'appel
+	size_t operator () (std::vector<int> const& r) const {
+		size_t resultat = 0;
+		
+		for (unsigned i = r.size(); i > 0; --i) {
+			resultat += i * r[i-1];
+		}
+		
+		return resultat;
 	}
-	
-	return r;
-}
+};
+
+struct Egal {
+	// Opérateur d'appel
+	bool operator () (std::vector<int> const& r1, std::vector<int> const& r2) const {
+		if (r1.size() != r2.size()) return false;
+		
+		for (unsigned i = 0; i < r1.size(); ++i) {
+			if (r1[i] != r2[i]) return false;
+		}
+		
+		return true;
+	}
+};
 
 // Constructeur
 Solveur::Solveur(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Deplacable> const& obj)
@@ -37,7 +51,7 @@ Solveur::Solveur(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<mo
 // Méthodes
 Chemin Solveur::resoudre() {
 	// Initialisation
-	std::set<std::vector<int>,bool(*)(std::vector<int> const&,std::vector<int> const&)> historique(&ordre);
+	std::unordered_set<std::vector<int>,Hash,Egal> historique;
 	std::queue<std::shared_ptr<Noeud>> file;
 	file.push(std::make_shared<Noeud>());
 	
@@ -52,7 +66,7 @@ Chemin Solveur::resoudre() {
 		std::shared_ptr<moteur::Carte> carte = noeud->carte(m_carte, obj, m_obj->force());
 		
 		// A-t-on (enfin) trouvé ?
-		if (carte->test_fin()) return noeud->chemin();
+		if (carte->test_fin()) return noeud->chemin_complet();
 		
 		// Ajout à l'historique
 		auto p = historique.insert(reduire(carte));

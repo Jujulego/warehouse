@@ -21,6 +21,7 @@ class Chemin {
 		// Méthodes
 		void ajouter(int x, int y);
 		void ajouter(Coord const& c);
+		void ajouter(Chemin const& c);
 		Coord pop();
 		
 		int longueur() const;
