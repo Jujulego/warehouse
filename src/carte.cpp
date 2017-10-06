@@ -1,7 +1,12 @@
 // Importations
+#include <algorithm>
 #include <array>
 #include <iostream>
+#include <list>
 #include <memory>
+#include <vector>
+
+#include "ia/solveur2.hpp"
 
 #include "moteur/carte.hpp"
 #include "moteur/emplacement.hpp"
@@ -63,57 +68,91 @@ std::string select_mur(std::shared_ptr<moteur::Carte> const& carte, std::shared_
 	return murs[cas];
 }
 
-void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y) {
+void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y, ia::Solveur2 const* solv2) {
 	// Initialisation
+	std::hash<Coord> hash(carte->taille_y());
 	auto ref = manip::coord(x, y);
-
+	
+	// Aide :
+	std::list<ia::Solveur2::Poussee> poussees;
+	std::vector<bool> zone;
+	
+	if (solv2) {
+		zone     = solv2->zone_accessible(carte, carte->personnage()->coord());
+		poussees = solv2->recup_poussees( carte, carte->personnage()->coord());
+	}
+	
 	// Affichage des objets
 	ref += Coord(1, 1);
+	
 	for (auto obj : *carte) {
 		std::cout << ref + obj->coord() + manip::x * obj->coord().x();
 		auto dobj = obj->get();
-
+		Style st;
+		
+		// Fond coloré pour les case à partir desquelles une poussée peut être faite
+		if (solv2 && std::find_if(
+				poussees.begin(), poussees.end(),
+				[&] (ia::Solveur2::Poussee const& p) -> bool { return p.pos == obj->coord(); }
+			) != poussees.end()) {
+		
+			st.fnd(style::BLEU);
+		}
+		
 		if (dobj) {
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
-
+			
 			if (pobj) {
 				if (carte->get<moteur::Emplacement>(pobj->coord())) {
-					std::cout << style::vert;
+					st.txt(style::VERT);
 				} else {
-					std::cout << style::jaune;
+					st.txt(style::JAUNE);
 				}
-
+				
 				#ifdef __gnu_linux__
 				if (pobj->poids() <= 6) {
 					std::string s = BOITE;
 					s.append(1, '\x7f' + pobj->poids());
 
-					std::cout << s << ' ' << style::defaut;
+					std::cout << st << s << ' ' << style::defaut;
 				} else {
-					std::cout << "#" << pobj->poids() << style::defaut;
+					std::cout << st << "#" << pobj->poids() << style::defaut;
 				}
 				#else
-				std::cout << BOITE << pobj->poids() << style::defaut;
+				std::cout << st << BOITE << pobj->poids() << style::defaut;
 				#endif
 			} else {
-				std::cout << style::vert << PERS << style::defaut;
+				st.txt(style::VERT);
+				std::cout << st << PERS << style::defaut;
 			}
 		} else {
+			// Un peu de couleur !
+			if (solv2 && zone[hash(obj->coord())]) {
+				if (st.fnd() != style::BLEU) {
+					st.txt(style::CYAN);
+				}
+			}
+			
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
-				std::cout << select_mur(carte, std::dynamic_pointer_cast<moteur::Obstacle>(obj));
+				std::cout << st << select_mur(carte, std::dynamic_pointer_cast<moteur::Obstacle>(obj));
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
-				std::cout << EMPL;
+				std::cout << st << EMPL;
 			} else if (std::dynamic_pointer_cast<moteur::Sortie>(obj)) {
-				std::cout << SORTIE;
+				std::cout << st << SORTIE;
+			} else if (solv2 && zone[hash(obj->coord())]) {
+				std::cout << st << "--";
 			} else {
-				std::cout << "  ";
+				std::cout << st << "  ";
 			}
 		}
 	}
+	
+	// Reset style
+	std::cout << style::defaut;
 }
 
-void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, Coord const& c) {
-	afficher_carte(carte, c.x(), c.y());
+void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, Coord const& c, ia::Solveur2 const* solv2) {
+	afficher_carte(carte, c.x(), c.y(), solv2);
 }
 
 void afficher_entete(int x, int y) {
@@ -123,7 +162,7 @@ void afficher_entete(int x, int y) {
 void afficher_entete(Coord const& c) {
 	// Entete
 	posstream<std::ostream> stream(&std::cout, c);
-
+	
 	stream << "__          __                      __   __" << std::endl;
 	stream << "\\ \\        / /                     / /  / /" << std::endl;
 	stream << " \\ \\  /\\  / / ___    ____  ___    / /__/ / ___    __  __  _____  ___" << std::endl;

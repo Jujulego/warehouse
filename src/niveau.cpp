@@ -8,6 +8,7 @@
 
 #include "ia/chemin.hpp"
 #include "ia/solveur.hpp"
+#include "ia/solveur2.hpp"
 
 #include "moteur/carte.hpp"
 #include "moteur/emplacement.hpp"
@@ -42,18 +43,36 @@ bool Niveau::jouer() {
 		return 0;
 	}
 	
-	// Solveur
-	ia::Solveur solveur(carte, pers);
-	ia::Chemin chemin;
+	// Solveurs
+	ia::Solveur  solveur( carte, pers);
+	ia::Solveur2 solveur2(carte, pers);
+	ia::Chemin   chemin;
+	
+	bool help_mode = false;
 	
 	// Informations
 	std::cout << manip::clear;
 	afficher_entete(ORIGINE);
 	
-	std::cout << manip::coord(8 + carte->taille_x() * 2, 9) << style::souligne << "Statistiques :" << style::nonsouligne;
-	std::cout << manip::coord(9 + carte->taille_x() * 2, 11) << "Force :      " << pers->force();
-	std::cout << manip::coord(9 + carte->taille_x() * 2, 12) << "Solution :   -";
-	std::cout << manip::coord(9 + carte->taille_x() * 2, 13) << "Mouvements : -";
+	int posx = 9 + carte->taille_x() * 2, posy = 9;
+	std::cout << manip::coord(posx -1, posy) << style::souligne << "Statistiques :" << style::nonsouligne;
+	posy += 2;
+	std::cout << manip::coord(posx, posy++) << "Force :      " << pers->force();
+	std::cout << manip::coord(posx, posy++) << "Solution :   -";
+	std::cout << manip::coord(posx, posy++) << "Mouvements : -";
+	
+	if (posx < 30) {
+		posy = 9;
+		posx += 20;
+	} else {
+		posy = 20;
+	}
+	
+	std::cout << manip::coord(posx -1, posy++) << style::souligne << "Commandes :" << style::nonsouligne;
+	std::cout << manip::coord(posx,    posy++) << " - " << style::gras << "R" << style::nongras << " : recommencer";
+	std::cout << manip::coord(posx,    posy++) << " - " << style::gras << "H" << style::nongras << " : un peu d'aide ?";
+	std::cout << manip::coord(posx,    posy++) << " - " << style::gras << "S" << style::nongras << " : calcul d'une solution";
+	std::cout << manip::coord(posx,    posy++) << " - " << style::gras << "Q" << style::nongras << " : quitter";
 	
 	if (!m_infos.empty()) {
 		auto dep = manip::coord(5, max(12 + carte->taille_y(), 20));
@@ -78,7 +97,8 @@ bool Niveau::jouer() {
 	unsigned nb_mouv = 0;
 	
 	while (!fin) {
-		afficher_carte(carte, 4, 8);
+		// Affichage
+		afficher_carte(carte, 4, 8, help_mode ? &solveur2 : nullptr);
 		
 		// Etat des emplacements
 		int nb = 0, i = 0;
@@ -118,6 +138,10 @@ bool Niveau::jouer() {
 			
 			case 'q':
 				fin = true;
+				break;
+			
+			case 'h':
+				help_mode = !help_mode;
 				break;
 			
 			case 's':

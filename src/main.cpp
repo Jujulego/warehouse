@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "outils/manip.hpp"
+#include "outils/style.hpp"
 
 #include "carte.hpp"
 #include "fichierxsb.hpp"
