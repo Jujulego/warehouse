@@ -52,6 +52,8 @@ function(add_graphe_appel target)
 		string(REGEX REPLACE "/[^/]+$" "" dir ${base})
 		file(MAKE_DIRECTORY ${dir})
 		
+		set(llvm)
+		set(dot)
 		string(APPEND llvm ${base} .ll)
 		string(APPEND dot  ${base} .dot)
 		list(APPEND dots ${dot})
@@ -60,13 +62,13 @@ function(add_graphe_appel target)
 		if (C_SRC)
 			add_custom_command(
 				OUTPUT  ${llvm}
-				COMMAND ${CLANG_C_PARSER} -Wall -Wextra -S -emit-llvm ${CMAKE_CURRENT_SOURCE_DIR}/${src} -o ${llvm}
+				COMMAND ${CLANG_C_PARSER} -Wall -Wextra -S -emit-llvm ${CMAKE_CURRENT_SOURCE_DIR}/${src} -I ${CMAKE_CURRENT_SOURCE_DIR}/${src_dir} -o ${llvm}
 				MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${src}
 			)
 		elseif (CXX_SRC)
 			add_custom_command(
 				OUTPUT  ${llvm}
-				COMMAND ${CLANG_CXX_PARSER} -Wall -Wextra -std=c++14 -S -emit-llvm ${CMAKE_CURRENT_SOURCE_DIR}/${src} -I ${PROJECT_SOURCE_DIR} -o ${llvm}
+				COMMAND ${CLANG_CXX_PARSER} -Wall -Wextra -std=c++14 -S -emit-llvm ${CMAKE_CURRENT_SOURCE_DIR}/${src} -I ${CMAKE_CURRENT_SOURCE_DIR}/${src_dir} -o ${llvm}
 				MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/${src}
 			)
 		endif()

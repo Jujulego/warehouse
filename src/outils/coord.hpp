@@ -1,5 +1,8 @@
 #pragma once
 
+// Importations
+#include <functional>
+
 // Classe
 class Coord {
 	public:
@@ -43,3 +46,30 @@ static const Coord HAUT(   0, -1);
 static const Coord DROITE( 1,  0);
 static const Coord BAS(    0,  1);
 static const Coord GAUCHE(-1,  0);
+
+// Hash
+namespace std {
+
+template<>
+class hash<Coord> {
+	public:
+		// Constructeur
+		hash(size_t factx, size_t minx = 0, size_t miny = 0) : m_factx(factx), m_minx(minx), m_miny(miny) {}
+		
+		// Opérateur d'appel
+		size_t operator () (Coord const& c) const {
+			return (c.x() + m_minx) * m_factx + (c.y() + m_miny);
+		}
+		
+		size_t operator () (int x, int y) const {
+			return (x + m_minx) * m_factx + (y + m_miny);
+		}
+	
+	private:
+		// Attributs
+		size_t m_factx;
+		size_t m_minx;
+		size_t m_miny;
+};
+
+}

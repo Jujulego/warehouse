@@ -31,6 +31,9 @@ s/std::chrono::duration<long>/std::seconds/g
 s/std::chrono::duration<long, std::ratio<60> >/std::minutes/g
 s/std::chrono::duration<long, std::ratio<3600> >/std::hours/g
 
+# operator << template
+s/operator<< <.*>/operator<< <>/g
+
 # Chars inutiles
 s/\[abi:cxx11\]//g
 s/ >/>/g

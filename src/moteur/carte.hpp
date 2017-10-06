@@ -26,19 +26,17 @@ class Carte {
 		
 		// Métafonctions
 		template<class T>
-		struct est_immuable : std::enable_if<std::is_base_of<Immuable,T>::type::value,std::shared_ptr<T>> {};
+		struct est_immuable : std::enable_if<std::is_base_of<Immuable,T>::type::value, std::shared_ptr<T>> {};
 		
 		template<class T>
-		struct est_deplacable : std::enable_if<std::is_base_of<Deplacable,T>::type::value,std::shared_ptr<T>> {};
+		struct est_deplacable : std::enable_if<std::is_base_of<Deplacable,T>::type::value, std::shared_ptr<T>> {};
 		
 		// Constructeur
 		Carte(int tx, int ty);
 		Carte(Carte const& carte);
-		Carte(Carte&& carte);
 		
 		// Opérateurs
 		Carte& operator = (Carte const& carte);
-		Carte& operator = (Carte&& carte);
 		
 		std::shared_ptr<Immuable>&       operator [] (Coord const& c);       //! Accès aux objets : carte[Coord(5, 5)] => pt sur Objet
 		std::shared_ptr<Immuable> const& operator [] (Coord const& c) const;
@@ -61,7 +59,7 @@ class Carte {
 			if (!coord_valides(x, y)) return nullptr;
 			
 			// Acces :
-			return std::dynamic_pointer_cast<T>(m_objets[x * m_ty + y]);
+			return std::dynamic_pointer_cast<T>(m_objets[m_hash(x, y)]);
 		}
 		
 		template<class T>
@@ -73,11 +71,11 @@ class Carte {
 		std::list<std::shared_ptr<T>> liste() const {
 			std::list<std::shared_ptr<T>> liste;
 			
-			for (int i = 0; i < m_tx * m_ty; i++) {
-				auto pt = get<T>(i / m_ty, i % m_ty);
+			for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
+				auto pt = get<T>(x, y);
 				
 				if (pt) liste.push_back(pt);
-			}
+			}}
 			
 			return liste;
 		}
@@ -104,6 +102,7 @@ class Carte {
 	private:
 		// Attributs
 		int m_tx, m_ty;
+		std::hash<Coord> m_hash;
 		std::vector<std::shared_ptr<Immuable>> m_objets;
 };
 

@@ -59,7 +59,7 @@ bool Niveau::jouer() {
 		auto dep = manip::coord(5, max(12 + carte->taille_y(), 20));
 		for (auto p : m_infos) {
 			if (p.first != "Title") {
-				std::cout << dep << p.first << ": " << style::italique << p.second << style::nonitalique;
+				std::cout << dep << style::gras << p.first << style::nongras << ": " << style::italique << p.second << style::nonitalique;
 				dep += manip::y;
 			} else {
 				std::cout << style::souligne << manip::coord(2, 7) << p.second << " :" << style::nonsouligne;

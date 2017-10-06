@@ -16,7 +16,7 @@
 
 // Paramètres
 #define NB_LIGNES 15U
-#define MARGE     5
+#define MARGE     2
 #define LARGEUR   70
 
 // Méthodes

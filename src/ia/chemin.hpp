@@ -26,6 +26,7 @@ class Chemin {
 		
 		int longueur() const;
 		
+		Coord appliquer(Coord c) const;
 		bool appliquer(std::shared_ptr<moteur::Deplacable> const& obj) const;
 		bool appliquer(std::shared_ptr<moteur::Carte> const& carte, Coord& obj, int force) const;
 		

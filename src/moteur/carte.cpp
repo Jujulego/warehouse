@@ -20,30 +20,18 @@
 using namespace moteur;
 
 // Constructeur
-Carte::Carte(int tx, int ty) : m_tx(tx), m_ty(ty) {
+Carte::Carte(int tx, int ty) : m_tx(tx), m_ty(ty), m_hash(ty) {
 	// Remplissage du tableau
 	for (int x = 0; x < tx; ++x) { for (int y = 0; y < ty; ++y) {
 		m_objets.push_back(std::make_shared<Immuable>(x, y));
 	}}
 }
 
-Carte::Carte(Carte const& carte) : m_tx(carte.m_tx), m_ty(carte.m_ty) {
+Carte::Carte(Carte const& carte) : m_tx(carte.m_tx), m_ty(carte.m_ty), m_hash(carte.m_ty) {
 	// Copie du tableau
 	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
-		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
+		m_objets.push_back(carte.m_objets[m_hash(x, y)]->copie(this));
 	}}
-}
-
-Carte::Carte(Carte&& carte) : m_tx(carte.m_tx), m_ty(carte.m_ty) {
-	// Copie du tableau
-	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
-		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
-	}}
-	
-	// Vidage de l'autre
-	carte.m_tx = 0;
-	carte.m_ty = 0;
-	carte.m_objets.clear();
 }
 
 // Opérateurs
@@ -53,40 +41,21 @@ Carte& Carte::operator = (Carte const& carte) {
 	// Copie du tableau
 	m_tx = carte.m_tx;
 	m_ty = carte.m_ty;
+	m_hash = std::hash<Coord>(m_ty);
 	
-	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
-		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
-	}}
-	
-	return *this;
-}
-
-Carte& Carte::operator = (Carte&& carte) {
-	if (this == &carte) return *this;
-	
-	// Copie
-	m_tx = carte.m_tx;
-	m_ty = carte.m_ty;
-	m_objets = carte.m_objets;
-	
-	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
-		m_objets.push_back(carte.m_objets[x * m_ty + y]->copie(this));
-	}}
-	
-	// Vidage de l'autre
-	carte.m_tx = 0;
-	carte.m_ty = 0;
-	carte.m_objets.clear();
+	for (int i = 0; i < m_tx * m_ty; ++i) {
+		m_objets.push_back(carte.m_objets[i]->copie(this));
+	}
 	
 	return *this;
 }
 
 std::shared_ptr<Immuable>& Carte::operator [] (Coord const& c) {
-	return m_objets[c.x() * m_ty + c.y()];
+	return m_objets[m_hash(c)];
 }
 
 std::shared_ptr<Immuable> const& Carte::operator [] (Coord const& c) const {
-	return m_objets[c.x() * m_ty + c.y()];
+	return m_objets[m_hash(c)];
 }
 
 // Méthodes statiques
@@ -179,9 +148,9 @@ void Carte::set(int x, int y, std::shared_ptr<Objet> obj) {
 	// Modif
 	auto pt = std::dynamic_pointer_cast<Immuable>(obj);
 	if (pt) {
-		m_objets[x * m_ty + y] = pt;
+		m_objets[m_hash(x, y)] = pt;
 	} else {
-		m_objets[x * m_ty + y]->set(std::dynamic_pointer_cast<Deplacable>(obj));
+		m_objets[m_hash(x, y)]->set(std::dynamic_pointer_cast<Deplacable>(obj));
 	}
 }
 
@@ -239,10 +208,10 @@ int Carte::taille_y() const {
 }
 
 std::shared_ptr<Personnage> Carte::personnage() const {
-	for (int i = 0; i < m_tx * m_ty; i++) {
-		auto pers = get<Personnage>(i / m_ty, i % m_ty);
+	for (int x = 0; x < m_tx; ++x) { for (int y = 0; y < m_ty; ++y) {
+		auto pers = get<Personnage>(x, y);
 		if (pers) return pers;
-	}
+	}}
 	
 	return nullptr;
 }

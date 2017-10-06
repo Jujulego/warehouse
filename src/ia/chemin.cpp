@@ -36,6 +36,14 @@ int Chemin::longueur() const {
 	return m_actions.size();
 }
 
+Coord Chemin::appliquer(Coord coord) const {
+	for (auto a : m_actions) {
+		coord += a;
+	}
+	
+	return coord;
+}
+
 bool Chemin::appliquer(std::shared_ptr<moteur::Deplacable> const& obj) const {
 	for (auto a : m_actions) {
 		if (obj->deplacer(a)) return true;
