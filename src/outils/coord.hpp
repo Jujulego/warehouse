@@ -64,6 +64,11 @@ class hash<Coord> {
 		size_t operator () (int x, int y) const {
 			return (x + m_minx) * m_factx + (y + m_miny);
 		}
+		
+		// Méthodes
+		Coord unhash(size_t h) const {
+			return Coord((h / m_factx) - m_minx, ((h - m_miny) % m_factx));
+		}
 	
 	private:
 		// Attributs

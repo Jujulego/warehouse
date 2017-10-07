@@ -3,11 +3,13 @@
 // Importations
 #include <list>
 #include <memory>
+#include <ostream>
 #include <vector>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
 #include "outils/coord.hpp"
+#include "outils/posstream.hpp"
 
 #include "chemin.hpp"
 
@@ -24,7 +26,15 @@ class IA {
 		virtual ~IA() = default;
 		
 		// Méthodes
-		virtual Chemin resoudre() = 0;
+		virtual Chemin resoudre(posstream<std::ostream>& stream) = 0;
+		
+		// Outils
+		bool deadlock(std::shared_ptr<moteur::Carte> const& carte) const;
+		bool trouver_chemin(      // Vrai = trouvé !
+			std::shared_ptr<moteur::Carte> carte,
+			Coord const& dep, Coord const& arr,
+			Chemin& res,
+			int force = 0) const; // force = 0 => pour le personnage, force != 0 => pour une boite qu'il faut pousser
 	
 	protected:
 		// Attributs
@@ -35,7 +45,6 @@ class IA {
 		std::vector<int> reduire(std::shared_ptr<moteur::Carte> const& c) const;
 		std::list<Coord> mouvements(std::shared_ptr<moteur::Deplacable> const& obj) const;
 		bool comparer(std::shared_ptr<moteur::Carte> const& c1, std::shared_ptr<moteur::Carte> const& c2) const;
-		bool trouver_chemin(std::shared_ptr<moteur::Carte> const& carte, Coord const& dep, Coord const& arr, Chemin& res) const;
 };
 
 } // ia

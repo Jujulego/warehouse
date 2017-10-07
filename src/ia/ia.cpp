@@ -1,7 +1,6 @@
 // Importations
 #include <algorithm>
 #include <cmath>
-#include <limits>
 #include <list>
 #include <memory>
 #include <queue>
@@ -11,6 +10,8 @@
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
+#include "moteur/emplacement.hpp"
+#include "moteur/obstacle.hpp"
 #include "moteur/personnage.hpp"
 #include "moteur/poussable.hpp"
 #include "outils/coord.hpp"
@@ -32,6 +33,103 @@ IA::IA(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Depl
 	: m_carte(carte), m_obj(obj) {};
 
 // Outils
+bool IA::deadlock(std::shared_ptr<moteur::Carte> const& carte) const {
+	// Si une boite touche 2 murs en angle sans etre sur un emplacement => deadlock !
+	for (auto pt : carte->liste<moteur::Poussable>()) {
+		if (carte->get<moteur::Emplacement>(pt->coord())) continue;
+		
+		for (Coord dir : {HAUT, BAS}) {
+			if (carte->get<moteur::Obstacle>(pt->coord() + dir)) {
+				for (Coord dir : {GAUCHE, DROITE}) {
+					if (carte->get<moteur::Obstacle>(pt->coord() + dir))
+						return true;
+				}
+				
+				break;
+			}
+		}
+	}
+	
+	return false;
+}
+
+bool IA::trouver_chemin(std::shared_ptr<moteur::Carte> carte, Coord const& dep, Coord const& arr, Chemin& res, int force) const {
+	// Cas de base
+	if (!carte->coord_valides(dep)) return false;
+	if (!carte->coord_valides(arr)) return false;
+	if (dep == arr) return true;
+	
+	// Outils
+	using Etat = std::pair<int,std::shared_ptr<Noeud>>;
+	struct Ordre {
+		bool operator () (Etat const& e1, Etat const& e2) const {
+			return e1.first > e2.first;
+		}
+	};
+	
+	auto distance = [&arr] (Coord const& c) -> int {
+		return std::abs(arr.x() - c.x()) + std::abs(arr.y() - c.y());
+	};
+	
+	// Recherche d'un chemin SANS pousser de boite
+	std::unordered_set<Coord> marques(0, std::hash<Coord>(carte->taille_y()));
+	std::priority_queue<Etat,std::vector<Etat>,Ordre> file;
+	int poids = 0;
+	
+	if (force) {
+		poids = carte->get<moteur::Poussable>(dep)->poids();
+		
+		// suppression du Personnage
+		carte = std::make_shared<moteur::Carte>(*carte);
+		
+		auto pers = carte->personnage();
+		(*carte)[pers->coord()]->pop();
+	}
+	
+	// Algo
+	file.push(Etat { distance(dep), std::make_shared<Noeud>() });
+	marques.insert(dep);
+	
+	while (!file.empty()) {
+		// Depilage
+		std::shared_ptr<Noeud> n = file.top().second;
+		file.pop();
+		
+		Coord c = n->chemin_complet().appliquer(dep);
+		
+		// Test de fin
+		if (c == arr) {
+			res = n->chemin_complet();
+			return true;
+		}
+		
+		// Traitement
+		for (auto m : {HAUT, BAS, DROITE, GAUCHE}) {
+			Coord nc = c + m;
+			
+			// Checks
+			if (!carte->coord_valides(nc)) continue;
+			
+			if (force) { // Il faut pousser !
+				if (!carte->coord_valides(c - m)) continue;
+				if (!carte->get<moteur::Immuable>(c - m)->accessible()) continue;
+				if (carte->deplacer(c, m, force - poids, true)) continue;
+			} else {     // pour le personnage
+				if (!carte->get<moteur::Immuable>(nc)->accessible()) continue;
+			}
+			
+			// Check marque
+			auto p = marques.insert(nc);
+			if (!p.second) continue;
+			
+			// Ajout au traitement
+			file.push(Etat { distance(nc), std::make_shared<Noeud>(m, n) });
+		}
+	}
+	
+	return false;
+}
+
 std::vector<int> IA::reduire(std::shared_ptr<moteur::Carte> const& carte) const {
 	// Déclarations
 	int tc = carte->taille_x() * carte->taille_y();
@@ -77,63 +175,4 @@ bool IA::comparer(std::shared_ptr<moteur::Carte> const& c1, std::shared_ptr<mote
 	}
 	
 	return equiv;
-}
-
-bool IA::trouver_chemin(std::shared_ptr<moteur::Carte> const& carte, Coord const& dep, Coord const& arr, Chemin& res) const {
-	// Cas de base
-	if (!carte->coord_valides(dep)) return false;
-	if (!carte->coord_valides(arr)) return false;
-	if (dep == arr) return true;
-	
-	// Outils
-	using Etat = std::pair<int,std::shared_ptr<Noeud>>;
-	struct Ordre {
-		bool operator () (Etat const& e1, Etat const& e2) const {
-			return e1.first < e2.first;
-		}
-	};
-	
-	auto distance = [&arr] (Coord const& c) -> int {
-		return std::abs(arr.x() - c.x()) + std::abs(arr.y() - c.y());
-	};
-	
-	// Recherche d'un chemin SANS pousser de boite
-	std::unordered_set<Coord> marques(0, std::hash<Coord>(carte->taille_y()));
-	std::priority_queue<Etat,std::vector<Etat>,Ordre> file;
-	
-	// Algo
-	file.push(Etat { distance(dep), std::make_shared<Noeud>() });
-	marques.insert(dep);
-	
-	while (!file.empty()) {
-		// Depilage
-		std::shared_ptr<Noeud> n = file.top().second;
-		file.pop();
-		
-		Coord c = n->chemin_complet().appliquer(dep);
-		
-		// Test de fin
-		if (c == arr) {
-			res = n->chemin_complet();
-			return true;
-		}
-		
-		// Traitement
-		for (auto m : {HAUT, BAS, DROITE, GAUCHE}) {
-			Coord nc = c + m;
-			
-			// Checks
-			if (!carte->coord_valides(nc)) continue;
-			if (!carte->get<moteur::Immuable>(nc)->accessible()) continue;
-			
-			// Check marque
-			auto p = marques.insert(nc);
-			if (!p.second) continue;
-			
-			// Ajout au traitement
-			file.push(Etat { distance(nc), std::make_shared<Noeud>(m, n) });
-		}
-	}
-	
-	return false;
 }

@@ -1,6 +1,7 @@
 // Importations
 #include <chrono>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
@@ -46,6 +47,7 @@ bool Niveau::jouer() {
 	// Solveurs
 	ia::Solveur  solveur( carte, pers);
 	ia::Solveur2 solveur2(carte, pers);
+	ia::IA*      ia = nullptr;
 	ia::Chemin   chemin;
 	
 	bool help_mode = false;
@@ -59,8 +61,16 @@ bool Niveau::jouer() {
 	posy += 2;
 	std::cout << manip::coord(posx, posy++) << "Force :      " << pers->force();
 	std::cout << manip::coord(posx, posy++) << "Solution :   -";
-	std::cout << manip::coord(posx, posy++) << "Mouvements : -";
+	std::cout << manip::coord(posx, posy)   << "Mouvements : -";
 	
+	// Streams
+	posstream<std::ostream> mouvstream(&std::cout, posx +13, posy++);
+	posstream<std::ostream> iastats(   &std::cout, posx, 15);
+	posstream<std::ostream> erreurs(   &std::cout, posx, 16);
+	posstream<std::ostream> infos(     &std::cout, posx, 17);
+	erreurs.style(style::erreur);
+	
+	// Commandes
 	if (posx < 30) {
 		posy = 9;
 		posx += 20;
@@ -86,12 +96,6 @@ bool Niveau::jouer() {
 		}
 	}
 	
-	// Streams
-	posstream<std::ostream> mouvstream(&std::cout, 22 + carte->taille_x() * 2, 13);
-	posstream<std::ostream> infos(     &std::cout, 9  + carte->taille_x() * 2, 16);
-	posstream<std::ostream> erreurs(   &std::cout, 9  + carte->taille_x() * 2, 17);
-	erreurs.style(style::erreur);
-	
 	// Boucle de jeu
 	bool fin = false, victoire = false;
 	unsigned nb_mouv = 0;
@@ -110,6 +114,16 @@ bool Niveau::jouer() {
 		}
 		
 		infos << manip::eff_ligne << i << " / " << nb;
+		
+		if (help_mode) {
+			unsigned h = solveur2.heuristique(carte, carte->personnage()->force());
+			
+			#ifdef __gnu_linux__
+			infos << " " << (h == std::numeric_limits<unsigned>::max() ? "\xe2\x88\x9e" : to_string(h));
+			#else
+			infos << " " << (h == std::numeric_limits<unsigned>::max() ? "inf" : to_string(h));
+			#endif
+		}
 		
 		// Touche
 		Coord dir(0, 0);
@@ -145,8 +159,28 @@ bool Niveau::jouer() {
 				break;
 			
 			case 's':
+				// Choix de l'IA
+				do {
+					int num = 0;
+					
+					infos << manip::eff_ligne << "Quelle IA (1 ou 2) ? ";
+					std::cout << infos.coord() + manip::y;
+					std::cin >> num;
+					
+					switch (num) {
+						case 1:
+							ia = &solveur;
+							break;
+						
+						case 2:
+							ia = &solveur2;
+							break;
+					}
+				} while(!ia);
+				
+				// Execution
 				infos << manip::eff_ligne << style::jaune << "Calcul en cours ...";
-				chemin = solveur.resoudre();
+				chemin = ia->resoudre(iastats);
 				infos << manip::eff_ligne << style::defaut;
 				
 				std::cout << manip::coord(22 + carte->taille_x() * 2, 12) << chemin.longueur();

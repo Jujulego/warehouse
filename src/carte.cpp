@@ -136,6 +136,7 @@ void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y, i
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
 				std::cout << st << select_mur(carte, std::dynamic_pointer_cast<moteur::Obstacle>(obj));
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
+				st.txt(style::DEFAUT_TEXTE);
 				std::cout << st << EMPL;
 			} else if (std::dynamic_pointer_cast<moteur::Sortie>(obj)) {
 				std::cout << st << SORTIE;

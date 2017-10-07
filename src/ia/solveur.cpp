@@ -1,59 +1,41 @@
 // Importations
+#include <chrono>
 #include <memory>
+#include <ostream>
 #include <queue>
-#include <unordered_set>
 #include <vector>
 
 #include "moteur/carte.hpp"
-#include "moteur/emplacement.hpp"
 #include "moteur/deplacable.hpp"
-#include "moteur/obstacle.hpp"
-#include "moteur/poussable.hpp"
+#include "outils/manip.hpp"
+#include "outils/posstream.hpp"
 
 #include "chemin.hpp"
+#include "hashtable.hpp"
 #include "noeud.hpp"
 #include "solveur.hpp"
 
+// Macros
+#define MAJ_AFF 500
+
 // Namespace
 using namespace ia;
-
-// Outils
-struct Hash {
-	// Opérateur d'appel
-	size_t operator () (std::vector<int> const& r) const {
-		size_t resultat = 0;
-		
-		for (unsigned i = r.size(); i > 0; --i) {
-			resultat += i * r[i-1];
-		}
-		
-		return resultat;
-	}
-};
-
-struct Egal {
-	// Opérateur d'appel
-	bool operator () (std::vector<int> const& r1, std::vector<int> const& r2) const {
-		if (r1.size() != r2.size()) return false;
-		
-		for (unsigned i = 0; i < r1.size(); ++i) {
-			if (r1[i] != r2[i]) return false;
-		}
-		
-		return true;
-	}
-};
+using namespace std::chrono;
 
 // Constructeur
 Solveur::Solveur(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Deplacable> const& obj)
 	: IA(carte, obj) {}
 
 // Méthodes
-Chemin Solveur::resoudre() {
+Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 	// Initialisation
-	std::unordered_set<std::vector<int>,Hash,Egal> historique;
 	std::queue<std::shared_ptr<Noeud>> file;
 	file.push(std::make_shared<Noeud>());
+	HashTable historique;
+	
+	// Stats
+	steady_clock::time_point debut = steady_clock::now();
+	int noeuds_t = 0, noeuds_at = 1, aff = 0;
 	
 	// Algo
 	while (!file.empty()) {
@@ -61,12 +43,23 @@ Chemin Solveur::resoudre() {
 		auto noeud = file.front();
 		file.pop();
 		
+		noeuds_t++;
+		
 		// Calcul de la nouvelle carte
 		Coord obj = m_obj->coord();
 		std::shared_ptr<moteur::Carte> carte = noeud->carte(m_carte, obj, m_obj->force());
 		
 		// A-t-on (enfin) trouvé ?
-		if (carte->test_fin()) return noeud->chemin_complet();
+		if (carte->test_fin()) {
+			// nb de noeuds traités
+			stream << manip::eff_ligne;
+			stream << noeuds_t << " / " << noeuds_at;
+			
+			// temps passé
+			stream << " en " << duration_cast<milliseconds>(steady_clock::now() - debut).count() << " ms";
+			
+			return noeud->chemin_complet();
+		}
 		
 		// Ajout à l'historique
 		auto p = historique.insert(reduire(carte));
@@ -74,35 +67,20 @@ Chemin Solveur::resoudre() {
 			continue;
 		}
 		
-		// Si une boite touche 2 murs en angle sans etre sur un emplacement => deadlock !
-		bool deadlock = false;
-		for (auto pt : carte->liste<moteur::Poussable>()) {
-			if (carte->get<moteur::Emplacement>(pt->coord())) continue;
-			
-			bool mur = false;
-			for (Coord dir : {HAUT, BAS}) {
-				if (carte->get<moteur::Obstacle>(pt->coord() + dir)) mur = true;
-			}
-			
-			if (mur) {
-				mur = false;
-				
-				for (Coord dir : {GAUCHE, DROITE}) {
-					if (carte->get<moteur::Obstacle>(pt->coord() + dir)) mur = true;
-				}
-				
-				if (mur) {
-					deadlock = true;
-					break;
-				}
-			}
-		}
-		
-		if (deadlock) continue;
+		// Arret en cas de deadlock
+		if (deadlock(carte)) continue;
 		
 		// Préparation des noeuds suivants
 		for (Coord m : mouvements(carte->get<moteur::Deplacable>(obj))) {
 			file.push(std::make_shared<Noeud>(m, noeud));
+			noeuds_at++;
+		}
+		
+		// Affichage
+		aff = (aff + 1) % MAJ_AFF;
+		if (!aff) {
+			stream << manip::eff_ligne;
+			stream << noeuds_t << " / " << noeuds_at;
 		}
 	}
 	

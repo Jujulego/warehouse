@@ -102,6 +102,10 @@ class posstream {
 		}
 
 		// Méthodes
+		CoordManip coord() {
+			return m_coord;
+		}
+		
 		void flush() {
 			m_flux->flush();
 		}

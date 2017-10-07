@@ -3,11 +3,13 @@
 // Importations
 #include <list>
 #include <memory>
+#include <ostream>
 #include <vector>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
 #include "outils/coord.hpp"
+#include "outils/posstream.hpp"
 
 #include "chemin.hpp"
 #include "ia.hpp"
@@ -29,9 +31,12 @@ class Solveur2 : public IA {
 		Solveur2(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Deplacable> const& obj);
 		
 		// Méthodes
-		virtual Chemin resoudre() override;
+		virtual Chemin resoudre(posstream<std::ostream>& stream) override;
+		
+		// Outils
+		unsigned heuristique(std::shared_ptr<moteur::Carte> const& carte, int force) const;
+		std::list<Poussee> recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> const& carte, Coord const& obj) const;
-		std::list<Poussee> recup_poussees(std::shared_ptr<moteur::Carte> const& carte, Coord const& obj) const;
 };
 
 } // ia
