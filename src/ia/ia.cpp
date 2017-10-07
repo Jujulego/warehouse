@@ -1,6 +1,7 @@
 // Importations
 #include <algorithm>
 #include <cmath>
+#include <future>
 #include <list>
 #include <memory>
 #include <queue>
@@ -21,6 +22,7 @@
 
 // Namespace
 using namespace ia;
+using namespace std::placeholders;
 
 // Alias
 template<class T, class U>
@@ -30,7 +32,29 @@ inline std::shared_ptr<T> cast(std::shared_ptr<U> const& pt) {
 
 // Constructeur
 IA::IA(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Deplacable> const& obj)
-	: m_carte(carte), m_obj(obj) {};
+	: m_carte(carte), m_obj(obj), m_interruption(false) {};
+
+IA::IA(IA&& ia) : m_carte(ia.m_carte), m_obj(ia.m_obj), m_interruption(ia.m_interruption.load()) {};
+
+// Opérateur
+IA& IA::operator = (IA&& ia) {
+	// Copie des données
+	m_carte = ia.m_carte;
+	m_obj   = ia.m_obj;
+	m_interruption = ia.m_interruption.load();
+	
+	return *this;
+}
+
+// Méthodes
+std::future<Chemin> IA::async_resoudre(posstream<std::ostream>& stream) {
+	m_interruption = false;
+	return std::async(std::launch::async, &IA::resoudre, this, std::ref(stream));
+}
+
+void IA::interrompre() {
+	m_interruption = true;
+}
 
 // Outils
 bool IA::deadlock(std::shared_ptr<moteur::Carte> const& carte) const {

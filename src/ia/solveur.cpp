@@ -39,6 +39,9 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 	
 	// Algo
 	while (!file.empty()) {
+		// Interruption ?
+		if (m_interruption) break;
+		
 		// Extraction du noeud suivant
 		auto noeud = file.front();
 		file.pop();

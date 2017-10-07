@@ -48,6 +48,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #
 # Dépendances
 #
+# Threads
+find_package(Threads REQUIRED)
+
 # Qt5
 if (QT_ENABLE)
 	find_package(Qt5 5.7 REQUIRED

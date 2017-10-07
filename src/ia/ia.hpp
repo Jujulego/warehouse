@@ -1,6 +1,8 @@
 #pragma once
 
 // Importations
+#include <atomic>
+#include <future>
 #include <list>
 #include <memory>
 #include <ostream>
@@ -21,12 +23,20 @@ class IA {
 	public:
 		// Constructeur
 		IA(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Deplacable> const& obj);
+		IA(IA&& ia);
 		
 		// Destructeur
 		virtual ~IA() = default;
 		
-		// Méthodes
+		// Operateur
+		IA& operator = (IA&& ia);
+		
+		// Méthodes virtuelles
 		virtual Chemin resoudre(posstream<std::ostream>& stream) = 0;
+		
+		// Méthodes
+		std::future<Chemin> async_resoudre(posstream<std::ostream>& stream);
+		void interrompre();
 		
 		// Outils
 		bool deadlock(std::shared_ptr<moteur::Carte> const& carte) const;
@@ -40,6 +50,8 @@ class IA {
 		// Attributs
 		std::shared_ptr<moteur::Carte> m_carte;
 		std::shared_ptr<moteur::Deplacable> m_obj;
+		
+		std::atomic<bool> m_interruption;
 		
 		// Outils
 		std::vector<int> reduire(std::shared_ptr<moteur::Carte> const& c) const;

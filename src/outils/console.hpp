@@ -10,6 +10,6 @@ namespace console {
 void gotoLigCol(int lig, int col);
 void clear();
 int kbhit();
-int getch();
+int getch(bool bloc = true);
 
 } // console

@@ -96,8 +96,9 @@ void console::clear() {
 	std::cout << manip::clear;
 }
 
-int console::getch() { // récupère le caractère du clavier
+int console::getch(bool bloc) { // récupère le caractère du clavier
 	std::cin.clear();
+	if (!bloc && !c::kbhit()) return 0;
 	int c = c::getch();
 	
 #ifndef __gnu_linux__

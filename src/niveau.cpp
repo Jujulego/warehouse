@@ -1,5 +1,6 @@
 // Importations
 #include <chrono>
+#include <future>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -51,6 +52,9 @@ bool Niveau::jouer() {
 	ia::Chemin   chemin;
 	
 	bool help_mode = false;
+	
+	// Futurs
+	std::future<ia::Chemin> fut_chemin;
 	
 	// Informations
 	std::cout << manip::clear;
@@ -125,6 +129,11 @@ bool Niveau::jouer() {
 			#endif
 		}
 		
+		// Check future
+		if (fut_chemin.valid() && fut_chemin.wait_for(100ms) == std::future_status::ready) {
+			chemin = fut_chemin.get();
+		}
+		
 		// Touche
 		Coord dir(0, 0);
 		
@@ -133,7 +142,7 @@ bool Niveau::jouer() {
 			std::this_thread::sleep_for(250ms);
 		
 		} else {
-			switch (console::getch()) {
+			switch (console::getch(!fut_chemin.valid())) {
 			case FL_HAUT:
 				dir = HAUT;
 				break;
@@ -152,6 +161,12 @@ bool Niveau::jouer() {
 			
 			case 'q':
 				fin = true;
+			
+			case 'i':
+				if (fut_chemin.valid()) {
+					ia->interrompre();
+				}
+				
 				break;
 			
 			case 'h':
@@ -159,6 +174,9 @@ bool Niveau::jouer() {
 				break;
 			
 			case 's':
+				// Ignoré si calcul déjà en cours
+				if (fut_chemin.valid()) break;
+				
 				// Choix de l'IA
 				do {
 					int num = 0;
@@ -180,7 +198,7 @@ bool Niveau::jouer() {
 				
 				// Execution
 				infos << manip::eff_ligne << style::jaune << "Calcul en cours ...";
-				chemin = ia->resoudre(iastats);
+				fut_chemin = ia->async_resoudre(iastats);
 				infos << manip::eff_ligne << style::defaut;
 				
 				std::cout << manip::coord(22 + carte->taille_x() * 2, 12) << chemin.longueur();
@@ -189,7 +207,8 @@ bool Niveau::jouer() {
 			case 'r':
 				carte   = this->carte();
 				pers    = carte->personnage();
-				solveur = ia::Solveur(carte, pers);
+				solveur  = ia::Solveur( carte, pers);
+				solveur2 = ia::Solveur2(carte, pers);
 				
 				nb_mouv = 0;
 				mouvstream << manip::eff_ligne << nb_mouv;
@@ -202,7 +221,7 @@ bool Niveau::jouer() {
 		erreurs << manip::eff_ligne;
 		
 		// Action !
-		if (dir != Coord(0, 0)) {
+		if (!fut_chemin.valid() && dir != Coord(0, 0)) {
 			if (pers->deplacer(dir)) {
 				std::cout << manip::buzz;
 				erreurs << style::souligne << "Mouvement impossible !";
@@ -216,7 +235,11 @@ bool Niveau::jouer() {
 		if (carte->test_fin()) {
 			afficher_carte(carte, 4, 8);
 			
+			#ifdef __gnu_linux__
 			infos << manip::eff_ligne << style::vert << "Bien joué !" << std::endl;
+			#else
+			infos << manip::eff_ligne << style::vert << "Bien joue !" << std::endl;
+			#endif
 			infos << std::endl;
 			infos << style::defaut << "[ Appuyez sur ENTREE ]";
 			while (console::getch() != ENTREE) {}

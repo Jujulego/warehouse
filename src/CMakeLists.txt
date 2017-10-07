@@ -58,3 +58,16 @@ add_executable(warehouse
 	outils/style.cpp
 	outils/style.hpp
 )
+
+#
+# Librairies
+#
+target_link_libraries(warehouse
+	${CMAKE_THREAD_LIBS_INIT}
+)
+
+if (QT_ENABLE)
+	target_link_libraries(warehouse
+		Qt5::Widgets
+	)
+endif()
