@@ -83,7 +83,7 @@ bool IA::trouver_chemin(std::shared_ptr<moteur::Carte> carte, Coord const& dep, 
 		carte = std::make_shared<moteur::Carte>(*carte);
 		
 		auto pers = carte->personnage();
-		(*carte)[pers->coord()]->pop();
+		if (pers) (*carte)[pers->coord()]->pop();
 	}
 	
 	// Algo
@@ -95,12 +95,14 @@ bool IA::trouver_chemin(std::shared_ptr<moteur::Carte> carte, Coord const& dep, 
 		std::shared_ptr<Noeud> n = file.top().second;
 		file.pop();
 		
-		Coord c = n->chemin_complet().appliquer(dep);
+		// Calcul coordonnées actuelle (+carte ;)
+		std::shared_ptr<moteur::Carte> carte_tmp;
+		Coord c = dep;
 		
-		// Test de fin
-		if (c == arr) {
-			res = n->chemin_complet();
-			return true;
+		if (force) {
+			carte_tmp = n->carte(carte, c, force);
+		} else {
+			c = n->chemin_complet().appliquer(dep);
 		}
 		
 		// Traitement
@@ -111,11 +113,19 @@ bool IA::trouver_chemin(std::shared_ptr<moteur::Carte> carte, Coord const& dep, 
 			if (!carte->coord_valides(nc)) continue;
 			
 			if (force) { // Il faut pousser !
-				if (!carte->coord_valides(c - m)) continue;
-				if (!carte->get<moteur::Immuable>(c - m)->accessible()) continue;
-				if (carte->deplacer(c, m, force - poids, true)) continue;
+				if (!carte_tmp->coord_valides(c - m)) continue;
+				if (!carte_tmp->get<moteur::Immuable>(c - m)->accessible()) continue;
+				if ( carte_tmp->deplacer(c, m, force - poids, true)) continue;
 			} else {     // pour le personnage
 				if (!carte->get<moteur::Immuable>(nc)->accessible()) continue;
+			}
+			
+			// Test de fin
+			if (nc == arr) {
+				res = n->chemin_complet();
+				res.ajouter(m);
+				
+				return true;
 			}
 			
 			// Check marque
