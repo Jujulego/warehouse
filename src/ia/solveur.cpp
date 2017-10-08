@@ -59,7 +59,7 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 			
 			// nb de noeuds traités
 			stream << manip::eff_ligne;
-			stream << noeuds_t << " / " << noeuds_at;
+			stream << ((double) noeuds_t) / noeuds_at * 100 << " % (" << noeuds_t << " / " << noeuds_at << ")";
 			
 			// temps passé
 			stream << " en " << duration_cast<milliseconds>(steady_clock::now() - debut).count() << " ms";
@@ -96,7 +96,7 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 		if (!aff) {
 			auto lck = console::lock();
 			stream << manip::eff_ligne;
-			stream << noeuds_t << " / " << noeuds_at;
+			stream << ((double) noeuds_t) / noeuds_at * 100 << " % (" << noeuds_t << " / " << noeuds_at << ")";
 		}
 	}
 	

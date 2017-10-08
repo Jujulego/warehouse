@@ -34,8 +34,10 @@ class Solveur2 : public IA {
 		virtual Chemin resoudre(posstream<std::ostream>& stream) override;
 		
 		// Outils
-		unsigned heuristique(std::shared_ptr<moteur::Carte> const& carte, int force) const;
+		unsigned heuristique(std::shared_ptr<moteur::Carte> const& carte) const;
 		std::list<Poussee> recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
+		
+		std::vector<bool> zone_interdite( std::shared_ptr<moteur::Carte> const& carte, Coord const& dep) const;
 		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> const& carte, Coord const& obj) const;
 };
 

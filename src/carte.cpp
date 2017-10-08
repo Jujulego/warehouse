@@ -76,11 +76,12 @@ void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y, i
 	// Aide :
 	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
 	std::list<ia::Solveur2::Poussee> poussees;
-	std::vector<bool> zone;
+	std::vector<bool> zone, zone_inter;
 	
 	if (solv2) {
-		zone     = solv2->zone_accessible(carte, carte->personnage()->coord());
-		poussees = solv2->recup_poussees( carte, carte->personnage()->coord());
+		zone_inter = solv2->zone_interdite(carte, pers->coord());
+		zone     = solv2->zone_accessible( carte, pers->coord());
+		poussees = solv2->recup_poussees(  carte, pers->coord());
 	}
 	
 	// Affichage des objets
@@ -130,8 +131,12 @@ void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y, i
 			}
 		} else {
 			// Un peu de couleur !
-			if (solv2 && zone[hash(obj->coord())]) {
-				if (st.fnd() != style::BLEU) {
+			if (solv2 && st.fnd() != style::BLEU) {
+				if (zone_inter[hash(obj->coord())]) {
+					// Faut pas mettre une boite ici !
+					st.fnd(style::ROUGE);
+				} else if (zone[hash(obj->coord())]) {
+					// Ici on peut aller !
 					st.txt(style::CYAN);
 				}
 			}

@@ -1,5 +1,6 @@
 // Importations
 #include <functional>
+#include <iomanip>
 #include <iostream>
 
 #include "outils/manip.hpp"
@@ -15,6 +16,9 @@ void charger();
 
 // Main !
 int main() {
+	std::cout << std::boolalpha;
+	std::cout << std::setprecision(2);
+	
 	Menu menu;
 	
 	Niveau niv("carte.txt");

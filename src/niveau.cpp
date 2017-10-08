@@ -122,7 +122,7 @@ bool Niveau::jouer() {
 		}
 		
 		if (help_mode) {
-			unsigned h = solveur2.heuristique(carte, carte->personnage()->force());
+			unsigned h = solveur2.heuristique(carte);
 			auto lck = console::lock();
 			
 			#ifdef __gnu_linux__
@@ -256,7 +256,6 @@ bool Niveau::jouer() {
 			#else
 			infos << manip::eff_ligne << style::vert << "Bien joue !" << std::endl;
 			#endif
-			infos << std::endl;
 			infos << style::defaut << "[ Appuyez sur ENTREE ]";
 			while (console::getch() != ENTREE) {}
 			
