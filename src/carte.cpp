@@ -74,6 +74,7 @@ void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y, i
 	auto ref = manip::coord(x, y);
 	
 	// Aide :
+	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
 	std::list<ia::Solveur2::Poussee> poussees;
 	std::vector<bool> zone;
 	
@@ -105,6 +106,8 @@ void afficher_carte(std::shared_ptr<moteur::Carte> const& carte, int x, int y, i
 			if (pobj) {
 				if (carte->get<moteur::Emplacement>(pobj->coord())) {
 					st.txt(style::VERT);
+				} else if (solv2 && solv2->deadlock(carte, pobj, pers->coord(), pers->force())) {
+					st.txt(style::ROUGE);
 				} else {
 					st.txt(style::JAUNE);
 				}

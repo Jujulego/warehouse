@@ -2,8 +2,10 @@
 #include <algorithm>
 #include <cmath>
 #include <future>
+#include <functional>
 #include <list>
 #include <memory>
+#include <set>
 #include <queue>
 #include <unordered_set>
 #include <utility>
@@ -57,24 +59,53 @@ void IA::interrompre() {
 }
 
 // Outils
-bool IA::deadlock(std::shared_ptr<moteur::Carte> const& carte) const {
-	// Si une boite touche 2 murs en angle sans etre sur un emplacement => deadlock !
-	for (auto pt : carte->liste<moteur::Poussable>()) {
-		if (carte->get<moteur::Emplacement>(pt->coord())) continue;
-		
-		for (Coord dir : {HAUT, BAS}) {
-			if (carte->get<moteur::Obstacle>(pt->coord() + dir)) {
-				for (Coord dir : {GAUCHE, DROITE}) {
-					if (carte->get<moteur::Obstacle>(pt->coord() + dir))
-						return true;
-				}
-				
-				break;
-			}
-		}
-	}
+bool IA::deadlock(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Poussable> const& pt, Coord const& pers, int force) const {
+	if (carte->get<moteur::Emplacement>(pt->coord())) return false;
 	
-	return false;
+	// On retire le personnage
+	std::shared_ptr<moteur::Deplacable> pt_pers;
+	if (carte->coord_valides(pers)) pt_pers = (*carte)[pers]->pop();
+	
+	// Marques
+	std::set<std::shared_ptr<moteur::Poussable>> marques;
+	
+	// Fonction récursive :
+	std::function<bool(std::shared_ptr<moteur::Poussable> const&,Coord)> exec(
+	[&] (std::shared_ptr<moteur::Poussable> const& p, Coord prov) -> bool {
+		// Si la boite ne peux plus être déplacée => deadlock
+		bool err = true;
+		for (Coord dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			if (dir == -prov) continue;
+			
+			if (!carte->coord_valides(p->coord() - dir) || carte->get<moteur::Obstacle>(p->coord() - dir)) {
+				continue;
+			}
+			
+			auto pous = carte->get<moteur::Poussable>(p->coord() - dir);
+			if (pous) {
+				auto pair = marques.insert(pous);
+				if (dir != prov && !pair.second) return true;
+				
+				if (pair.second && exec(pous, dir)) {
+					continue;
+				}
+			}
+			
+			err &= carte->deplacer(p->coord(), dir, force - p->poids(), true);
+			if (!err) break;
+		}
+		
+		return err;
+	});
+	
+	// Execution
+	marques.insert(pt);
+	bool res = exec(pt, ORIGINE);
+	
+	// Et on remet le personnage
+	if (carte->coord_valides(pers)) carte->set(pers, pt_pers);
+	
+	return res;
 }
 
 bool IA::trouver_chemin(std::shared_ptr<moteur::Carte> carte, Coord const& dep, Coord const& arr, Chemin& res, int force) const {

@@ -10,6 +10,7 @@
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
+#include "moteur/poussable.hpp"
 #include "outils/coord.hpp"
 #include "outils/posstream.hpp"
 
@@ -39,7 +40,11 @@ class IA {
 		void interrompre();
 		
 		// Outils
-		bool deadlock(std::shared_ptr<moteur::Carte> const& carte) const;
+		bool deadlock(
+			std::shared_ptr<moteur::Carte> const& carte,
+			std::shared_ptr<moteur::Poussable> const& pt, // L'objet à vérifier
+			Coord const& pers, int force) const;          // Paramètres personnage
+		
 		bool trouver_chemin(      // Vrai = trouvé !
 			std::shared_ptr<moteur::Carte> carte,
 			Coord const& dep, Coord const& arr,

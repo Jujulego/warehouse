@@ -37,6 +37,7 @@ Niveau::Niveau(std::shared_ptr<moteur::Carte> const& carte) : m_carte(carte) {}
 bool Niveau::jouer() {
 	// Init
 	std::shared_ptr<moteur::Carte> carte     = this->carte();
+	std::shared_ptr<moteur::Carte> carte_aff = nullptr;
 	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
 	
 	// Check personnage
@@ -105,9 +106,6 @@ bool Niveau::jouer() {
 	unsigned nb_mouv = 0;
 	
 	while (!fin) {
-		// Affichage
-		afficher_carte(carte, 4, 8, help_mode ? &solveur2 : nullptr);
-		
 		// Etat des emplacements
 		int nb = 0, i = 0;
 		for (auto empl : carte->liste<moteur::Emplacement>()) {
@@ -117,10 +115,15 @@ bool Niveau::jouer() {
 				i++;
 		}
 		
-		infos << manip::eff_ligne << i << " / " << nb;
+		{ auto lck = console::lock();
+			// Affichage
+			afficher_carte(fut_chemin.valid() ? carte_aff : carte, 4, 8, help_mode ? &solveur2 : nullptr);
+			infos << manip::eff_ligne << i << " / " << nb;
+		}
 		
 		if (help_mode) {
 			unsigned h = solveur2.heuristique(carte, carte->personnage()->force());
+			auto lck = console::lock();
 			
 			#ifdef __gnu_linux__
 			infos << " " << (h == std::numeric_limits<unsigned>::max() ? "\xe2\x88\x9e" : to_string(h));
@@ -131,7 +134,11 @@ bool Niveau::jouer() {
 		
 		// Check future
 		if (fut_chemin.valid() && fut_chemin.wait_for(100ms) == std::future_status::ready) {
-			chemin = fut_chemin.get();
+			chemin    = fut_chemin.get();
+			carte_aff = nullptr;
+			
+			auto lck = console::lock();
+			std::cout << manip::coord(22 + carte->taille_x() * 2, 12) << chemin.longueur();
 		}
 		
 		// Touche
@@ -177,15 +184,16 @@ bool Niveau::jouer() {
 				// Ignoré si calcul déjà en cours
 				if (fut_chemin.valid()) break;
 				
-				// Choix de l'IA
-				do {
-					int num = 0;
-					
-					infos << manip::eff_ligne << "Quelle IA (1 ou 2) ? ";
-					std::cout << infos.coord() + manip::y;
-					std::cin >> num;
-					
-					switch (num) {
+				{ auto lck = console::lock();
+					// Choix de l'IA
+					do {
+						int num = 0;
+						
+						infos << manip::eff_ligne << "Quelle IA (1 ou 2) ? ";
+						std::cout << infos.coord() + manip::y;
+						std::cin >> num;
+						
+						switch (num) {
 						case 1:
 							ia = &solveur;
 							break;
@@ -193,46 +201,54 @@ bool Niveau::jouer() {
 						case 2:
 							ia = &solveur2;
 							break;
-					}
-				} while(!ia);
+						}
+					} while(!ia);
+					
+					// Copie de la carte pour maintenir l'affichage
+					carte_aff = std::make_shared<moteur::Carte>(*carte);
+					
+					// Execution
+					infos << manip::eff_ligne << style::jaune << "Calcul en cours ...";
+					fut_chemin = ia->async_resoudre(iastats);
+					infos << manip::eff_ligne << style::defaut;
+				}
 				
-				// Execution
-				infos << manip::eff_ligne << style::jaune << "Calcul en cours ...";
-				fut_chemin = ia->async_resoudre(iastats);
-				infos << manip::eff_ligne << style::defaut;
-				
-				std::cout << manip::coord(22 + carte->taille_x() * 2, 12) << chemin.longueur();
 				break;
 			
 			case 'r':
-				carte   = this->carte();
-				pers    = carte->personnage();
+				carte = this->carte();
+				pers  = carte->personnage();
 				solveur  = ia::Solveur( carte, pers);
 				solveur2 = ia::Solveur2(carte, pers);
 				
 				nb_mouv = 0;
-				mouvstream << manip::eff_ligne << nb_mouv;
+				{ auto lck = console::lock();
+					mouvstream << manip::eff_ligne << nb_mouv;
+				}
 				
 				break;
 			}
 		}
 		
-		// Effacement des erreurs précedantes
-		erreurs << manip::eff_ligne;
-		
-		// Action !
-		if (!fut_chemin.valid() && dir != Coord(0, 0)) {
-			if (pers->deplacer(dir)) {
-				std::cout << manip::buzz;
-				erreurs << style::souligne << "Mouvement impossible !";
-				erreurs.flush();
-			} else {
-				mouvstream << manip::eff_ligne << ++nb_mouv;
+		{ auto lck = console::lock();
+			// Effacement des erreurs précedantes
+			erreurs << manip::eff_ligne;
+			
+			// Action !
+			if (!fut_chemin.valid() && dir != Coord(0, 0)) {
+				if (pers->deplacer(dir)) {
+					std::cout << manip::buzz;
+					erreurs << style::souligne << "Mouvement impossible !";
+					erreurs.flush();
+				} else {
+					mouvstream << manip::eff_ligne << ++nb_mouv;
+				}
 			}
 		}
 		
 		// Test de fin
 		if (carte->test_fin()) {
+			auto lck = console::lock();
 			afficher_carte(carte, 4, 8);
 			
 			#ifdef __gnu_linux__

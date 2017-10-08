@@ -7,6 +7,7 @@
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
+#include "outils/console.hpp"
 #include "outils/manip.hpp"
 #include "outils/posstream.hpp"
 
@@ -54,6 +55,8 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 		
 		// A-t-on (enfin) trouvé ?
 		if (carte->test_fin()) {
+			auto lck = console::lock();
+			
 			// nb de noeuds traités
 			stream << manip::eff_ligne;
 			stream << noeuds_t << " / " << noeuds_at;
@@ -70,8 +73,17 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 			continue;
 		}
 		
-		// Arret en cas de deadlock
-		if (deadlock(carte)) continue;
+		// Ignoré en cas de deadlock
+		bool dl = false;
+		for (auto pt : carte->liste<moteur::Poussable>()) {
+			dl |= deadlock(carte, pt, obj, m_obj->force());
+			
+			if (dl) break;
+		}
+		
+		if (dl) {
+			continue;
+		}
 		
 		// Préparation des noeuds suivants
 		for (Coord m : mouvements(carte->get<moteur::Deplacable>(obj))) {
@@ -82,6 +94,7 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 		// Affichage
 		aff = (aff + 1) % MAJ_AFF;
 		if (!aff) {
+			auto lck = console::lock();
 			stream << manip::eff_ligne;
 			stream << noeuds_t << " / " << noeuds_at;
 		}

@@ -14,6 +14,7 @@
 #include "moteur/deplacable.hpp"
 #include "moteur/emplacement.hpp"
 #include "moteur/poussable.hpp"
+#include "outils/console.hpp"
 #include "outils/coord.hpp"
 #include "outils/manip.hpp"
 #include "outils/posstream.hpp"
@@ -114,7 +115,7 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 
 			c.ajouter(p.dir);
 
-			// Application du chemin & rajout du personnage
+			// Application du mouvement
 			carte->set(p.pos, pers);
 			carte->deplacer(p.pos, p.dir, m_obj->force());
 
@@ -124,11 +125,13 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 				continue;
 			}
 
-			// Ignoré en cas de deadlock
-			if (deadlock(carte)) continue;
-
+			// Ignoré si provoque un deadlock
+			if (deadlock(carte, carte->get<moteur::Poussable>(p.pos + 2 * p.dir), p.pos + p.dir, m_obj->force())) continue;
+			
 			// A-t-on (enfin) trouvé ?
 			if (carte->test_fin()) {
+				auto lck = console::lock();
+				
 				// nb de noeuds traités
 				stream << manip::eff_ligne;
 				stream << noeuds_t << " / " << noeuds_at;
@@ -156,6 +159,8 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 		// Affichage
 		aff = (aff + 1) % MAJ_AFF;
 		if (!aff) {
+			auto lck = console::lock();
+			
 			stream << manip::eff_ligne;
 			stream << noeuds_t << " / " << noeuds_at;
 		}

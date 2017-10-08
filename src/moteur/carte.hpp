@@ -26,10 +26,10 @@ class Carte {
 		
 		// Métafonctions
 		template<class T>
-		struct est_immuable : std::enable_if<std::is_base_of<Immuable,T>::type::value, std::shared_ptr<T>> {};
+		struct est_immuable : std::enable_if<std::is_base_of<Immuable,T>::type::value,std::shared_ptr<T>> {};
 		
 		template<class T>
-		struct est_deplacable : std::enable_if<std::is_base_of<Deplacable,T>::type::value, std::shared_ptr<T>> {};
+		struct est_deplacable : std::enable_if<std::is_base_of<Deplacable,T>::type::value,std::shared_ptr<T>> {};
 		
 		// Constructeur
 		Carte(int tx, int ty);

@@ -1,4 +1,7 @@
 // Importations
+#include <iostream>
+#include <mutex>
+
 #include "console.hpp"
 #include "manip.hpp"
 
@@ -114,4 +117,11 @@ int console::getch(bool bloc) { // récupère le caractère du clavier
 int console::kbhit() { // renvoi 0 ou 1
 	std::cin.clear();
 	return c::kbhit();
+}
+
+// Verrou d'affichage !
+static std::mutex VERROU;
+
+std::unique_lock<std::mutex> console::lock() {
+	return std::unique_lock<std::mutex>(VERROU);
 }
