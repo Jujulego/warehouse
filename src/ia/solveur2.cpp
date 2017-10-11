@@ -38,7 +38,7 @@ using namespace std::chrono;
 
 // Constructeur
 Solveur2::Solveur2(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Deplacable> const& obj)
-	: IA(carte, obj) {}
+	: IA(carte, obj), c_min_dist_empl(carte->taille_x() * carte->taille_y(), std::pair<Coord,int>(Coord(-1, -1), -1)) {}
 
 // Méthodes
 Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
@@ -47,33 +47,29 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 		std::shared_ptr<Noeud> noeud;
 		std::list<Poussee> poussees;
 		unsigned ordre;
-
+		
 		mutable unsigned _dist = 0;
-
+		
 		Etat(std::shared_ptr<Noeud> const& n, std::list<Poussee> const& p, unsigned o)
             : noeud(n), poussees(p), ordre(o) {}
-
+		
 		bool operator < (Etat const& e) const {
-			if (ordre == e.ordre) {
-				return dist() > e.dist();
-			}
-
 			return ordre > e.ordre;
 		}
-
+		
 		unsigned dist() const {
 			if (_dist == 0) {
 				_dist = noeud->chemin_complet().longueur();
 			}
-
+			
 			return _dist;
 		}
 	};
-
+	
 	// Initialisation
 	std::priority_queue<Etat> file;
 	HashTable historique;
-
+	
 	historique.insert(reduire(m_carte));
 	file.push(Etat(
 		std::make_shared<Noeud>(),
@@ -84,57 +80,60 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 	// Analyse statique
 	std::hash<Coord> hash(m_carte->taille_y());
 	std::vector<bool> zone_interdite = this->zone_interdite(m_carte, m_obj->coord());
-
+	
 	// Stats
 	steady_clock::time_point debut = steady_clock::now();
 	int noeuds_t = 0, noeuds_at = 1, aff = 0;
 	unsigned min_heu = std::numeric_limits<unsigned>::max();
-
+	
 	// Algo
 	while (!file.empty()) {
 		// Interruption ?
 		if (m_interruption) break;
-
+		
 		// Extraction du noeud suivant
 		Etat etat = file.top();
 		file.pop();
-
+		
 		// Infos ...
 		auto noeud = etat.noeud;
-
+		
 		// Stats ...
 		noeuds_t++;
-
+		
 		// Préparation des noeuds suivants
 		for (Poussee p : etat.poussees) {
 			Coord obj = m_obj->coord();
-
+			
+			// Check zone interdite
+			if (zone_interdite[hash(p.pos + 2 * p.dir)]) continue;
+			
 			// Calcul de la nouvelle carte
 			std::shared_ptr<moteur::Carte> carte = noeud->carte(m_carte, obj, m_obj->force());
-
+			
 			// Suppression du personnage
 			auto pers = carte->get<moteur::Deplacable>(obj);
 			carte->get<moteur::Immuable>(obj)->pop();
-
+			
 			// Calcul d'un chemin
 			Chemin c;
 			if (!trouver_chemin(carte, obj, p.pos, c)) continue;
-
+			
 			c.ajouter(p.dir);
-
+			
 			// Application du mouvement
 			carte->set(p.pos, pers);
 			carte->deplacer(p.pos, p.dir, m_obj->force());
-
+			Coord poussable = p.pos + 2*p.dir;
+			
 			// Ajout à l'historique
 			auto pair = historique.insert(reduire(carte));
 			if (!pair.second) { // Si la carte à déjà été traitée ...
 				continue;
 			}
-
+			
 			// Ignoré si provoque un deadlock
-			if (zone_interdite[hash(p.pos + 2 * p.dir)]) continue;
-			if (deadlock(carte, carte->get<moteur::Poussable>(p.pos + 2 * p.dir), p.pos + p.dir, m_obj->force())) continue;
+			if (deadlock(carte, carte->get<moteur::Poussable>(poussable), poussable - p.dir, m_obj->force())) continue;
 			
 			// A-t-on (enfin) trouvé ?
 			if (carte->test_fin()) {
@@ -143,21 +142,21 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 				// nb de noeuds traités
 				stream << manip::eff_ligne;
 				stream << ((double) noeuds_t) / noeuds_at * 100 << " % (" << noeuds_t << " / " << noeuds_at << ")";
-
+				
 				// temps passé
 				stream << " en " << duration_cast<milliseconds>(steady_clock::now() - debut).count() << " ms";
-
+				
 				// Calcul du chemin complet
 				Chemin chemin = noeud->chemin_complet();
 				chemin.ajouter(c);
-
+				
 				return chemin;
 			}
-
+			
 			// Ajout à la liste
 			file.push(Etat(
 				std::make_shared<Noeud>(c, noeud),
-				recup_poussees(carte, p.pos + p.dir),
+				recup_poussees(carte, poussable - p.dir, poussable),
 				heuristique(carte)
 			));
 
@@ -184,36 +183,36 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 unsigned Solveur2::heuristique(std::shared_ptr<moteur::Carte> const& carte) const {
 	// Evaluation des positions accessibles
 	std::hash<Coord> hash(carte->taille_y());
-
+	
 	// Recherche des emplacement && boites
 	std::vector<Coord> empl;
-
+	
 	for (auto pt : carte->liste<moteur::Emplacement>()) {
 		// Oh ! un emplacement ! ;)
 		empl.push_back(pt->coord());
 	}
-
+	
 	// Calcul des distances
 	// il y a tjs autant d'emplacements que de boites :
 	struct Boites {
 		std::vector<int> distances;
 		int mini = INFINI;
 		int nb = 0;
-
+		
 		Boites(unsigned t) : distances(t, INFINI) {};
-
+		
 		bool operator < (Boites const& b) const {
 			if (nb == b.nb) {
 				return mini > b.mini;
 			}
-
+			
 			return nb > b.nb;
 		}
-
+		
 		int get(unsigned i) const {
 			return distances[i];
 		}
-
+		
 		void set(unsigned i, int d) {
 			// Evolution du compte de distances
 			if (d != INFINI) {
@@ -221,252 +220,278 @@ unsigned Solveur2::heuristique(std::shared_ptr<moteur::Carte> const& carte) cons
 				mini = std::min(d, mini);
 			} else if (distances[i] != INFINI) {
 				--nb;
-
+				
 				for (auto v : distances) {
 					mini = std::min(v, mini);
 				}
 			}
-
+			
 			distances[i] = d;
 		}
-
+		
 		void suppr(unsigned i) {
 			set(i, INFINI);
 		}
-
+		
 		size_t size() const {
 			return distances.size();
 		}
 	};
-
+	
 	std::vector<Boites> distances(empl.size(), Boites(empl.size()));
 	unsigned i = 0;
-
-/*	auto print = [&] () -> void {
-		for (unsigned i = 0; i < empl.size(); i++) {
-			for (unsigned j = 0; j < empl.size(); j++) {
-				std::cout << manip::coord(40 + 3*i, 21 + j);
-				std::cout << "   ";
-				std::cout << manip::coord(40 + 3*i, 21 + j);
-
-				if (i < distances.size() && distances[i].get(j) != INFINI) {
-					std::cout << distances[i].get(j);
-				}
-			}
-		}
-	};*/
-
+	
 	for (auto pt : carte->liste<moteur::Poussable>()) {
-//		std::cout << manip::coord(37, 21 + i) << (char) (pt->coord().x() + 'A') << pt->coord().y();
-
+		auto dists = dists_empls(carte)[hash(pt->coord())];
+		
 		// Calcul !
 		for (unsigned j = 0; j < empl.size(); ++j) {
-//			Chemin chemin;
-//			if (!trouver_chemin(carte, pt->coord(), empl[j], chemin, force)) continue;
-
-//			distances[j].set(i, chemin.longueur());
-			distances[j].set(i, std::abs(pt->coord().x() - empl[j].x()) + std::abs(pt->coord().y() - empl[j].y()));
+			auto it = dists.find(empl[j]);
+			
+			if (it != dists.end()) {
+				distances[j].set(i, it->second);
+			}
 		}
-
+		
 		// incrementation !
 		++i;
 	}
-
+	
 	// Evaluation
 	std::sort(distances.begin(), distances.end());
 	unsigned r = 0;
-
+	
 	while (!distances.empty()) {
-/*		print();
-		std::cin.get();*/
-
 		auto dist = distances.back();
 		distances.pop_back();
-
+		
 		// Test !
 		if (dist.nb == 0) return std::numeric_limits<unsigned>::max(); // Niveau impossible !
-
+		
 		// Recherche du minimum
 		unsigned mini = dist.size();
-
+		
 		for (unsigned j = 0; j < dist.size(); ++j) {
 			if (mini == dist.size() || dist.get(mini) > dist.get(j)) {
 				mini = j;
 			}
 		}
-
+		
 		if (mini != dist.size()) {
 			r += dist.get(mini);
-
+			
 			// suppression des autres tableaux
 			for (unsigned j = 0; j < distances.size(); ++j) {
 				distances[j].suppr(mini);
 			}
-
+			
 			std::sort(distances.begin(), distances.end());
 		} else {
 			return std::numeric_limits<unsigned>::max();
 		}
 	}
-
+	
 	return r;
 }
 
-std::list<Solveur2::Poussee> Solveur2::recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
+std::list<Solveur2::Poussee> Solveur2::recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj, Coord const& prec) const {
 	// Evaluation des positions accessibles
 	std::vector<bool> zone = zone_accessible(carte, obj);
 	std::hash<Coord> hash(carte->taille_y());
-
+	
 	// Suppression du personnage
 	carte = std::make_shared<moteur::Carte>(*carte);
-
+	
 	auto pers = carte->get<moteur::Deplacable>(obj);
 	(*carte)[pers->coord()]->pop();
-
+	
 	// Parcours des boites:
 	std::list<Poussee> poussees;
-
+	
 	for (auto pt : carte->liste<moteur::Poussable>()) {
 		// Les 4 directions !
 		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
 			// La case du joueur
 			Coord pos = pt->coord() - dir;
-
+			
 			// Checks
 			if (!carte->coord_valides(pos)) continue; // valide ?
 			if (!zone[hash(pos)])           continue; // accessible ?
 			if (carte->deplacer(pt->coord(), dir, pers->force() - pt->poids(), true)) continue;
-
-			// Ajout
-			poussees.push_back({pos, dir});
+			
+			// Ajout trié
+//			if (pos + dir == prec) {
+//				poussees.push_front({pos, dir});
+//			} else {
+				poussees.push_back({pos, dir});
+//			}
+			poussees.sort([this,&carte] (Poussee const& p1, Poussee const& p2) -> bool {
+				return min_dist_empl(carte, p1.pos + p1.dir).second < min_dist_empl(carte, p2.pos + p2.dir).second;
+			});
 		}
 	}
-
+	
 	return poussees;
 }
 
-std::vector<bool> Solveur2::zone_interdite(std::shared_ptr<moteur::Carte> const& carte, Coord const& dep) const {
-	// Déclarations
-	std::vector<bool> marques(carte->taille_x() * carte->taille_y(), false);
-	std::vector<bool> zone(carte->taille_x() * carte->taille_y(), false);
-	std::hash<Coord> hash(carte->taille_y());
+bool Solveur2::est_tunnel(std::shared_ptr<moteur::Carte> const& carte, Coord const& pos, Coord const& dir) const {
+	bool tunnel = carte->get<moteur::Obstacle>(pos) != nullptr;
 	
-	auto test = [&] (Coord c, Coord dir, bool mur1, Coord dir1, bool mur2, Coord dir2) -> void {
-		Coord tmp = c + dir;
-		
-		std::list<Coord> cases;
-		bool inter = true;
-		
-		while (carte->coord_valides(tmp)) {
-			// On s'arrete sur un mur !
-			if (carte->get<moteur::Obstacle>(tmp)) break;
-			
-			// Emplacement
-			if (carte->get<moteur::Emplacement>(tmp)) inter = false;
-			
-			// Fin du mur suivi
-			if (mur1 && !carte->get<moteur::Obstacle>(tmp + dir1)) inter = false;
-			if (mur2 && !carte->get<moteur::Obstacle>(tmp + dir2)) inter = false;
-			
-			// Fin ?
-			if (inter) {
-				cases.push_back(tmp);
-				tmp += dir;
-			} else {
-				break;
-			}
-		}
-		
-		// Conclusion
-		if (inter) {
-			for (auto v : cases) {
-				zone[hash(v)] = true;
-			}
-		}
-	};
-	
-	// Initialisation
-	std::stack<Coord> pile;
-	
-	marques[hash(dep)] = true;
-	pile.push(dep);
-	
-	// DFS !
-	while (!pile.empty()) {
-		// Depilage
-		Coord c = pile.top();
-		pile.pop();
-		
-		// Marquage et empilage
-		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
-			// uniquement les espaces vides !
-			if (!carte->coord_valides(c + dir)) continue;
-			
-			if (!marques[hash(c + dir)] && !carte->get<moteur::Obstacle>(c + dir)) {
-				// Marquage
-				marques[hash(c+dir)] = true;
-				pile.push(c+dir);
-			}
-		}
-		
-		// Sauf si déjà notée interdite ...
-		if (zone[hash(c)]) continue;
-		if (carte->get<moteur::Emplacement>(c)) continue;
-		
-		// Test murs
-		bool mur_h = carte->coord_valides(c + HAUT)   && carte->get<moteur::Obstacle>(c + HAUT);   // un mur en haut ...
-		bool mur_b = carte->coord_valides(c + BAS)    && carte->get<moteur::Obstacle>(c + BAS);    // ... ou en bas ?
-		bool mur_g = carte->coord_valides(c + GAUCHE) && carte->get<moteur::Obstacle>(c + GAUCHE); // un mur a gauche ...
-		bool mur_d = carte->coord_valides(c + DROITE) && carte->get<moteur::Obstacle>(c + DROITE); // ... ou a droite ?
-		
-		// Coin !
-		if ((mur_h || mur_b) && (mur_g || mur_d)) {
-			zone[hash(c)] = true;
-			
-			// Vertical
-			if (mur_g ^ mur_d) { // gauche ou droite, pas les 2 !
-				test(c, mur_g ? DROITE : GAUCHE, mur_h, HAUT, mur_b, BAS);
-			}
-			
-			// Horizontal
-			if (mur_h ^ mur_b) { // haut ou bas, pas les 2 !
-				test(c, mur_h ? BAS : HAUT, mur_g, GAUCHE, mur_d, DROITE);
-			}
-		}
+	for (auto d : {HAUT, BAS, GAUCHE, DROITE}) {
+		if (dir == d || dir == -d) continue;
+		tunnel &= carte->get<moteur::Obstacle>(pos + d) != nullptr;
 	}
 	
-	return zone;
+	return tunnel;
 }
 
 std::vector<bool> Solveur2::zone_accessible(std::shared_ptr<moteur::Carte> const& carte, Coord const& obj) const {
 	// Déclarations
 	std::vector<bool> zone(carte->taille_x() * carte->taille_y(), false);
 	std::hash<Coord> hash(carte->taille_y());
-
+	
 	// Initialisation
 	std::stack<Coord> pile;
-
+	
 	zone[hash(obj)] = true;
 	pile.push(obj);
-
+	
 	// DFS !
 	while (!pile.empty()) {
 		// Depilage
 		Coord c = pile.top();
 		pile.pop();
-
+		
 		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
 			// Calcul coord suivantes
 			Coord nc = c + dir;
 			if (!carte->coord_valides(nc))   continue; // validité
 			if (!(*carte)[nc]->accessible()) continue; // accessibilité
 			if (zone[hash(nc)]) continue;              // marquage
-
+			
 			// Marquage et empilage
 			zone[hash(nc)] = true;
 			pile.push(nc);
 		}
 	}
+	
+	return zone;
+}
 
+std::pair<Coord,int> Solveur2::min_dist_empl(std::shared_ptr<moteur::Carte> const& carte, Coord const& pos) const {
+	// Déclarations
+	std::hash<Coord> hash(carte->taille_y());
+	
+	// Cache
+	if (c_min_dist_empl[hash(pos)].second != -1) return c_min_dist_empl[hash(pos)];
+	
+	// Evaluation du minimum
+	int mini = std::numeric_limits<int>::max();
+	Coord empl(-1, -1);
+	
+	for (auto p : dists_empls(carte)[hash(pos)]) {
+		if (mini > p.second) {
+			mini = p.second;
+			empl = p.first;
+		}
+	}
+	
+	// Enregistrement
+	c_min_dist_empl[hash(pos)] = std::pair<Coord,int>(empl, mini);
+	
+	return std::pair<Coord,int>(empl, mini);
+}
+
+std::vector<std::map<Coord,int>> Solveur2::dists_empls(std::shared_ptr<moteur::Carte> const& carte) const {
+	// Cache
+	if (c_dists_empls.size() != 0) return c_dists_empls;
+	
+	// Déclarations
+	std::hash<Coord> hash(carte->taille_y());
+	std::vector<std::map<Coord,int>> dists(
+		carte->taille_x() * carte->taille_y(),
+		std::map<Coord,int>(
+			std::less<Coord>(hash)
+		)
+	);
+	
+	// Parcours des emplacements
+	for (auto empl : carte->liste<moteur::Emplacement>()) {
+		// Init BFS
+		std::queue<Coord> file;
+		
+		dists[hash(empl->coord())][empl->coord()] = 0;
+		file.push(empl->coord());
+		
+		// Algo !
+		while (!file.empty()) {
+			// Défilage
+			Coord c = file.front();
+			file.pop();
+			
+			// Evalutation des suivants !
+			int nd = dists[hash(c)][empl->coord()] + 1;
+			
+			for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+				// Les 2 précédantes cases doivent être des espaces (pas mur), pour pouvoir réaliser une poussée
+				if (carte->get<moteur::Obstacle>(c - dir) || carte->get<moteur::Obstacle>(c - 2*dir)) {
+					continue; // suivant !
+				}
+				
+				// Marquage
+				auto p = dists[hash(c - dir)].emplace(empl->coord(), nd);
+				if (!p.second) continue; // Déjà traité !
+				
+				// Emfilage
+				file.push(c - dir);
+			}
+		}
+	}
+	
+	// Sauvegarde du résultat
+	c_dists_empls = dists;
+	
+	return dists;
+}
+
+std::vector<bool> Solveur2::zone_interdite(std::shared_ptr<moteur::Carte> const& carte, Coord const& dep) const {
+	// Cache
+	if (c_zone_interdite.size() != 0) return c_zone_interdite;
+	
+	// Déclarations
+	std::vector<bool> marques(carte->taille_x() * carte->taille_y(), false);
+	std::vector<bool> zone(carte->taille_x() * carte->taille_y(), false);
+	std::hash<Coord> hash(carte->taille_y());
+	
+	// DFS
+	std::stack<Coord> pile;
+	
+	marques[hash(dep)] = true;
+	pile.push(dep);
+	
+	while (!pile.empty()) {
+		// Dépilage
+		Coord c = pile.top();
+		pile.pop();
+		
+		// Interdite ?
+		zone[hash(c)] = dists_empls(carte)[hash(c)].size() == 0;
+		
+		// Suivants !
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			// Checks
+			if (!carte->coord_valides(c + dir)) continue; // validité
+			if (marques[hash(c + dir)])         continue; // marquage
+			if (carte->get<moteur::Obstacle>(c + dir) != nullptr) continue; // pas un mur
+			
+			// Empilage
+			marques[hash(c + dir)] = true;
+			pile.push(c + dir);
+		}
+	}
+	
+	// Sauvegarde du résultat
+	c_zone_interdite = zone;
+	
 	return zone;
 }

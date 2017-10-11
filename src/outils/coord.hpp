@@ -77,4 +77,21 @@ class hash<Coord> {
 		size_t m_miny;
 };
 
+template<>
+class less<Coord> {
+	public:
+		// Constructeur
+		less(std::hash<Coord> const& hash) : m_hash(hash) {}
+		less(size_t factx, size_t minx = 0, size_t miny = 0) : m_hash(factx, minx, miny) {}
+		
+		// Opérateur d'appel
+		bool operator () (Coord const& c1, Coord const& c2) const {
+			return m_hash(c1) < m_hash(c2);
+		}
+	
+	private:
+		// Attributs
+		std::hash<Coord> m_hash;
+};
+
 }
