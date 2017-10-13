@@ -18,12 +18,13 @@ function(generer_pro target)
 	set(SOURCES)
 	
 	foreach(src ${srcs})
-		get_source_file_property(est_header "${src_dir}/${src}" HEADER_FILE_ONLY)
+        string(REGEX MATCH "\.h(pp)?$" est_header ${src})
+#		get_source_file_property(est_header "${src_dir}/${src}" HEADER_FILE_ONLY)
 		
 		if (est_header)
-			string(APPEND HEADERS ${src_dir}/${src})
+			string(APPEND HEADERS "${src_dir}/${src} \\\n\t")
 		else()
-			string(APPEND SOURCES ${src_dir}/${src})
+			string(APPEND SOURCES "${src_dir}/${src} \\\n\t")
 		endif()
 	endforeach(src)
 	
