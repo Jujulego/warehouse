@@ -37,8 +37,8 @@ add_executable(warehouse
 	ia/solveur2.cpp
 	
 	# Executable !
-	carte.hpp
-	carte.cpp
+	affichage.hpp
+	affichage.cpp
 	fichierxsb.cpp
 	fichierxsb.hpp
 	main.cpp

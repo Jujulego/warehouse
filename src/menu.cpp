@@ -11,7 +11,7 @@
 #include "outils/posstream.hpp"
 #include "outils/style.hpp"
 
-#include "carte.hpp"
+#include "affichage.hpp"
 #include "menu.hpp"
 
 // Paramètres

@@ -3,10 +3,17 @@
 #include <iomanip>
 #include <iostream>
 
+#include <QApplication>
+#include <QLabel>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QTranslator>
+#include <QString>
+
 #include "outils/manip.hpp"
 #include "outils/style.hpp"
 
-#include "carte.hpp"
+#include "affichage.hpp"
 #include "fichierxsb.hpp"
 #include "menu.hpp"
 #include "niveau.hpp"
@@ -15,6 +22,26 @@
 void charger();
 
 // Main !
+#ifdef QTCREATOR
+int main(int argc, char* argv[]) {
+    // Initialiation de Qt
+    QApplication app(argc, argv);
+
+    // Traduction
+    QString locale = QLocale::system().name().section('_', 0, 0);
+    QTranslator translator;
+
+    translator.load(QString("qt_") + locale, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    app.installTranslator(&translator);
+
+    // Petite fenetre
+    QLabel label(" Bon courage ! ;) ");
+    label.show();
+
+    return app.exec();
+}
+
+#else
 int main() {
 	std::cout << std::boolalpha;
 	std::cout << std::setprecision(2);
@@ -29,6 +56,7 @@ int main() {
 	
 	return 0;
 }
+#endif
 
 void charger() {
 	// Nettoyage de l'ecran

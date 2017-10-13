@@ -20,7 +20,7 @@
 #include "outils/posstream.hpp"
 #include "outils/style.hpp"
 
-#include "carte.hpp"
+#include "affichage.hpp"
 
 #ifdef __gnu_linux__
 # define MUR    "\xe2\x97\x8b "

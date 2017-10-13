@@ -65,8 +65,8 @@
 		<Unit filename="src/ia/solveur.cpp" />
 		<Unit filename="src/ia/solveur2.hpp" />
 		<Unit filename="src/ia/solveur2.cpp" />
-		<Unit filename="src/carte.hpp" />
-		<Unit filename="src/carte.cpp" />
+		<Unit filename="src/affichage.hpp" />
+		<Unit filename="src/affichage.cpp" />
 		<Unit filename="src/fichierxsb.cpp" />
 		<Unit filename="src/fichierxsb.hpp" />
 		<Unit filename="src/main.cpp" />
