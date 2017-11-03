@@ -22,20 +22,6 @@
 
 #include "affichage.hpp"
 
-#ifdef __gnu_linux__
-# define MUR    "\xe2\x97\x8b "
-# define PERS   "\xe2\x98\xba "
-# define BOITE  "\xe2\x9a"
-# define EMPL   "\xe2\x9b\xb6 "
-# define SORTIE style::fvert << "  " << style::defaut
-#else
-# define MUR    "\xc4\xc4"
-# define PERS   ";)"
-# define BOITE  "#"
-# define EMPL   "[]"
-# define SORTIE style::fvert << "  " << style::defaut
-#endif
-
 // Fonctions
 std::string select_mur(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Obstacle> const& mur) {
 	static const std::array<std::string,16> murs = {

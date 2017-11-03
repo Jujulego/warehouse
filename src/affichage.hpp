@@ -3,11 +3,29 @@
 // Importations
 #include <memory>
 
-#include "ia/solveur2.hpp"
-#include "moteur/carte.hpp"
 #include "outils/coord.hpp"
+#include "moteur/carte.hpp"
+#include "moteur/obstacle.hpp"
+#include "ia/solveur2.hpp"
 
-// Prototype
+// Macros
+#ifdef __gnu_linux__
+# define MUR    "\xe2\x97\x8b "
+# define PERS   "\xe2\x98\xba "
+# define BOITE  "\xe2\x9a"
+# define EMPL   "[]"
+# define SORTIE style::fvert << "  " << style::defaut
+#else
+# define MUR    "\xc4\xc4"
+# define PERS   ";)"
+# define BOITE  "#"
+# define EMPL   "[]"
+# define SORTIE style::fvert << "  " << style::defaut
+#endif
+
+// Prototypes
+std::string select_mur(std::shared_ptr<moteur::Carte> const& carte, std::shared_ptr<moteur::Obstacle> const& mur);
+
 void afficher_entete(int x, int y);
 void afficher_entete(Coord const& c);
 

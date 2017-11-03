@@ -116,7 +116,6 @@ bool Niveau::jouer() {
 	ia::IA*      ia = nullptr;
 	ia::Chemin   chemin;
 
-	DevScreen devscreen(carte);
 	bool help_mode = false;
 	
 	std::hash<Coord> hash(carte->taille_y());
@@ -196,6 +195,7 @@ bool Niveau::jouer() {
 			
 			case 'q':
 				fin = true;
+				__attribute__((fallthrough));
 			
 			case 'i':
 				if (fut_chemin.valid()) {
@@ -205,7 +205,10 @@ bool Niveau::jouer() {
 				break;
 
 			case 'd':
-				devscreen.afficher();
+				if (fut_chemin.valid()) break;
+
+				DevScreen(carte).afficher();
+				__attribute__((fallthrough));
 
 			case 'l':
 				init_aff();
