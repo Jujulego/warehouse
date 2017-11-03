@@ -85,6 +85,7 @@ class Carte {
 		
 		// interaction jeu
 		bool deplacer(Coord const& c, Coord const& vecteur, int force, bool fake = false);
+		bool deplacer(Coord const& c, Coord const& vecteur, int force, int& push, bool fake = false);
 		bool test_fin() const;
 		
 		// Accesseurs

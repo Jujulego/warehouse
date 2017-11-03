@@ -15,7 +15,7 @@ CMAKE_OPTS =
 
 # Commandes
 RM    = rm -rf
-CMAKE = /usr/local/bin/cmake
+CMAKE = /usr/bin/cmake
 VALGRIND = valgrind
 
 # Options
@@ -64,7 +64,7 @@ clean:
 
 # Dossier $(BUILD)
 $(BUILD): CMakeLists.txt $(SRCS) $(TPLS)
-	echo "\033[35;01mConstruction du dossier $(BUILD)\033[m"
+	echo -e "\033[35;01mConstruction du dossier $(BUILD)\033[m"
 	[ -d "$(BUILD)" ] || mkdir -p $(BUILD)
 	cd $(BUILD); $(CMAKE) $(CMAKE_OPTS) ../..
 

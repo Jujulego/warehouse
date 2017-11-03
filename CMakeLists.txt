@@ -12,7 +12,7 @@ find_package(Doxygen)
 option(CLANG_ANALYSE "Analyse statique (Clang)."      ON)
 option(DOCUMENTATION "Crée et installe une API de documentation (Doxygen)." ON)
 option(GRAPHE_APPEL  "Génère un graphe d'appel."      ON)
-option(QT_ENABLE     "Compile l'interface graphique." OFF)
+option(QT_ENABLE     "Compile l'interface graphique." ON)
 
 #
 # Paramètres

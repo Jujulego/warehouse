@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "moteur/carte.hpp"
+#include "outils/posstream.hpp"
 
 // Classe
 class Niveau {
@@ -23,7 +24,16 @@ class Niveau {
 		std::map<std::string,std::string> const& infos() const;
 	
 	private:
+		// Méthodes
+		void init_aff();
+
 		// Attributs
 		std::shared_ptr<moteur::Carte> m_carte;
 		std::map<std::string,std::string> m_infos;
+
+		posstream<std::ostream> pushstream;
+		posstream<std::ostream> mouvstream;
+		posstream<std::ostream> infostream;
+		posstream<std::ostream> iastats;
+		posstream<std::ostream> erreurs;
 };

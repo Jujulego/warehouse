@@ -30,6 +30,8 @@ class Coord {
 		int& y();
 		int  x() const;
 		int  y() const;
+
+		void set(int x, int y);
 	
 	private:
 		// Attributs

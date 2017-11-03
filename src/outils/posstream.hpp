@@ -102,7 +102,7 @@ class posstream {
 		}
 
 		// Méthodes
-		CoordManip coord() {
+		CoordManip& coord() {
 			return m_coord;
 		}
 		

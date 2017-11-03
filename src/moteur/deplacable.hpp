@@ -20,6 +20,7 @@ class Deplacable : public Objet {
 		
 		// Méthodes
 		virtual bool deplacer(Coord const& vecteur, bool fake = false); //! Renvoie true en cas d'erreur (le mouvement n'est alors pas réalisé)
+		virtual bool deplacer(Coord const& vecteur, int& push, bool fake = false);
 		virtual std::shared_ptr<Deplacable> copie(Carte* carte) const;
 		
 		// Accesseurs

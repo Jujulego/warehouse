@@ -82,6 +82,11 @@ int Coord::y() const {
 	return m_y;
 }
 
+void Coord::set(int x, int y) {
+	m_x = x;
+	m_y = y;
+}
+
 // Opérateurs externes
 Coord operator * (int k, Coord const& c) {
 	return c * k;

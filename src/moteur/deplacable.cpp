@@ -14,7 +14,12 @@ Deplacable::Deplacable(Carte* carte, int force) : Objet(-1, -1), m_carte(carte),
 
 // Méthodes
 bool Deplacable::deplacer(Coord const& vecteur, bool fake) {
-	return m_carte->deplacer(coord(), vecteur, m_force, fake);
+	int p = false;
+	return m_carte->deplacer(coord(), vecteur, m_force, p, fake);
+}
+
+bool Deplacable::deplacer(Coord const& vecteur, int& push, bool fake) {
+	return m_carte->deplacer(coord(), vecteur, m_force, push, fake);
 }
 
 std::shared_ptr<Deplacable> Deplacable::copie(Carte* carte) const {

@@ -155,6 +155,14 @@ void Carte::set(int x, int y, std::shared_ptr<Objet> obj) {
 }
 
 bool Carte::deplacer(Coord const& c, Coord const& vecteur, int force, bool fake) {
+	int p = 0;
+	return deplacer(c, vecteur, force, p, fake);
+}
+
+bool Carte::deplacer(Coord const& c, Coord const& vecteur, int force, int& push, bool fake) {
+	// Décompte des poussées
+	push = 0;
+	
 	// Check coordonnees
 	Coord nc = c + vecteur;
 	if (!coord_valides(c))  return true;
@@ -171,7 +179,8 @@ bool Carte::deplacer(Coord const& c, Coord const& vecteur, int force, bool fake)
 		if (!pobj || (force < pobj->poids())) return true;
 		
 		// ... qu'on peut (peut-être) pousser !
-		if (deplacer(nc, vecteur, force - pobj->poids(), fake)) return true; // ou pas ;)
+		if (deplacer(nc, vecteur, force - pobj->poids(), push, fake)) return true; // ou pas ;)
+		++push;
 	}
 	
 	// Mouvement !

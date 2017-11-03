@@ -35,10 +35,12 @@ add_executable(warehouse
 	ia/solveur.cpp
 	ia/solveur2.hpp
 	ia/solveur2.cpp
-	
+
 	# Executable !
 	affichage.hpp
 	affichage.cpp
+	devscreen.hpp
+	devscreen.cpp
 	fichierxsb.cpp
 	fichierxsb.hpp
 	main.cpp
