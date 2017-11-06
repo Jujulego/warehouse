@@ -56,7 +56,7 @@ template<>
 class hash<Coord> {
 	public:
 		// Constructeur
-		hash(size_t factx, size_t minx = 0, size_t miny = 0) : m_factx(factx), m_minx(minx), m_miny(miny) {}
+		hash(size_t factx, size_t minx = 0, size_t miny = 0) : m_factx(factx), m_minx(-minx), m_miny(-miny) {}
 		
 		// Opérateur d'appel
 		size_t operator () (Coord const& c) const {

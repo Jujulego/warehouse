@@ -27,6 +27,7 @@ HEADERS += src/moteur/carte.hpp \
 	src/ia/noeud.hpp \
 	src/ia/solveur.hpp \
 	src/ia/solveur2.hpp \
+	src/ia/solveur3.hpp \
 	src/affichage.hpp \
 	src/devscreen.hpp \
 	src/fichierxsb.hpp \
@@ -53,6 +54,7 @@ SOURCES += src/moteur/carte.cpp \
 	src/ia/noeud.cpp \
 	src/ia/solveur.cpp \
 	src/ia/solveur2.cpp \
+	src/ia/solveur3.cpp \
 	src/affichage.cpp \
 	src/devscreen.cpp \
 	src/fichierxsb.cpp \

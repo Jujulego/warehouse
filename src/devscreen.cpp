@@ -1,4 +1,5 @@
 // Importations
+#include <array>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -19,14 +20,22 @@
 #include "moteur/poussable.hpp"
 #include "moteur/sortie.hpp"
 
+#include "ia/solveur3.hpp"
+
 #include "affichage.hpp"
 #include "devscreen.hpp"
 
 // Constructeur
 DevScreen::DevScreen(std::shared_ptr<moteur::Carte> carte)
-	: m_carte(std::make_shared<moteur::Carte>(*carte)) {
+	: hash(carte->taille_y()), m_carte(std::make_shared<moteur::Carte>(*carte)) {
 
-	m_pers = m_carte->personnage();
+	m_pers  = m_carte->personnage();
+	m_solv3 = new ia::Solveur3(m_carte, m_pers);
+}
+
+// Destructeur
+DevScreen::~DevScreen() {
+	delete m_solv3;
 }
 
 // Méthodes
@@ -62,8 +71,14 @@ void DevScreen::afficher() {
 			dir = DROITE;
 			break;
 
-		case 'd':
+		case 'a':
 			m_deplacables = !m_deplacables;
+			m_directions = false;
+			break;
+
+		case 'f':
+			m_directions = !m_directions;
+			m_deplacables = false;
 			break;
 
 		case 'p':
@@ -102,23 +117,30 @@ void DevScreen::reset_poussables() {
 	}
 
 	// Remise en place
+	bool p = false;
 	for (auto po : m_poussables) {
-		m_carte->set(po->coord(), po);
+		if (m_pers->coord() == po->coord()) {
+			p = true;
+		} else {
+			m_carte->set(po->coord(), po);
+		}
 	}
 
-	m_poussables.clear();
+	if (!p) m_poussables.clear();
 }
 
 void DevScreen::afficher_status() const {
 	// Initialisation
-	static Coord ref(max(5 + m_carte->taille_x() * 2 + 2, 30), 11);
+	static Coord ref(std::max(5 + m_carte->taille_x() * 2 + 4, 30), 11);
 	static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
-		{'D', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ", "Afficher les déplacables"}},
+		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ", "Afficher les déplacables"}},
+		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",     "Afficher les flèches"}},
 		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",  "Remettre les poussables"}},
 	};
 
 	// Affichage
 	posstream<std::ostream> stream(&std::cout, ref);
+	stream << "Commandes : " << 5 + m_carte->taille_x() * 2 + 4 << std::endl;
 	for (auto opt : options) {
 		stream << "- " << style::gras << opt.first << style::nongras << " : ";
 
@@ -135,6 +157,23 @@ void DevScreen::afficher_status() const {
 }
 
 void DevScreen::afficher_carte() const {
+	// Statiques !
+#ifndef __gnu_linux__
+	static const std::array<std::string,16> fleches = {
+		"  ", " >", " <", " x",
+		"v ", "v>", "v<", "vx",
+		"^ ", "^>", "^<", "^x",
+		"x ", "x>", "x<", "xx"
+	};
+#else
+	static const std::array<std::string,16> fleches = {
+		"  ", " →", " ←", " ↔",
+		"↓ ", "↓→", "↓←", "↓↔",
+		"↑ ", "↑→", "↑←", "↑↔",
+		"↕ ", "↕→", "↕←", "↕↔"
+	};
+#endif
+
 	// Initialisation
 	auto ref = manip::coord(5, 9);
 	
@@ -173,11 +212,13 @@ void DevScreen::afficher_carte() const {
 		} else {
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
 				std::cout << st << select_mur(m_carte, std::dynamic_pointer_cast<moteur::Obstacle>(obj));
+			} else if (std::dynamic_pointer_cast<moteur::Sortie>(obj)) {
+				std::cout << st << SORTIE;
+			} else if (m_directions) {
+				std::cout << st << fleches[m_solv3->infos_cases(m_carte)[hash(obj->coord())].directions];
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);
 				std::cout << st << EMPL;
-			} else if (std::dynamic_pointer_cast<moteur::Sortie>(obj)) {
-				std::cout << st << SORTIE;
 			} else {
 				std::cout << st << "  ";
 			}

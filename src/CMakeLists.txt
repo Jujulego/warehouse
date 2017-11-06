@@ -35,6 +35,8 @@ add_executable(warehouse
 	ia/solveur.cpp
 	ia/solveur2.hpp
 	ia/solveur2.cpp
+	ia/solveur3.hpp
+	ia/solveur3.cpp
 
 	# Executable !
 	affichage.hpp
