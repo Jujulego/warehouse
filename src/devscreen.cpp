@@ -73,12 +73,38 @@ void DevScreen::afficher() {
 
 		case 'a':
 			m_deplacables = !m_deplacables;
-			m_directions = false;
+			m_directions  = false;
+			m_tunnels     = false;
+			m_zones_empls = false;
+			break;
+
+		case 'c':
+			m_poussees = !m_poussees;
+			m_directions  = false;
+			m_tunnels     = false;
+			m_zones_empls = false;
+			m_zone_access = false;
+			m_deplacables = true;
 			break;
 
 		case 'f':
 			m_directions = !m_directions;
 			m_deplacables = false;
+			m_tunnels     = false;
+			m_zones_empls = false;
+			m_zone_access = false;
+			break;
+
+		case 'g':
+			m_zones_empls = !m_zones_empls;
+			m_poussees    = false;
+			m_deplacables = false;
+			m_directions  = false;
+			m_zone_access = false;
+			break;
+
+		case 'i':
+			m_zone_interdite = !m_zone_interdite;
 			break;
 
 		case 'p':
@@ -91,6 +117,26 @@ void DevScreen::afficher() {
 
 		case 'q':
 			continuer = false;
+			break;
+
+		case 's':
+			m_stone_reachable = !m_stone_reachable;
+			break;
+
+		case 't':
+			m_tunnels = !m_tunnels;
+			m_poussees    = false;
+			m_deplacables = false;
+			m_directions  = false;
+			m_zone_access = false;
+			break;
+
+		case 'z':
+			m_zone_access = !m_zone_access;
+			m_deplacables = true;
+			m_directions  = false;
+			m_tunnels     = false;
+			m_zones_empls = false;
 			break;
 		}
 
@@ -131,16 +177,22 @@ void DevScreen::reset_poussables() {
 
 void DevScreen::afficher_status() const {
 	// Initialisation
-	static Coord ref(std::max(5 + m_carte->taille_x() * 2 + 4, 30), 11);
 	static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
-		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ", "Afficher les déplacables"}},
-		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",     "Afficher les flèches"}},
-		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",  "Remettre les poussables"}},
+		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ",    "Afficher les déplacables"}},
+		{'C', {[] (DevScreen const& ds) { return ds.m_poussees; },               "Cacher les poussees  ",       "Afficher les poussees"}},
+		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",        "Afficher les flèches"}},
+		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",    "Afficher les zones empls"}},
+		{'I', {[] (DevScreen const& ds) { return ds.m_zone_interdite;  },        "Cacher la zone interdite  ",  "Afficher la zone interdite"}},
+		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",     "Remettre les poussables"}},
+		{'S', {[] (DevScreen const& ds) { return ds.m_stone_reachable;  },       "Cacher la zone SR  ",         "Afficher la zone SR"}},
+		{'T', {[] (DevScreen const& ds) { return ds.m_tunnels;  },               "Cacher les tunnels  ",        "Afficher les tunnels"}},
+		{'Z', {[] (DevScreen const& ds) { return ds.m_zone_access;  },           "Cacher la zone accessible  ", "Afficher la zone accessible"}},
 	};
 
 	// Affichage
+	Coord ref(std::max(5 + m_carte->taille_x() * 2 + 4, 30), 9);
 	posstream<std::ostream> stream(&std::cout, ref);
-	stream << "Commandes : " << 5 + m_carte->taille_x() * 2 + 4 << std::endl;
+	stream << "Commandes : " << std::endl;
 	for (auto opt : options) {
 		stream << "- " << style::gras << opt.first << style::nongras << " : ";
 
@@ -167,32 +219,34 @@ void DevScreen::afficher_carte() const {
 	};
 #else
 	static const std::array<std::string,16> fleches = {
-		"  ", " →", " ←", " ↔",
-		"↓ ", "↓→", "↓←", "↓↔",
-		"↑ ", "↑→", "↑←", "↑↔",
-		"↕ ", "↕→", "↕←", "↕↔"
+		"  ", " →", "← ", " ↔",
+		"↓ ", "↓→", "←↓", "↓↔",
+		"↑ ", "↑→", "←↑", "↑↔",
+		"↕ ", "↕→", "←↕", "↕↔"
 	};
 #endif
 
 	// Initialisation
+	std::vector<unsigned char> poussees = m_solv3->poussees(m_carte, m_pers->coord());
+	std::vector<bool> zone = m_solv3->zone_accessible(m_carte, m_pers->coord());
 	auto ref = manip::coord(5, 9);
-	
+
 	// Affichage des objets
 	for (auto obj : *m_carte) {
 		std::cout << ref + obj->coord() + manip::x * obj->coord().x();
 		auto dobj = obj->get();
 		Style st;
-		
+
 		if (dobj && m_deplacables) {
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
-			
+
 			if (pobj) {
 				if (m_carte->get<moteur::Emplacement>(pobj->coord())) {
 					st.txt(style::VERT);
 				} else {
 					st.txt(style::JAUNE);
 				}
-				
+
 				#ifdef __gnu_linux__
 				if (pobj->poids() <= 6) {
 					std::string s = BOITE;
@@ -210,21 +264,54 @@ void DevScreen::afficher_carte() const {
 				std::cout << st << PERS << style::defaut;
 			}
 		} else {
+			// Style
+			if (m_zone_interdite && m_solv3->zone_interdite(obj->coord())) {
+				st.fnd(style::ROUGE);
+			}
+
+			if (m_stone_reachable && m_solv3->infos_cases(obj->coord()).stone_reachable) {
+				if (st.fnd() == style::ROUGE) {
+					st.fnd(style::VIOLET);
+				} else {
+					st.fnd(style::CYAN);
+				}
+			}
+
+			// Affichage
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
 				std::cout << st << select_mur(m_carte, std::dynamic_pointer_cast<moteur::Obstacle>(obj));
+
 			} else if (std::dynamic_pointer_cast<moteur::Sortie>(obj)) {
 				std::cout << st << SORTIE;
+
 			} else if (m_directions) {
-				std::cout << st << fleches[m_solv3->infos_cases(m_carte)[hash(obj->coord())].directions];
+				std::cout << st << fleches[m_solv3->infos_cases(obj->coord()).directions];
+
+			} else if (m_poussees && poussees[hash(obj->coord())]) {
+				std::cout << st << fleches[poussees[hash(obj->coord())]];
+
+			} else if (m_zones_empls && m_solv3->zones_empls(obj->coord())) {
+				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::JAUNE);
+				std::cout << st << "G" << m_solv3->zones_empls(obj->coord());
+
+			} else if (m_tunnels && m_solv3->infos_cases(obj->coord()).tunnel) {
+				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::VIOLET);
+				std::cout << st << "TT";
+
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);
 				std::cout << st << EMPL;
+
+			} else if (m_zone_access && zone[hash(obj->coord())]) {
+				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::CYAN);
+				std::cout << st << "--";
+
 			} else {
 				std::cout << st << "  ";
 			}
 		}
 	}
-	
+
 	// Reset style
 	std::cout << style::defaut;
 }

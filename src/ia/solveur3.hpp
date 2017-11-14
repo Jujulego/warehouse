@@ -17,21 +17,32 @@
 // Namespace
 namespace ia {
 
+// Prototype
+unsigned char get_mask(Coord const& dir);
+
 // Classe
 class Solveur3 : public IA {
 	public:
 		// Structure
 		struct Infos {
 			// Attributs
-			unsigned char directions = 0;  // Directions interressantes
-			std::map<Coord,int> distances; // Distance aux emplacements
+			bool coin = false;
+			bool tunnel = false;
+			bool interieur = false;       // A l'intérieur des murs
+			bool stone_reachable = false; // Atteignable par un poussable
+
+			unsigned char directions = 0;            // Directions vers tous les emplacements
+			std::map<Coord,int> distances;           // Distance aux emplacements
+			std::map<Coord,unsigned char> empl_dirs; // Directions aux emplacements
 
 			// Constructeur
-			Infos(size_t factx) : distances(std::less<Coord>(factx)) {}
+			Infos(size_t factx) : distances(std::less<Coord>(factx)), empl_dirs(std::less<Coord>(factx)) {}
 
 			// Methodes
-			void ajouter(Coord const& dir);
+			void ajouter(Coord const& empl, Coord const& dir);
+
 			bool test(Coord const& dir) const;
+			bool test(Coord const& empl, Coord const& dir) const;
 		};
 
 		// Constructeur
@@ -40,12 +51,28 @@ class Solveur3 : public IA {
 		// Méthodes
 		virtual Chemin resoudre(posstream<std::ostream>& stream) override;
 
+		// Outils
 		// - analyse statique
-		std::vector<Infos> infos_cases(std::shared_ptr<moteur::Carte> carte) const;
+		std::vector<Infos> const& infos_cases() const;
+		std::vector<bool> const& zone_interdite() const;
+		std::vector<int> const& zones_empls() const;
+
+		Infos const& infos_cases(Coord const& c) const;
+		bool zone_interdite(Coord const& c) const;
+		int const& zones_empls(Coord const& c) const;
+
+		// - analyse dynamique
+		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
+		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 
 	private:
+		// Attributs
+		std::hash<Coord> hash;
+
 		// Cache
 		mutable std::vector<Infos> c_infos;
+		mutable std::vector<bool> c_zone_interdite;
+		mutable std::vector<int> c_zones_empls;
 };
 
 } // ia

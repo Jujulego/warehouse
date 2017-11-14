@@ -388,8 +388,9 @@ std::pair<Coord,int> Solveur2::min_dist_empl(std::shared_ptr<moteur::Carte> cons
 	// Evaluation du minimum
 	int mini = std::numeric_limits<int>::max();
 	Coord empl(-1, -1);
-	
-	for (auto p : dists_empls(carte)[hash(pos)]) {
+
+	auto de = dists_empls(carte);
+	for (auto p : de[hash(pos)]) {
 		if (mini > p.second) {
 			mini = p.second;
 			empl = p.first;

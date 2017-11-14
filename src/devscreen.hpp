@@ -32,8 +32,14 @@ class DevScreen {
 
 		// Attributs
 		std::hash<Coord> hash;
-		bool m_deplacables = true;
-		bool m_directions  = false;
+		bool m_deplacables    = true;
+		bool m_directions     = false;
+		bool m_zone_interdite = false;
+		bool m_zone_access    = true;
+		bool m_poussees       = false;
+		bool m_tunnels        = false;
+		bool m_stone_reachable = false;
+		bool m_zones_empls    = false;
 
 		ia::Solveur3* m_solv3;
 		std::shared_ptr<moteur::Carte> m_carte;

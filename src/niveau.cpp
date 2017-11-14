@@ -119,7 +119,6 @@ bool Niveau::jouer() {
 	bool help_mode = false;
 	
 	std::hash<Coord> hash(carte->taille_y());
-	int prev_nb_empl = 0, nb_empl = 0;
 	
 	// Futurs
 	std::future<ia::Chemin> fut_chemin;
@@ -290,32 +289,6 @@ bool Niveau::jouer() {
 						pushstream << manip::eff_ligne << nb_push;
 					}
 				}
-			}
-			
-			// Distances aux emplacements
-			auto dep  = manip::coord(5, max(15 + carte->taille_y(), 23));
-			auto mini = solveur2.min_dist_empl(carte, pers->coord());
-			prev_nb_empl = nb_empl;
-			nb_empl = 0;
-			
-			for (auto p : solveur2.dists_empls(carte)[hash(pers->coord())]) {
-				std::cout << dep - 2*manip::x << " ";
-				if (mini.first == p.first) std::cout << dep - 2*manip::x << '>' << style::souligne;
-				
-				std::cout << dep << style::gras << (char) (p.first.x() + 'A') << p.first.y() << style::nongras << " " << p.second;
-				
-				if (mini.first == p.first) std::cout << style::nonsouligne;
-				
-				std::cout << "  ";
-				
-				dep += manip::y;
-				nb_empl++;
-			}
-			
-			while (nb_empl < prev_nb_empl) {
-				std::cout << dep - 2*manip::x << "          ";
-				dep += manip::y;
-				nb_empl++;
 			}
 		}
 		
