@@ -248,22 +248,66 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 	}
 
 	// Retour sur les intersections
+	std::vector<Coord> est_inter(m_carte->taille_x() * m_carte->taille_y(), ORIGINE);
+
 	for (auto c : inter) {
 		// tunnel si tunnel dans la direction opposée à l'obstacle ou tunnel sur les 2 autres côtés
 		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
 			// Checks
 			if (m_carte->coord_valides(c + dir) && !m_carte->get<moteur::Obstacle>(c + dir)) continue; // Coordonnées valides et pas un obstacle
+			est_inter[hash(c)] = dir;
 
 			// Tunnel ?
 			if (c_infos[hash(c - dir)].tunnel) {
 				c_infos[hash(c)].tunnel = true;
+				c_infos[hash(c)].porte  = false;
+
 			} else if (dir == HAUT || dir == BAS) {
 				c_infos[hash(c)].tunnel = c_infos[hash(c + DROITE)].tunnel && c_infos[hash(c + GAUCHE)].tunnel;
+
 			} else if (dir == GAUCHE || dir == DROITE) {
 				c_infos[hash(c)].tunnel = c_infos[hash(c + HAUT)].tunnel && c_infos[hash(c + BAS)].tunnel;
 			}
 
 			break; // Une seule direction vérifie le test
+		}
+	}
+
+	// Détection des portes
+	for (auto c : inter) {
+		// Porte si 2 intersections voisines sont de directions opposées
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			Coord nc = c + dir;
+
+			// Checks
+			if (dir  == est_inter[hash(c)]) continue;     // direction interdite (obstacle ou coord invalide)
+			if (-dir == est_inter[hash(c)]) continue;     // Uniquement sur les côtés
+			if (est_inter[hash(nc)] == ORIGINE) continue; // pas une intersection !
+			if (c_infos[hash(c)].tunnel && c_infos[hash(nc)].tunnel) continue; // Pas de porte au millieu d'un tunnel
+
+			// Test
+			c_infos[hash(c)].porte = (est_inter[hash(c)] == -est_inter[hash(nc)]);
+
+			if (c_infos[hash(c)].porte) break;
+		}
+	}
+
+	for (int h = 0; h < m_carte->taille_x() * m_carte->taille_y(); ++h) {
+		Coord c = hash.unhash(h);
+
+		// Check
+		if (!c_infos[h].interieur) continue;
+
+		for (auto dir : {HAUT, BAS, GAUCHE, HAUT}) {
+			Coord nc = c + dir;
+
+			// Checks
+			if (!m_carte->coord_valides(nc)) continue;  // Coordonnées invalides
+			if (!c_infos[hash(nc)].interieur) continue; // A l'interieur du labyrinthe
+
+			// Porte ?
+			c_infos[h].porte |= c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel;
+			c_infos[hash(nc)].porte |= c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel;
 		}
 	}
 
@@ -314,7 +358,23 @@ std::vector<int> const& Solveur3::zones_empls() const {
 
 				// Checks
 				if (!m_carte->coord_valides(nc))        continue; // Coordonnées invalides
+
+				// Fusion de zones
+				if (c_zones_empls[hash(nc)] != 0 && c_zones_empls[hash(nc)] != num) {
+					int z1, z2;
+
+					z1 = std::min(num, c_zones_empls[hash(nc)]);
+					z2 = std::max(num, c_zones_empls[hash(nc)]);
+
+					std::replace(c_zones_empls.begin(), c_zones_empls.end(), z2, z1);
+					num = z1;
+
+					continue;
+				}
+
+				// Checks
 				if (m_carte->get<moteur::Obstacle>(nc)) continue; // La case n'est pas un espace libre
+				if (infos[hash(c)].porte && infos[hash(nc)].porte) continue; // On ne passe pas une porte
 				if (infos[hash(nc)].tunnel && !m_carte->get<moteur::Emplacement>(nc)) continue; // La case est un tunnel mais pas un emplacement
 
 				// Marque

@@ -74,6 +74,7 @@ void DevScreen::afficher() {
 		case 'a':
 			m_deplacables = !m_deplacables;
 			m_directions  = false;
+			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
 			break;
@@ -81,15 +82,25 @@ void DevScreen::afficher() {
 		case 'c':
 			m_poussees = !m_poussees;
 			m_directions  = false;
+			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
 			m_zone_access = false;
 			m_deplacables = true;
 			break;
 
+		case 'd':
+			m_portes = !m_portes;
+			m_poussees    = false;
+			m_deplacables = false;
+			m_directions  = false;
+			m_zone_access = false;
+			break;
+
 		case 'e':
 			m_priorites = !m_priorites;
 			m_directions  = false;
+			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
 			m_zone_access = false;
@@ -99,6 +110,7 @@ void DevScreen::afficher() {
 		case 'f':
 			m_directions = !m_directions;
 			m_deplacables = false;
+			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
 			m_zone_access = false;
@@ -144,6 +156,7 @@ void DevScreen::afficher() {
 			m_zone_access = !m_zone_access;
 			m_deplacables = true;
 			m_directions  = false;
+			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
 			break;
@@ -189,6 +202,7 @@ void DevScreen::afficher_status() const {
 	static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
 		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ",    "Afficher les déplacables"}},
 		{'C', {[] (DevScreen const& ds) { return ds.m_poussees; },               "Cacher les poussees  ",       "Afficher les poussees"}},
+		{'D', {[] (DevScreen const& ds) { return ds.m_portes; },                 "Cacher les portes  ",         "Afficher les portes"}},
 		{'E', {[] (DevScreen const& ds) { return ds.m_priorites;  },             "Cacher les priorités  ",      "Afficher les priorités"}},
 		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",        "Afficher les flèches"}},
 		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",    "Afficher les zones empls"}},
@@ -307,6 +321,10 @@ void DevScreen::afficher_carte() const {
 			} else if (m_tunnels && m_solv3->infos_cases(obj->coord()).tunnel) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::VIOLET);
 				std::cout << st << "TT";
+
+			} else if (m_portes && m_solv3->infos_cases(obj->coord()).porte) {
+				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::BLEU);
+				std::cout << st << "PP";
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);

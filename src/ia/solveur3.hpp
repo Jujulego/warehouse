@@ -29,6 +29,7 @@ class Solveur3 : public IA {
 			bool coin = false;
 			bool culdesac = false;
 			bool tunnel = false;
+			bool porte  = false;          // Séparation entre une salle et une autre ou une salle et un tunnel
 			bool interieur = false;       // A l'intérieur des murs
 			bool stone_reachable = false; // Atteignable par un poussable
 
