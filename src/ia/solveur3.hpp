@@ -27,6 +27,7 @@ class Solveur3 : public IA {
 		struct Infos {
 			// Attributs
 			bool coin = false;
+			bool culdesac = false;
 			bool tunnel = false;
 			bool interieur = false;       // A l'intérieur des murs
 			bool stone_reachable = false; // Atteignable par un poussable
@@ -56,10 +57,12 @@ class Solveur3 : public IA {
 		std::vector<Infos> const& infos_cases() const;
 		std::vector<bool> const& zone_interdite() const;
 		std::vector<int> const& zones_empls() const;
+		std::vector<int> const& ordre_empls() const;
 
 		Infos const& infos_cases(Coord const& c) const;
 		bool zone_interdite(Coord const& c) const;
 		int const& zones_empls(Coord const& c) const;
+		int const& ordre_empls(Coord const& c) const;
 
 		// - analyse dynamique
 		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
@@ -73,6 +76,7 @@ class Solveur3 : public IA {
 		mutable std::vector<Infos> c_infos;
 		mutable std::vector<bool> c_zone_interdite;
 		mutable std::vector<int> c_zones_empls;
+		mutable std::vector<int> c_ordre_empls;
 };
 
 } // ia

@@ -37,6 +37,7 @@ class DevScreen {
 		bool m_zone_interdite = false;
 		bool m_zone_access    = true;
 		bool m_poussees       = false;
+		bool m_priorites      = false;
 		bool m_tunnels        = false;
 		bool m_stone_reachable = false;
 		bool m_zones_empls    = false;

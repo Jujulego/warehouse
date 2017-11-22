@@ -87,6 +87,15 @@ void DevScreen::afficher() {
 			m_deplacables = true;
 			break;
 
+		case 'e':
+			m_priorites = !m_priorites;
+			m_directions  = false;
+			m_tunnels     = false;
+			m_zones_empls = false;
+			m_zone_access = false;
+			m_deplacables = false;
+			break;
+
 		case 'f':
 			m_directions = !m_directions;
 			m_deplacables = false;
@@ -180,6 +189,7 @@ void DevScreen::afficher_status() const {
 	static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
 		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ",    "Afficher les déplacables"}},
 		{'C', {[] (DevScreen const& ds) { return ds.m_poussees; },               "Cacher les poussees  ",       "Afficher les poussees"}},
+		{'E', {[] (DevScreen const& ds) { return ds.m_priorites;  },             "Cacher les priorités  ",      "Afficher les priorités"}},
 		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",        "Afficher les flèches"}},
 		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",    "Afficher les zones empls"}},
 		{'I', {[] (DevScreen const& ds) { return ds.m_zone_interdite;  },        "Cacher la zone interdite  ",  "Afficher la zone interdite"}},
@@ -300,7 +310,11 @@ void DevScreen::afficher_carte() const {
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);
-				std::cout << st << EMPL;
+				if (m_priorites) {
+					std::cout << st << m_solv3->ordre_empls(obj->coord()) << ' ';
+				} else {
+					std::cout << st << EMPL;
+				}
 
 			} else if (m_zone_access && zone[hash(obj->coord())]) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::CYAN);
