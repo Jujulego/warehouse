@@ -1,5 +1,6 @@
 // Importations
 #include <algorithm>
+#include <functional>
 #include <list>
 #include <map>
 #include <memory>
@@ -467,48 +468,62 @@ std::vector<bool> Solveur3::zone_atteignable(std::shared_ptr<moteur::Carte> cart
 	// Initialisation
 	std::vector<bool> resultat(carte->taille_x() * carte->taille_y(), false);
 
-	// Checks
+	// Extraction du poussable obj
 	std::shared_ptr<moteur::Poussable> pous = carte->get<moteur::Poussable>(obj);
 	if (pous == nullptr) return resultat;
+	(*carte)[obj]->pop();
 
 	// Extraction du personnage
 	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
 	(*carte)[pers->coord()]->pop();
 
 	// Init BFS
-	std::queue<Coord> file;
+	std::map<std::pair<Coord,Coord>,bool,std::function<bool(std::pair<Coord,Coord> const&,std::pair<Coord,Coord> const&)>> marques(
+		[this] (std::pair<Coord,Coord> const& p1, std::pair<Coord,Coord> const& p2) {
+			return (hash(p1.first) == hash(p2.first)) ? (hash(p1.second) < hash(p2.second)) : (hash(p1.first) < hash(p2.first));
+		}
+	);
+	std::queue<std::pair<Coord,Coord>> file;
 	resultat[hash(obj)] = true;
-	file.push(obj);
+	file.push({obj, pers->coord()});
 
 	// Algo !
 	while (!file.empty()) {
 		// Défilage
-		Coord c = file.front();
+		Coord c = file.front().first;
+		Coord p = file.front().second;
 		file.pop();
+
+		// Calcul zone accessible
+		carte->set(c, std::make_shared<moteur::Poussable>(carte.get(), pous->poids()));
+		std::vector<bool> z = zone_accessible(carte, p);
+		(*carte)[c]->pop();
 
 		// Evalutation des suivants !
 		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
 			Coord nc = c + dir;
 
 			// La case précédante est accessible
-			if (!m_carte->coord_valides(c - dir))                       continue; // validité
-			if ((c - dir != obj) && !(*m_carte)[c - dir]->accessible()) continue; // accessibilité
+			if (!m_carte->coord_valides(c - dir)) continue; // validité
+			if (!z[hash(c - dir)])                continue; // accessibilité
 
 			// Mouvement possible ?
-			if (!m_carte->coord_valides(nc))                  continue; // validité
-			if ((nc != obj) && !(*m_carte)[nc]->accessible()) continue; // accessibilité
+			if (!m_carte->coord_valides(nc))   continue; // validité
+			if (!(*m_carte)[nc]->accessible()) continue; // accessibilité
 
 			// Marquage
-			if (resultat[hash(nc)]) continue; // Déjà traité !
+			if (marques[{nc, c}]) continue; // Déjà traité !
+			marques[{nc, c}] = true;
 			resultat[hash(nc)] = true;
 
 			// Enfilage
-			file.push(nc);
+			file.push({nc, c});
 		}
 	}
 
 	// Retour du personnage
 	carte->set(pers->coord(), pers);
+	carte->set(obj, pous);
 
 	return resultat;
 }
