@@ -74,6 +74,7 @@ void DevScreen::afficher() {
 		case 'a':
 			m_deplacables = !m_deplacables;
 			m_directions  = false;
+			m_intersections = false;
 			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
@@ -82,6 +83,7 @@ void DevScreen::afficher() {
 		case 'c':
 			m_poussees = !m_poussees;
 			m_directions  = false;
+			m_intersections = false;
 			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
@@ -100,6 +102,7 @@ void DevScreen::afficher() {
 		case 'e':
 			m_priorites = !m_priorites;
 			m_directions  = false;
+			m_intersections = false;
 			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
@@ -110,6 +113,7 @@ void DevScreen::afficher() {
 		case 'f':
 			m_directions = !m_directions;
 			m_deplacables = false;
+			m_intersections = false;
 			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
@@ -118,6 +122,14 @@ void DevScreen::afficher() {
 
 		case 'g':
 			m_zones_empls = !m_zones_empls;
+			m_poussees    = false;
+			m_deplacables = false;
+			m_directions  = false;
+			m_zone_access = false;
+			break;
+
+		case 'h':
+			m_intersections = !m_intersections;
 			m_poussees    = false;
 			m_deplacables = false;
 			m_directions  = false;
@@ -156,6 +168,7 @@ void DevScreen::afficher() {
 			m_zone_access = !m_zone_access;
 			m_deplacables = true;
 			m_directions  = false;
+			m_intersections = false;
 			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
@@ -206,6 +219,7 @@ void DevScreen::afficher_status() const {
 		{'E', {[] (DevScreen const& ds) { return ds.m_priorites;  },             "Cacher les priorités  ",      "Afficher les priorités"}},
 		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",        "Afficher les flèches"}},
 		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",    "Afficher les zones empls"}},
+		{'H', {[] (DevScreen const& ds) { return ds.m_intersections;  },         "Cacher les intersections  ",  "Afficher les intersections"}},
 		{'I', {[] (DevScreen const& ds) { return ds.m_zone_interdite;  },        "Cacher la zone interdite  ",  "Afficher la zone interdite"}},
 		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",     "Remettre les poussables"}},
 		{'S', {[] (DevScreen const& ds) { return ds.m_stone_reachable;  },       "Cacher la zone SR  ",         "Afficher la zone SR"}},
@@ -243,7 +257,7 @@ void DevScreen::afficher_carte() const {
 	};
 #else
 	static const std::array<std::string,16> fleches = {
-		"  ", " →", "← ", " ↔",
+		"  ", " →", "← ", "←→",
 		"↓ ", "↓→", "←↓", "↓↔",
 		"↑ ", "↑→", "←↑", "↑↔",
 		"↕ ", "↕→", "←↕", "↕↔"
@@ -252,7 +266,8 @@ void DevScreen::afficher_carte() const {
 
 	// Initialisation
 	std::vector<unsigned char> poussees = m_solv3->poussees(m_carte, m_pers->coord());
-	std::vector<bool> zone = m_solv3->zone_accessible(m_carte, m_pers->coord());
+	std::vector<bool> zone    = m_solv3->zone_accessible(m_carte, m_pers->coord());
+	std::vector<bool> zone_sr = m_solv3->zone_atteignable(m_carte);
 	auto ref = manip::coord(5, 9);
 
 	// Affichage des objets
@@ -265,8 +280,18 @@ void DevScreen::afficher_carte() const {
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
 
 			if (pobj) {
+				std::vector<bool> z = m_solv3->zone_atteignable(m_carte, pobj->coord());
+				bool f = false;
+
+				for (auto e : m_carte->liste<moteur::Emplacement>()) {
+					f |= z[hash(e->coord())];
+					if (f) break;
+				}
+
 				if (m_carte->get<moteur::Emplacement>(pobj->coord())) {
 					st.txt(style::VERT);
+				} else if (f) {
+					st.txt(style::CYAN);
 				} else {
 					st.txt(style::JAUNE);
 				}
@@ -293,7 +318,7 @@ void DevScreen::afficher_carte() const {
 				st.fnd(style::ROUGE);
 			}
 
-			if (m_stone_reachable && m_solv3->infos_cases(obj->coord()).stone_reachable) {
+			if (m_stone_reachable && zone_sr[hash(obj->coord())]) {
 				if (st.fnd() == style::ROUGE) {
 					st.fnd(style::VIOLET);
 				} else {
@@ -317,6 +342,10 @@ void DevScreen::afficher_carte() const {
 			} else if (m_zones_empls && m_solv3->infos_empls(obj->coord()).zone) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::JAUNE);
 				std::cout << st << "G" << m_solv3->infos_empls(obj->coord()).zone;
+
+			} else if (m_intersections && m_solv3->infos_cases(obj->coord()).intersection) {
+				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::VERT);
+				std::cout << st << "II";
 
 			} else if (m_tunnels && m_solv3->infos_cases(obj->coord()).tunnel) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::VIOLET);

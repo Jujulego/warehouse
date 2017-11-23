@@ -29,9 +29,9 @@ class Solveur3 : public IA {
 			bool coin = false;
 			bool culdesac = false;
 			bool tunnel = false;
+			bool intersection = false;
 			unsigned char porte = 0;      // Séparation entre une salle et une autre ou une salle et un tunnel (indique de quel côté de la case se trouve la porte)
 			bool interieur = false;       // A l'intérieur des murs
-			bool stone_reachable = false; // Atteignable par un poussable
 
 			unsigned char directions = 0;            // Directions vers tous les emplacements
 			std::map<Coord,int> distances;           // Distance aux emplacements
@@ -77,6 +77,9 @@ class Solveur3 : public IA {
 		// - analyse dynamique
 		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
+
+		std::vector<bool> zone_atteignable(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;  // Par le poussable obj
+		std::vector<bool> zone_atteignable(std::shared_ptr<moteur::Carte> carte) const; // "Somme" de celle de touts les poussables
 
 	private:
 		// Attributs

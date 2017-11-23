@@ -34,13 +34,14 @@ class DevScreen {
 		std::hash<Coord> hash;
 		bool m_deplacables    = true;
 		bool m_directions     = false;
-		bool m_zone_interdite = false;
-		bool m_zone_access    = true;
+		bool m_intersections  = false;
 		bool m_portes         = false;
 		bool m_poussees       = false;
 		bool m_priorites      = false;
-		bool m_tunnels        = false;
 		bool m_stone_reachable = false;
+		bool m_tunnels        = false;
+		bool m_zone_interdite = false;
+		bool m_zone_access    = true;
 		bool m_zones_empls    = false;
 
 		ia::Solveur3* m_solv3;

@@ -123,43 +123,6 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 		}
 	}
 
-	// Parcours des poussables
-	for (auto pous : m_carte->liste<moteur::Poussable>()) {
-		if (c_infos[hash(pous->coord())].stone_reachable) continue;
-
-		// Init BFS
-		std::queue<Coord> file;
-
-		c_infos[hash(pous->coord())].stone_reachable = true;
-		file.push(pous->coord());
-
-		// Algo !
-		while (!file.empty()) {
-			// Défilage
-			Coord c = file.front();
-			file.pop();
-
-			// Evalutation des suivants !
-			for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
-				Coord nc = c + dir;
-
-				// Checks
-				if (!m_carte->coord_valides(nc))        continue; // validité
-				if (m_carte->get<moteur::Obstacle>(nc)) continue; // La case est un espace libre
-
-				// La case précédante est espace libre
-				if (m_carte->get<moteur::Obstacle>(c - dir)) continue;
-
-				// Marquage
-				if (c_infos[hash(nc)].stone_reachable) continue; // Déjà traité !
-				c_infos[hash(nc)].stone_reachable = true;
-
-				// Enfilage
-				file.push(nc);
-			}
-		}
-	}
-
 	// Init DFS
 	std::stack<Coord> pile;
 	std::list<Coord> coins;
@@ -279,6 +242,9 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 				c_infos[hash(c)].tunnel = c_infos[hash(c + HAUT)].tunnel && c_infos[hash(c + BAS)].tunnel;
 			}
 
+			// Il n'y a des intersections que dans les tunnels !
+			c_infos[hash(c)].intersection = c_infos[hash(c)].tunnel;
+
 			break; // Une seule direction vérifie le test
 		}
 	}
@@ -319,6 +285,10 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 			if (c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel) { // L'un des 2 est un tunnel
 				c_infos[h].porte        |= get_mask(dir);
 				c_infos[hash(nc)].porte |= get_mask(-dir);
+
+				// 4 portes = intersection
+				c_infos[h].intersection        |= (c_infos[h].porte        == 0b1111);
+				c_infos[hash(nc)].intersection |= (c_infos[hash(nc)].porte == 0b1111);
 			}
 		}
 	}
@@ -491,4 +461,69 @@ std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> car
 	carte->set(pers->coord(), pers);
 
 	return poussees;
+}
+
+std::vector<bool> Solveur3::zone_atteignable(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
+	// Initialisation
+	std::vector<bool> resultat(carte->taille_x() * carte->taille_y(), false);
+
+	// Checks
+	std::shared_ptr<moteur::Poussable> pous = carte->get<moteur::Poussable>(obj);
+	if (pous == nullptr) return resultat;
+
+	// Extraction du personnage
+	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
+	(*carte)[pers->coord()]->pop();
+
+	// Init BFS
+	std::queue<Coord> file;
+	resultat[hash(obj)] = true;
+	file.push(obj);
+
+	// Algo !
+	while (!file.empty()) {
+		// Défilage
+		Coord c = file.front();
+		file.pop();
+
+		// Evalutation des suivants !
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			Coord nc = c + dir;
+
+			// La case précédante est accessible
+			if (!m_carte->coord_valides(c - dir))                       continue; // validité
+			if ((c - dir != obj) && !(*m_carte)[c - dir]->accessible()) continue; // accessibilité
+
+			// Mouvement possible ?
+			if (!m_carte->coord_valides(nc))                  continue; // validité
+			if ((nc != obj) && !(*m_carte)[nc]->accessible()) continue; // accessibilité
+
+			// Marquage
+			if (resultat[hash(nc)]) continue; // Déjà traité !
+			resultat[hash(nc)] = true;
+
+			// Enfilage
+			file.push(nc);
+		}
+	}
+
+	// Retour du personnage
+	carte->set(pers->coord(), pers);
+
+	return resultat;
+}
+
+std::vector<bool> Solveur3::zone_atteignable(std::shared_ptr<moteur::Carte> carte) const {
+	// Calcul
+	std::vector<bool> resultat(carte->taille_x() * carte->taille_y(), false);
+
+	for (auto pous : m_carte->liste<moteur::Poussable>()) {
+		std::vector<bool> r = zone_atteignable(carte, pous->coord());
+
+		for (int i = 0; i < carte->taille_x() * carte->taille_y(); ++i) {
+			resultat[i] = r[i] || resultat[i];
+		}
+	}
+
+	return resultat;
 }
