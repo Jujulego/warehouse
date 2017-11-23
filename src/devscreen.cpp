@@ -314,9 +314,9 @@ void DevScreen::afficher_carte() const {
 			} else if (m_poussees && poussees[hash(obj->coord())]) {
 				std::cout << st << fleches[poussees[hash(obj->coord())]];
 
-			} else if (m_zones_empls && m_solv3->zones_empls(obj->coord())) {
+			} else if (m_zones_empls && m_solv3->infos_empls(obj->coord()).zone) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::JAUNE);
-				std::cout << st << "G" << m_solv3->zones_empls(obj->coord());
+				std::cout << st << "G" << m_solv3->infos_empls(obj->coord()).zone;
 
 			} else if (m_tunnels && m_solv3->infos_cases(obj->coord()).tunnel) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::VIOLET);
@@ -324,15 +324,15 @@ void DevScreen::afficher_carte() const {
 
 			} else if (m_portes && m_solv3->infos_cases(obj->coord()).porte) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::BLEU);
-				std::cout << st << "PP";
+				std::cout << st << fleches[m_solv3->infos_cases(obj->coord()).porte];
+
+			} else if (m_priorites && m_solv3->infos_empls(obj->coord()).zone) {
+				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::CYAN);
+				std::cout << st << fleches[m_solv3->infos_empls(obj->coord()).dirs()];
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);
-				if (m_priorites) {
-					std::cout << st << m_solv3->ordre_empls(obj->coord()) << ' ';
-				} else {
-					std::cout << st << EMPL;
-				}
+				std::cout << st << EMPL;
 
 			} else if (m_zone_access && zone[hash(obj->coord())]) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::CYAN);

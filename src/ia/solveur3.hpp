@@ -23,13 +23,13 @@ unsigned char get_mask(Coord const& dir);
 // Classe
 class Solveur3 : public IA {
 	public:
-		// Structure
+		// Structures
 		struct Infos {
 			// Attributs
 			bool coin = false;
 			bool culdesac = false;
 			bool tunnel = false;
-			bool porte  = false;          // Séparation entre une salle et une autre ou une salle et un tunnel
+			unsigned char porte = 0;      // Séparation entre une salle et une autre ou une salle et un tunnel (indique de quel côté de la case se trouve la porte)
 			bool interieur = false;       // A l'intérieur des murs
 			bool stone_reachable = false; // Atteignable par un poussable
 
@@ -40,11 +40,22 @@ class Solveur3 : public IA {
 			// Constructeur
 			Infos(size_t factx) : distances(std::less<Coord>(factx)), empl_dirs(std::less<Coord>(factx)) {}
 
-			// Methodes
+			// Méthodes
 			void ajouter(Coord const& empl, Coord const& dir);
 
 			bool test(Coord const& dir) const;
 			bool test(Coord const& empl, Coord const& dir) const;
+		};
+
+		struct Empl {
+			// Attributs
+			int zone;
+
+			// Doit être libre >vvvvv vvvvv< Pour accéder à
+			std::list<std::pair<Coord,Coord>> suivants;
+
+			// Méthodes
+			unsigned char dirs() const;
 		};
 
 		// Constructeur
@@ -57,13 +68,11 @@ class Solveur3 : public IA {
 		// - analyse statique
 		std::vector<Infos> const& infos_cases() const;
 		std::vector<bool> const& zone_interdite() const;
-		std::vector<int> const& zones_empls() const;
-		std::vector<int> const& ordre_empls() const;
+		std::vector<Empl> const& infos_empls() const;
 
 		Infos const& infos_cases(Coord const& c) const;
 		bool zone_interdite(Coord const& c) const;
-		int const& zones_empls(Coord const& c) const;
-		int const& ordre_empls(Coord const& c) const;
+		Empl const& infos_empls(Coord const& c) const;
 
 		// - analyse dynamique
 		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
@@ -76,8 +85,7 @@ class Solveur3 : public IA {
 		// Cache
 		mutable std::vector<Infos> c_infos;
 		mutable std::vector<bool> c_zone_interdite;
-		mutable std::vector<int> c_zones_empls;
-		mutable std::vector<int> c_ordre_empls;
+		mutable std::vector<Empl> c_infos_empls;
 };
 
 } // ia

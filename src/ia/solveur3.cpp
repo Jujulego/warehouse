@@ -42,7 +42,7 @@ unsigned char ia::get_mask(Coord const& dir) {
 Solveur3::Solveur3(std::shared_ptr<moteur::Carte> carte, std::shared_ptr<moteur::Deplacable> obj)
 	: IA(carte, obj), hash(carte->taille_y()) {}
 
-// Structure
+// Structures
 void Solveur3::Infos::ajouter(Coord const& empl, Coord const& dir) {
 	directions      |= get_mask(dir);
 	empl_dirs[empl] |= get_mask(dir);
@@ -54,6 +54,16 @@ bool Solveur3::Infos::test(Coord const& dir) const {
 
 bool Solveur3::Infos::test(Coord const& empl, Coord const& dir) const {
 	return empl_dirs.at(empl) & get_mask(dir);
+}
+
+unsigned char Solveur3::Empl::dirs() const {
+	unsigned char dirs = 0;
+
+	for (auto p : suivants) {
+		dirs |= get_mask((p.second - p.first) / 2);
+	}
+
+	return dirs;
 }
 
 // Méthodes
@@ -286,9 +296,9 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 			if (c_infos[hash(c)].tunnel && c_infos[hash(nc)].tunnel) continue; // Pas de porte au millieu d'un tunnel
 
 			// Test
-			c_infos[hash(c)].porte = (est_inter[hash(c)] == -est_inter[hash(nc)]);
-
-			if (c_infos[hash(c)].porte) break;
+			if (est_inter[hash(c)] == -est_inter[hash(nc)]) {
+				c_infos[hash(c)].porte |= get_mask(dir);
+			}
 		}
 	}
 
@@ -306,8 +316,10 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 			if (!c_infos[hash(nc)].interieur) continue; // A l'interieur du labyrinthe
 
 			// Porte ?
-			c_infos[h].porte |= c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel;
-			c_infos[hash(nc)].porte |= c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel;
+			if (c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel) { // L'un des 2 est un tunnel
+				c_infos[h].porte        |= get_mask(dir);
+				c_infos[hash(nc)].porte |= get_mask(-dir);
+			}
 		}
 	}
 
@@ -329,19 +341,19 @@ std::vector<bool> const& Solveur3::zone_interdite() const {
 	return c_zone_interdite;
 }
 
-std::vector<int> const& Solveur3::zones_empls() const {
+std::vector<Solveur3::Empl> const& Solveur3::infos_empls() const {
 	// Cache
-	if (c_zones_empls.size() != 0) return c_zones_empls;
+	if (c_infos_empls.size() != 0) return c_infos_empls;
 
 	// Déduction depuis les infos
 	std::vector<Infos> const& infos = infos_cases();
-	c_zones_empls.resize(infos.size(), 0);
+	c_infos_empls.resize(infos.size());
 
 	// Parcours des emplacements
 	int num = 1;
 	for (auto empl : m_carte->liste<moteur::Emplacement>()) {
-		if (c_zones_empls[hash(empl->coord())] != 0) continue;
-		c_zones_empls[hash(empl->coord())] = num;
+		if (c_infos_empls[hash(empl->coord())].zone != 0) continue;
+		c_infos_empls[hash(empl->coord())].zone = num;
 
 		// Init DFS
 		std::stack<Coord> pile;
@@ -357,17 +369,19 @@ std::vector<int> const& Solveur3::zones_empls() const {
 				Coord nc = c + dir;
 
 				// Checks
-				if (!m_carte->coord_valides(nc))        continue; // Coordonnées invalides
+				if (!m_carte->coord_valides(nc)) continue; // Coordonnées invalides
 
 				// Fusion de zones
-				if (c_zones_empls[hash(nc)] != 0 && c_zones_empls[hash(nc)] != num) {
+				if (c_infos_empls[hash(nc)].zone != 0 && c_infos_empls[hash(nc)].zone != num) {
 					int z1, z2;
 
-					z1 = std::min(num, c_zones_empls[hash(nc)]);
-					z2 = std::max(num, c_zones_empls[hash(nc)]);
+					z1 = std::min(num, c_infos_empls[hash(nc)].zone);
+					z2 = std::max(num, c_infos_empls[hash(nc)].zone);
 
-					std::replace(c_zones_empls.begin(), c_zones_empls.end(), z2, z1);
-					num = z1;
+					for (Empl& e : c_infos_empls) {
+						if (e.zone == z1) e.zone = z2;
+					}
+					num = z2;
 
 					continue;
 				}
@@ -375,11 +389,16 @@ std::vector<int> const& Solveur3::zones_empls() const {
 				// Checks
 				if (m_carte->get<moteur::Obstacle>(nc)) continue; // La case n'est pas un espace libre
 				if (infos[hash(c)].porte && infos[hash(nc)].porte) continue; // On ne passe pas une porte
-				if (infos[hash(nc)].tunnel && !m_carte->get<moteur::Emplacement>(nc)) continue; // La case est un tunnel mais pas un emplacement
+
+				// Lien !
+				Coord pc = c - dir;
+				if (m_carte->coord_valides(pc) && !m_carte->get<moteur::Obstacle>(pc)) {
+					c_infos_empls[hash(c)].suivants.push_back({pc, nc});
+				}
 
 				// Marque
-				if (c_zones_empls[hash(nc)] != 0) continue;
-				c_zones_empls[hash(nc)] = num;
+				if (c_infos_empls[hash(nc)].zone != 0) continue;
+				c_infos_empls[hash(nc)].zone = num;
 
 				pile.push(nc);
 			}
@@ -388,174 +407,7 @@ std::vector<int> const& Solveur3::zones_empls() const {
 		++num;
 	}
 
-	return c_zones_empls;
-}
-
-std::vector<int> const& Solveur3::ordre_empls() const {
-	// Cache
-	if (c_ordre_empls.size() != 0) return c_ordre_empls;
-
-	// Déduction depuis les infos
-	std::vector<Infos> const& infos = infos_cases();
-	c_ordre_empls.resize(infos.size(), 0);
-
-	// Parcours des emplacments
-	std::list<std::shared_ptr<moteur::Emplacement>> empls = m_carte->liste<moteur::Emplacement>();
-	std::queue<Coord> file;
-	int prio_max = 0;
-
-	// Dépendances & Priorités
-//	std::cout << std::endl;
-	std::vector<std::list<Coord>> priorites(infos.size());   // Emplacements devant etre rempli AVANT
-	std::vector<std::list<Coord>> dependances(infos.size()); // Emplacements devant etre rempli APRES
-
-	for (auto empl : empls) {
-		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
-			Coord nc = empl->coord() + dir;
-
-			// Checks
-			if (!m_carte->coord_valides(nc))            continue; // coordonnées valides
-			if (!m_carte->get<moteur::Emplacement>(nc)) continue; // est un emplacement
-
-			// Dépendant ? oui s'il est possible d'y accéder via dir
-			if (infos[hash(nc)].directions & get_mask(-dir)) {
-//				std::cout << (char)(empl->coord().x() + 'A') << empl->coord().y() << " < " << (char)(nc.x() + 'A') << nc.y() << std::endl;
-				priorites[hash(nc)].push_back(empl->coord());
-				dependances[hash(empl->coord())].push_back(nc);
-
-				// La précedante doit etre vide egalement
-				nc += dir;
-				if (!m_carte->coord_valides(nc))            continue; // coordonnées valides
-				if (!m_carte->get<moteur::Emplacement>(nc)) continue; // est un emplacement
-
-//				std::cout << (char)(empl->coord().x() + 'A') << empl->coord().y() << " < " << (char)(nc.x() + 'A') << nc.y() << std::endl;
-				priorites[hash(nc)].push_back(empl->coord());
-				dependances[hash(empl->coord())].push_back(nc);
-			}
-		}
-	}
-
-	// Suppression des cycles simples : A -> B & B -> A sur les coins & cul-de-sacs
-	for (auto empl : empls) {
-		Coord a = empl->coord();
-		if (!(infos[hash(a)].coin || infos[hash(a)].culdesac)) continue;
-
-		for (auto ita = priorites[hash(a)].begin(); ita != priorites[hash(a)].end(); ++ita) {
-			Coord b = *ita;
-
-			auto itb = std::find(priorites[hash(b)].begin(), priorites[hash(b)].end(), a);
-			if (itb == priorites[hash(b)].end()) continue;
-
-			if (!infos[hash(b)].culdesac) {
-				priorites[hash(a)].erase(ita--);
-				dependances[hash(b)].remove(a);
-			} else {
-				priorites[hash(b)].erase(itb);
-				dependances[hash(a)].remove(b);
-			}
-		}
-	}
-
-	// Pas de priorité : prio = 1
-	for (auto it = empls.begin(); it != empls.end(); ++it) {
-		Coord empl = (*it)->coord();
-
-		// Dépendances ?
-		if (priorites[hash(empl)].size() != 0) continue;
-
-		// Application de la priorité
-		c_ordre_empls[hash(empl)] = 1;
-		prio_max = 1;
-
-		file.push(empl);
-
-		// Suppression de la liste
-		empls.erase(it--);
-	}
-
-	// Outils
-	enum R { CULDESAC = 0, COIN = 1, PLUS = 2 };
-	auto est_coin = [this] (Coord const& c) -> R {
-		int nb_hb = 0;
-		int nb_dg = 0;
-
-		for (auto dir : {HAUT, BAS}) {
-			Coord nc = c + dir;
-
-			if (!m_carte->coord_valides(nc))        continue; // coordonnées valides
-			if (m_carte->get<moteur::Obstacle>(nc)) continue; // est un espace libre
-
-			if (c_ordre_empls[hash(nc)] == 0) {
-				++nb_hb;
-			}
-		}
-
-		for (auto dir : {GAUCHE, DROITE}) {
-			Coord nc = c + dir;
-
-			if (!m_carte->coord_valides(nc))        continue; // coordonnées valides
-			if (m_carte->get<moteur::Obstacle>(nc)) continue; // est un espace libre
-
-			if (c_ordre_empls[hash(nc)] == 0) {
-				++nb_dg;
-			}
-		}
-
-		if (nb_hb == 1 && nb_dg == 1) return COIN;
-		if (nb_hb + nb_dg == 1)       return CULDESAC;
-		return PLUS;
-	};
-
-	while (!file.empty()) {
-		// Défilage
-		Coord empl = file.front();
-		file.pop();
-
-		// Enfilage des dépendances dont toutes les priorités sont définies
-//		std::cout << (char)(empl.x() + 'A') << empl.y() << std::endl;
-		for (auto dep : dependances[hash(empl)]) {
-			if (c_ordre_empls[hash(dep)] != 0) continue;
-
-//			std::cout << " " << (char)(dep.x() + 'A') << dep.y() << std::endl;
-			bool ok = true;
-			int p = 0;
-
-			for (auto itd = priorites[hash(dep)].begin(); itd != priorites[hash(dep)].end(); ++itd) {
-				Coord prio = *itd;
-//				std::cout << "  " << (char)(prio.x() + 'A') << prio.y() << " " << c_ordre_empls[hash(prio)] << std::endl;
-
-				if (c_ordre_empls[hash(prio)] == 0) {
-					// Recherche d'un cycle simple
-					auto itp = std::find(priorites[hash(prio)].begin(), priorites[hash(prio)].end(), dep);
-					if (itp != priorites[hash(prio)].end()) { // Il y a un cycle !
-						if (est_coin(dep) > est_coin(prio)) {
-							ok = false;
-							break;
-						}
-					} else {
-						ok = false;
-						break;
-					}
-				}
-
-				p = std::max(p, c_ordre_empls[hash(prio)]);
-			}
-
-			if (ok) {
-				c_ordre_empls[hash(dep)] = ++p;
-				empls.remove_if([&dep] (std::shared_ptr<moteur::Emplacement> pt) { return pt->coord() == dep; });
-				file.push(dep);
-			}
-		}
-	}
-
-	// Les autres sont interdépendants => meme priorité (max)
-	prio_max = 99;
-	for (auto empl : empls) {
-		c_ordre_empls[hash(empl->coord())] = prio_max;
-	}
-
-	return c_ordre_empls;
+	return c_infos_empls;
 }
 
 Solveur3::Infos const& Solveur3::infos_cases(Coord const& c) const {
@@ -566,12 +418,8 @@ bool Solveur3::zone_interdite(Coord const& c) const {
 	return zone_interdite()[hash(c)];
 }
 
-int const& Solveur3::zones_empls(Coord const& c) const {
-	return zones_empls()[hash(c)];
-}
-
-int const& Solveur3::ordre_empls(Coord const& c) const {
-	return ordre_empls()[hash(c)];
+Solveur3::Empl const& Solveur3::infos_empls(Coord const& c) const {
+	return infos_empls()[hash(c)];
 }
 
 std::vector<bool> Solveur3::zone_accessible(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
