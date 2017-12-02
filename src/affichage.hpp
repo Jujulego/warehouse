@@ -11,7 +11,7 @@
 // Macros
 #ifdef __gnu_linux__
 # define MUR    "\xe2\x97\x8b "
-# define PERS   "\xe2\x98\xba "
+# define PERS   "\xe2\x98\xba"
 # define BOITE  "\xe2\x9a"
 # define EMPL   "[]"
 # define SORTIE style::fvert << "  " << style::defaut

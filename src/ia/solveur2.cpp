@@ -78,7 +78,6 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 	));
 	
 	// Analyse statique
-	std::hash<Coord> hash(m_carte->taille_y());
 	std::vector<bool> zone_interdite = this->zone_interdite(m_carte, m_obj->coord());
 	
 	// Stats
@@ -181,9 +180,6 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 
 // Outils
 unsigned Solveur2::heuristique(std::shared_ptr<moteur::Carte> const& carte) const {
-	// Evaluation des positions accessibles
-	std::hash<Coord> hash(carte->taille_y());
-	
 	// Recherche des emplacement && boites
 	std::vector<Coord> empl;
 	
@@ -297,7 +293,6 @@ unsigned Solveur2::heuristique(std::shared_ptr<moteur::Carte> const& carte) cons
 std::list<Solveur2::Poussee> Solveur2::recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj, Coord const& prec) const {
 	// Evaluation des positions accessibles
 	std::vector<bool> zone = zone_accessible(carte, obj);
-	std::hash<Coord> hash(carte->taille_y());
 	
 	// Suppression du personnage
 	carte = std::make_shared<moteur::Carte>(*carte);
@@ -345,43 +340,7 @@ bool Solveur2::est_tunnel(std::shared_ptr<moteur::Carte> const& carte, Coord con
 	return tunnel;
 }
 
-std::vector<bool> Solveur2::zone_accessible(std::shared_ptr<moteur::Carte> const& carte, Coord const& obj) const {
-	// Déclarations
-	std::vector<bool> zone(carte->taille_x() * carte->taille_y(), false);
-	std::hash<Coord> hash(carte->taille_y());
-	
-	// Initialisation
-	std::stack<Coord> pile;
-	
-	zone[hash(obj)] = true;
-	pile.push(obj);
-	
-	// DFS !
-	while (!pile.empty()) {
-		// Depilage
-		Coord c = pile.top();
-		pile.pop();
-		
-		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
-			// Calcul coord suivantes
-			Coord nc = c + dir;
-			if (!carte->coord_valides(nc))   continue; // validité
-			if (!(*carte)[nc]->accessible()) continue; // accessibilité
-			if (zone[hash(nc)]) continue;              // marquage
-			
-			// Marquage et empilage
-			zone[hash(nc)] = true;
-			pile.push(nc);
-		}
-	}
-	
-	return zone;
-}
-
 std::pair<Coord,int> Solveur2::min_dist_empl(std::shared_ptr<moteur::Carte> const& carte, Coord const& pos) const {
-	// Déclarations
-	std::hash<Coord> hash(carte->taille_y());
-	
 	// Cache
 	if (c_min_dist_empl[hash(pos)].second != -1) return c_min_dist_empl[hash(pos)];
 	
@@ -408,7 +367,6 @@ std::vector<std::map<Coord,int>> Solveur2::dists_empls(std::shared_ptr<moteur::C
 	if (c_dists_empls.size() != 0) return c_dists_empls;
 	
 	// Déclarations
-	std::hash<Coord> hash(carte->taille_y());
 	std::vector<std::map<Coord,int>> dists(
 		carte->taille_x() * carte->taille_y(),
 		std::map<Coord,int>(
@@ -462,7 +420,6 @@ std::vector<bool> Solveur2::zone_interdite(std::shared_ptr<moteur::Carte> const&
 	// Déclarations
 	std::vector<bool> marques(carte->taille_x() * carte->taille_y(), false);
 	std::vector<bool> zone(carte->taille_x() * carte->taille_y(), false);
-	std::hash<Coord> hash(carte->taille_y());
 	
 	// DFS
 	std::stack<Coord> pile;

@@ -1,5 +1,6 @@
 // Importations
 #include <array>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <map>
@@ -20,6 +21,7 @@
 #include "moteur/poussable.hpp"
 #include "moteur/sortie.hpp"
 
+#include "ia/chemin.hpp"
 #include "ia/solveur3.hpp"
 
 #include "affichage.hpp"
@@ -27,7 +29,7 @@
 
 // Constructeur
 DevScreen::DevScreen(std::shared_ptr<moteur::Carte> carte)
-	: hash(carte->taille_y()), m_carte(std::make_shared<moteur::Carte>(*carte)) {
+	: hash(carte->taille_y()), m_carte(std::make_shared<moteur::Carte>(*carte)), m_chemin(std::less<Coord>(hash)) {
 
 	m_pers  = m_carte->personnage();
 	m_solv3 = new ia::Solveur3(m_carte, m_pers);
@@ -164,6 +166,53 @@ void DevScreen::afficher() {
 			m_zone_access = false;
 			break;
 
+		case 'v':
+			m_directions  = false;
+			m_intersections = false;
+			m_portes      = false;
+			m_tunnels     = false;
+			m_zones_empls = false;
+			m_zone_access = false;
+
+			// Reset
+			m_chemin.clear();
+
+		{	// Calcul du chemin
+			Coord dep = select_case();
+			if (dep == Coord(-1, -1)) break;
+
+			Coord arr = select_case();
+			if (arr == Coord(-1, -1)) break;
+
+			ia::Chemin res;
+			int force = 0;
+
+			auto pous = m_carte->get<moteur::Poussable>(dep);
+			if (pous != nullptr) force = m_pers->force();
+
+			if (m_solv3->trouver_chemin(m_carte, dep, arr, res, force)) {
+				// Résultat
+				for (auto dir : res) {
+					m_chemin[dep] |= ia::get_mask(dir);
+					dep += dir;
+				}
+
+				m_aff_chemin = true;
+			}
+		}
+
+			break;
+
+		case 'w':
+			m_aff_chemin = !m_aff_chemin;
+			m_directions  = false;
+			m_intersections = false;
+			m_portes      = false;
+			m_tunnels     = false;
+			m_zones_empls = false;
+			m_zone_access = false;
+			break;
+
 		case 'z':
 			m_zone_access = !m_zone_access;
 			m_deplacables = true;
@@ -181,6 +230,58 @@ void DevScreen::afficher() {
 			m_pers->deplacer(dir, p);
 		}
 	}
+}
+
+Coord DevScreen::select_case() {
+	// Déclarations
+	m_selection = ORIGINE;
+	bool fin = false;
+
+	// Interactions
+	while (!fin) {
+		// Affichage !
+		afficher_carte();
+
+		// Interaction !
+		Coord dir = ORIGINE;
+
+		switch (console::getch()) {
+		case FL_HAUT:
+			dir = HAUT;
+			break;
+
+		case FL_BAS:
+			dir = BAS;
+			break;
+
+		case FL_GAUCHE:
+			dir = GAUCHE;
+			break;
+
+		case FL_DROITE:
+			dir = DROITE;
+			break;
+
+		case 'c': // Annulation
+			m_selection = Coord(-1, -1);
+			__attribute__((fallthrough));
+
+		case ENTREE:
+			fin = true;
+			break;
+		}
+
+		// Déplacement
+		if (m_carte->coord_valides(m_selection + dir)) {
+			m_selection += dir;
+		}
+	}
+
+	// Retour
+	Coord c = m_selection;
+	m_selection = Coord(-1, -1);
+
+	return c;
 }
 
 void DevScreen::pop_poussables() {
@@ -224,6 +325,8 @@ void DevScreen::afficher_status() const {
 		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",     "Remettre les poussables"}},
 		{'S', {[] (DevScreen const& ds) { return ds.m_stone_reachable;  },       "Cacher la zone SR  ",         "Afficher la zone SR"}},
 		{'T', {[] (DevScreen const& ds) { return ds.m_tunnels;  },               "Cacher les tunnels  ",        "Afficher les tunnels"}},
+		{'V', {[] (DevScreen const&)    { return true; },                        "Calculer un chemin",          ""}},
+		{'W', {[] (DevScreen const& ds) { return ds.m_aff_chemin; },             "Cacher le chemin  ",          "Afficher le chemin"}},
 		{'Z', {[] (DevScreen const& ds) { return ds.m_zone_access;  },           "Cacher la zone accessible  ", "Afficher la zone accessible"}},
 	};
 
@@ -251,16 +354,16 @@ void DevScreen::afficher_carte() const {
 #ifndef __gnu_linux__
 	static const std::array<std::string,16> fleches = {
 		"  ", " >", " <", " x",
-		"v ", "v>", "v<", "vx",
-		"^ ", "^>", "^<", "^x",
-		"x ", "x>", "x<", "xx"
+		" v", "v>", "v<", "vx",
+		" ^", "^>", "^<", "^x",
+		" x", "x>", "x<", "xx"
 	};
 #else
 	static const std::array<std::string,16> fleches = {
-		"  ", " →", "← ", "←→",
-		"↓ ", "↓→", "←↓", "↓↔",
-		"↑ ", "↑→", "←↑", "↑↔",
-		"↕ ", "↕→", "←↕", "↕↔"
+		"  ", " →", " ←", " ↔",
+		" ↓", "↓→", "←↓", "↓↔",
+		" ↑", "↑→", "←↑", "↑↔",
+		" ↕", "↕→", "←↕", "↕↔"
 	};
 #endif
 
@@ -270,30 +373,70 @@ void DevScreen::afficher_carte() const {
 	std::vector<bool> zone_sr = m_solv3->zone_atteignable(m_carte);
 	auto ref = manip::coord(5, 9);
 
+	// Repères
+	for (int i = 0; i < m_carte->taille_x(); ++i) {
+		std::cout << ref + manip::coord(2*i, -1) << (char) ('A' + i);
+	}
+
+	for (int i = 1; i <= m_carte->taille_y(); ++i) {
+		std::cout << ref + manip::coord(-floor(log10(i)) -2, i-1) << i;
+	}
+
 	// Affichage des objets
 	for (auto obj : *m_carte) {
 		std::cout << ref + obj->coord() + manip::x * obj->coord().x();
 		auto dobj = obj->get();
-		Style st;
+		Style st = style::defaut;
+
+		// Surlignage du curseur de sélection
+		if (obj->coord() == m_selection) {
+			st.effet(style::INVERSE);
+		}
+
+		// Chemin
+		std::string direction = "  ";
+
+		if (m_aff_chemin) {
+			auto it = m_chemin.find(obj->coord());
+
+			if (it != m_chemin.end()) {
+				unsigned char dirs = it->second;
+
+				// On enleve les directions inaccessibles
+				if (dobj && m_deplacables && std::dynamic_pointer_cast<moteur::Poussable>(dobj)) {
+					dirs = 0;
+
+					for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+						if (!(it->second & ia::get_mask(dir))) continue;
+						if (zone[hash(obj->coord() - dir)]) dirs |= ia::get_mask(dir);
+					}
+				}
+
+				direction = fleches[dirs];
+			}
+		}
 
 		if (dobj && m_deplacables) {
+			// Poussable ?
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
-
 			if (pobj) {
 				std::vector<bool> z = m_solv3->zone_atteignable(m_carte, pobj->coord());
 				bool f = false;
 
+				// le poussable peut-il aller jusqu'à la fin ?
 				for (auto e : m_carte->liste<moteur::Emplacement>()) {
 					f |= z[hash(e->coord())];
 					if (f) break;
 				}
 
-				if (m_carte->get<moteur::Emplacement>(pobj->coord())) {
-					st.txt(style::VERT);
-				} else if (f) {
-					st.txt(style::CYAN);
-				} else {
-					st.txt(style::JAUNE);
+				if (st.fnd() == style::DEFAUT_FOND) {
+					if (m_carte->get<moteur::Emplacement>(pobj->coord())) {
+						st.txt(style::VERT);
+					} else if (f) {
+						st.txt(style::CYAN);
+					} else {
+						st.txt(style::JAUNE);
+					}
 				}
 
 				#ifdef __gnu_linux__
@@ -301,28 +444,35 @@ void DevScreen::afficher_carte() const {
 					std::string s = BOITE;
 					s.append(1, '\x7f' + pobj->poids());
 
-					std::cout << st << s << ' ' << style::defaut;
+					std::cout << st << direction;
+					std::cout << -2 * manip::dx;
+					std::cout << st << s;
 				} else {
-					std::cout << st << "#" << pobj->poids() << style::defaut;
+					std::cout << st << "#" << pobj->poids();
 				}
 				#else
-				std::cout << st << BOITE << pobj->poids() << style::defaut;
+				std::cout << st << BOITE << pobj->poids();
 				#endif
 			} else {
-				st.txt(style::VERT);
-				std::cout << st << PERS << style::defaut;
+				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::VERT);
+
+				std::cout << st << direction;
+				std::cout << -2 * manip::dx;
+				std::cout << st << PERS;
 			}
 		} else {
 			// Style
-			if (m_zone_interdite && m_solv3->zone_interdite(obj->coord())) {
-				st.fnd(style::ROUGE);
-			}
+			if (st.fnd() == style::DEFAUT_FOND) {
+				if (m_zone_interdite && m_solv3->zone_interdite(obj->coord())) {
+					st.fnd(style::ROUGE);
+				}
 
-			if (m_stone_reachable && zone_sr[hash(obj->coord())]) {
-				if (st.fnd() == style::ROUGE) {
-					st.fnd(style::VIOLET);
-				} else {
-					st.fnd(style::CYAN);
+				if (m_stone_reachable && zone_sr[hash(obj->coord())]) {
+					if (st.fnd() == style::ROUGE) {
+						st.fnd(style::VIOLET);
+					} else {
+						st.fnd(style::CYAN);
+					}
 				}
 			}
 
@@ -332,6 +482,9 @@ void DevScreen::afficher_carte() const {
 
 			} else if (std::dynamic_pointer_cast<moteur::Sortie>(obj)) {
 				std::cout << st << SORTIE;
+
+			} else if (m_aff_chemin) {
+				std::cout << st << direction;
 
 			} else if (m_directions) {
 				std::cout << st << fleches[m_solv3->infos_cases(obj->coord()).directions];
@@ -371,8 +524,8 @@ void DevScreen::afficher_carte() const {
 				std::cout << st << "  ";
 			}
 		}
-	}
 
-	// Reset style
-	std::cout << style::defaut;
+		// Reset style
+		std::cout << style::defaut;
+	}
 }

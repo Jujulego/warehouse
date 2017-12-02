@@ -41,7 +41,7 @@ unsigned char ia::get_mask(Coord const& dir) {
 
 // Constructeur
 Solveur3::Solveur3(std::shared_ptr<moteur::Carte> carte, std::shared_ptr<moteur::Deplacable> obj)
-	: IA(carte, obj), hash(carte->taille_y()) {}
+	: IA(carte, obj) {}
 
 // Structures
 void Solveur3::Infos::ajouter(Coord const& empl, Coord const& dir) {
@@ -283,7 +283,7 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 			if (!c_infos[hash(nc)].interieur) continue; // A l'interieur du labyrinthe
 
 			// Porte ?
-			if (c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel) { // L'un des 2 est un tunnel
+			if (c_infos[h].tunnel ^ c_infos[hash(nc)].tunnel) { // L'un des 2 est un tunnel (mais pas les 2 !)
 				c_infos[h].porte        |= get_mask(dir);
 				c_infos[hash(nc)].porte |= get_mask(-dir);
 
@@ -393,38 +393,6 @@ Solveur3::Empl const& Solveur3::infos_empls(Coord const& c) const {
 	return infos_empls()[hash(c)];
 }
 
-std::vector<bool> Solveur3::zone_accessible(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
-	// Déclarations
-	std::vector<bool> zone(carte->taille_x() * carte->taille_y(), false);
-
-	// Initialisation
-	std::stack<Coord> pile;
-
-	zone[hash(obj)] = true;
-	pile.push(obj);
-
-	// DFS !
-	while (!pile.empty()) {
-		// Depilage
-		Coord c = pile.top();
-		pile.pop();
-
-		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
-			// Calcul coord suivantes
-			Coord nc = c + dir;
-			if (!carte->coord_valides(nc))   continue; // validité
-			if (!(*carte)[nc]->accessible()) continue; // accessibilité
-			if (zone[hash(nc)]) continue;              // marquage
-
-			// Marquage et empilage
-			zone[hash(nc)] = true;
-			pile.push(nc);
-		}
-	}
-
-	return zone;
-}
-
 std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
 	// Détection des poussées en croisant les infos avec la zone accessible
 	std::vector<unsigned char> poussees(carte->taille_x() * carte->taille_y(), 0);
@@ -484,6 +452,7 @@ std::vector<bool> Solveur3::zone_atteignable(std::shared_ptr<moteur::Carte> cart
 		}
 	);
 	std::queue<std::pair<Coord,Coord>> file;
+	marques[{obj, pers->coord()}] = true;
 	resultat[hash(obj)] = true;
 	file.push({obj, pers->coord()});
 

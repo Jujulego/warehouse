@@ -75,16 +75,12 @@ class Solveur3 : public IA {
 		Empl const& infos_empls(Coord const& c) const;
 
 		// - analyse dynamique
-		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 
 		std::vector<bool> zone_atteignable(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;  // Par le poussable obj
 		std::vector<bool> zone_atteignable(std::shared_ptr<moteur::Carte> carte) const; // "Somme" de celle de touts les poussables
 
 	private:
-		// Attributs
-		std::hash<Coord> hash;
-
 		// Cache
 		mutable std::vector<Infos> c_infos;
 		mutable std::vector<bool> c_zone_interdite;

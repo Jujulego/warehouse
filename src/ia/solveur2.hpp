@@ -37,7 +37,6 @@ class Solveur2 : public IA {
 		// Outils
 		unsigned heuristique(std::shared_ptr<moteur::Carte> const& carte) const;
 		std::list<Poussee> recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj, Coord const& prec = Coord(-1, -1)) const;
-		std::vector<bool> zone_accessible(std::shared_ptr<moteur::Carte> const& carte, Coord const& obj) const;
 		
 		// - analyse statique
 		bool est_tunnel(std::shared_ptr<moteur::Carte> const& carte, Coord const& pos, Coord const& dir) const;
