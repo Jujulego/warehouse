@@ -35,6 +35,7 @@ class DevScreen {
 		// Attributs
 		std::hash<Coord> hash;
 		bool m_aff_chemin     = false;
+		bool m_empl_conseil   = false;
 		bool m_deplacables    = true;
 		bool m_directions     = false;
 		bool m_intersections  = false;
@@ -46,6 +47,7 @@ class DevScreen {
 		bool m_zone_interdite = false;
 		bool m_zone_access    = true;
 		bool m_zones_empls    = false;
+		Coord m_influence     = Coord(-1, -1);
 		Coord m_selection     = Coord(-1, -1); // Sélection en cours
 
 		ia::Solveur3* m_solv3;

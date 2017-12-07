@@ -82,6 +82,15 @@ void DevScreen::afficher() {
 			m_zones_empls = false;
 			break;
 
+		case 'b':
+			if (m_influence == Coord(-1, -1)) {
+				m_influence = select_case();
+			} else {
+				m_influence = Coord(-1, -1);
+			}
+
+			break;
+
 		case 'c':
 			m_poussees = !m_poussees;
 			m_directions  = false;
@@ -89,7 +98,6 @@ void DevScreen::afficher() {
 			m_portes      = false;
 			m_tunnels     = false;
 			m_zones_empls = false;
-			m_zone_access = false;
 			m_deplacables = true;
 			break;
 
@@ -140,6 +148,10 @@ void DevScreen::afficher() {
 
 		case 'i':
 			m_zone_interdite = !m_zone_interdite;
+			break;
+
+		case 'j':
+			m_empl_conseil = !m_empl_conseil;
 			break;
 
 		case 'o': {
@@ -239,7 +251,7 @@ void DevScreen::afficher() {
 		}
 
 		// Déplacement
-		if (m_deplacables && dir != ORIGINE) {
+		if (m_deplacables && dir != ORIGINE && m_influence == Coord(-1, -1)) {
 			int p;
 			m_pers->deplacer(dir, p);
 		}
@@ -323,21 +335,23 @@ void DevScreen::reset_poussables() {
 void DevScreen::afficher_status() const {
 	// Initialisation
 	static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
-		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ",    "Afficher les déplacables"}},
-		{'C', {[] (DevScreen const& ds) { return ds.m_poussees; },               "Cacher les poussees  ",       "Afficher les poussees"}},
-		{'D', {[] (DevScreen const& ds) { return ds.m_portes; },                 "Cacher les portes  ",         "Afficher les portes"}},
-		{'E', {[] (DevScreen const& ds) { return ds.m_priorites;  },             "Cacher les priorités  ",      "Afficher les priorités"}},
-		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",        "Afficher les flèches"}},
-		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",    "Afficher les zones empls"}},
-		{'H', {[] (DevScreen const& ds) { return ds.m_intersections;  },         "Cacher les intersections  ",  "Afficher les intersections"}},
-		{'I', {[] (DevScreen const& ds) { return ds.m_zone_interdite;  },        "Cacher la zone interdite  ",  "Afficher la zone interdite"}},
-		{'O', {[] (DevScreen const&)    { return true; },                        "Enlever un poussable ",       ""}},
-		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",     "Remettre les poussables"}},
-		{'S', {[] (DevScreen const& ds) { return ds.m_stone_reachable;  },       "Cacher la zone SR  ",         "Afficher la zone SR"}},
-		{'T', {[] (DevScreen const& ds) { return ds.m_tunnels;  },               "Cacher les tunnels  ",        "Afficher les tunnels"}},
-		{'V', {[] (DevScreen const&)    { return true; },                        "Calculer un chemin",          ""}},
-		{'W', {[] (DevScreen const& ds) { return ds.m_aff_chemin; },             "Cacher le chemin  ",          "Afficher le chemin"}},
-		{'Z', {[] (DevScreen const& ds) { return ds.m_zone_access;  },           "Cacher la zone accessible  ", "Afficher la zone accessible"}},
+		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ",          "Afficher les déplacables"}},
+		{'B', {[] (DevScreen const&)    { return true; },                        "Montrer l'influence d'un poussable ", ""}},
+		{'C', {[] (DevScreen const& ds) { return ds.m_poussees; },               "Cacher les poussees  ",             "Afficher les poussees"}},
+		{'D', {[] (DevScreen const& ds) { return ds.m_portes; },                 "Cacher les portes  ",               "Afficher les portes"}},
+		{'E', {[] (DevScreen const& ds) { return ds.m_priorites;  },             "Cacher les priorités  ",            "Afficher les priorités"}},
+		{'F', {[] (DevScreen const& ds) { return ds.m_directions;  },            "Cacher les flèches  ",              "Afficher les flèches"}},
+		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",          "Afficher les zones empls"}},
+		{'H', {[] (DevScreen const& ds) { return ds.m_intersections;  },         "Cacher les intersections  ",        "Afficher les intersections"}},
+		{'I', {[] (DevScreen const& ds) { return ds.m_zone_interdite;  },        "Cacher la zone interdite  ",        "Afficher la zone interdite"}},
+		{'J', {[] (DevScreen const& ds) { return ds.m_empl_conseil;  },          "Cacher l'emplacement conseillé  ",  "Afficher l'emplacement conseillé"}},
+		{'O', {[] (DevScreen const&)    { return true; },                        "Enlever un poussable ",             ""}},
+		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",           "Remettre les poussables"}},
+		{'S', {[] (DevScreen const& ds) { return ds.m_stone_reachable;  },       "Cacher la zone SR  ",               "Afficher la zone SR"}},
+		{'T', {[] (DevScreen const& ds) { return ds.m_tunnels;  },               "Cacher les tunnels  ",              "Afficher les tunnels"}},
+		{'V', {[] (DevScreen const&)    { return true; },                        "Calculer un chemin",                ""}},
+		{'W', {[] (DevScreen const& ds) { return ds.m_aff_chemin; },             "Cacher le chemin  ",                "Afficher le chemin"}},
+		{'Z', {[] (DevScreen const& ds) { return ds.m_zone_access;  },           "Cacher la zone accessible  ",       "Afficher la zone accessible"}},
 	};
 
 	// Affichage
@@ -378,11 +392,38 @@ void DevScreen::afficher_carte() const {
 #endif
 
 	// Initialisation
-	std::vector<unsigned char> poussees = m_solv3->poussees(m_carte, m_pers->coord());
-	std::vector<bool> zone    = m_solv3->zone_accessible(m_carte, m_pers->coord());
-	std::vector<bool> zone_i  = m_solv3->zone_interdite(m_carte);
-	std::vector<bool> zone_sr = m_solv3->zone_sr(m_carte);
+	std::vector<bool> zone = m_solv3->zone_accessible(m_carte, m_pers->coord());
 	auto ref = manip::coord(5, 9);
+	std::vector<bool> zone_sr;
+	Coord empl_conseil;
+
+	if (m_influence == Coord(-1, -1)) {
+		zone_sr      = m_solv3->zone_sr(m_carte);
+		empl_conseil = m_solv3->choix_empl(m_carte, {});
+	} else {
+		zone_sr = m_solv3->zone_sr(m_carte, m_influence);
+
+		std::list<Coord> empls;
+		for (auto p : m_solv3->infos_cases(m_influence).distances) {
+			empls.push_back(p.first);
+		}
+
+		empl_conseil = m_solv3->choix_empl(m_carte, empls);
+	}
+
+	// "suppression" des poussables
+	std::list<std::shared_ptr<moteur::Poussable>> poussables;
+	if (m_influence != Coord(-1, -1)) {
+		for (auto pous : m_carte->liste<moteur::Poussable>()) {
+			if (pous->coord() != m_influence) {
+				poussables.push_back(pous);
+				(*m_carte)[pous->coord()]->pop();
+			}
+		}
+	}
+
+	std::vector<unsigned char> poussees = m_solv3->poussees(m_carte, m_pers->coord());
+	std::vector<bool> zone_i = m_solv3->zone_interdite(m_carte);
 
 	// Repères
 	for (int i = 0; i < m_carte->taille_x(); ++i) {
@@ -531,6 +572,8 @@ void DevScreen::afficher_carte() const {
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);
+				if (m_empl_conseil && obj->coord() == empl_conseil) st.fnd(style::BLEU);
+
 				std::cout << st << EMPL;
 
 			} else if (m_zone_access && zone[hash(obj->coord())]) {
@@ -544,5 +587,10 @@ void DevScreen::afficher_carte() const {
 
 		// Reset style
 		std::cout << style::defaut;
+	}
+
+	// retour des poussables
+	for (auto pous : poussables) {
+		m_carte->set(pous->coord(), pous);
 	}
 }

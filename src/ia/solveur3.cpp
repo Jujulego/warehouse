@@ -1,6 +1,7 @@
 // Importations
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -69,6 +70,10 @@ unsigned char Solveur3::Empl::dirs() const {
 
 // Méthodes
 Chemin Solveur3::resoudre(posstream<std::ostream>&) {
+	// Outils
+	struct Etat {
+	};
+
 	return Chemin();
 }
 
@@ -318,7 +323,7 @@ std::vector<Solveur3::Empl> const& Solveur3::infos_empls() const {
 
 	// Déduction depuis les infos
 	std::vector<Infos> const& infos = infos_cases();
-	c_infos_empls.resize(infos.size());
+	c_infos_empls.resize(infos.size(), Empl {0, {}});
 
 	// Parcours des emplacements
 	int num = 1;
@@ -391,6 +396,86 @@ bool Solveur3::zone_interdite(Coord const& c) const {
 
 Solveur3::Empl const& Solveur3::infos_empls(Coord const& c) const {
 	return infos_empls()[hash(c)];
+}
+
+unsigned Solveur3::heuristique(std::shared_ptr<moteur::Carte> carte) const {
+	return 0;
+}
+
+Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, std::list<Coord> empls) const {
+	// Suppression de toutes les coordonées ne correspondant pas à un emplacement
+	empls.erase(
+		std::remove_if(empls.begin(), empls.end(),
+			[&carte] (Coord const& empl) {
+				return carte->get<moteur::Emplacement>(empl) == nullptr;
+			}
+		),
+		empls.end()
+	);
+
+	// Pas de choix ...
+	if (empls.size() == 1) return empls.front();
+	if (empls.size() == 0) {
+		// Sélection de tous les emplacements vides
+		for (auto empl : carte->liste<moteur::Emplacement>()) {
+			if (!empl->a_bloc()) empls.push_back(empl->coord());
+		}
+	}
+
+	// Suppression du personnage
+	std::vector<Empl> infos = infos_empls();
+	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
+	(*carte)[pers->coord()]->pop();
+
+	// Choix !
+	size_t nb_prio = std::numeric_limits<size_t>::max();
+	Coord choix = ORIGINE;
+
+	for (auto empl : empls) {
+		// Décompte des priorités
+		std::list<Coord> marques;
+		std::queue<Coord> file;
+		int nb = -1;
+
+		marques.push_back(empl);
+		file.push(empl);
+
+		// Algo
+		while (!file.empty()) {
+			Coord c = file.front();
+			file.pop();
+
+			// Décompte
+			if (carte->get<moteur::Emplacement>(c)) {
+				++nb;
+
+				// Condition d'arrêt prématuré
+				if (nb >= nb_prio) break;
+			}
+
+			// Suivants
+			for (auto prio : infos[hash(empl)].suivants) {
+				if (!(*carte)[prio.first]->accessible()) continue;
+				if (!(*carte)[prio.second]->accessible()) continue;
+				if (std::find(marques.begin(), marques.end(), prio.second) != marques.end()) continue;
+
+				marques.push_back(prio.second);
+				file.push(prio.second);
+			}
+		}
+
+		// Choix !
+		if (nb < nb_prio) {
+			choix = empl;
+			nb_prio = nb;
+		}
+
+		if (nb_prio == 0) break; // peu pas faire mieux !
+	}
+
+	carte->set(pers->coord(), pers);
+
+	return choix;
 }
 
 std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
