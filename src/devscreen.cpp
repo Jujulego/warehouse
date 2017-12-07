@@ -142,6 +142,20 @@ void DevScreen::afficher() {
 			m_zone_interdite = !m_zone_interdite;
 			break;
 
+		case 'o': {
+			Coord p = select_case();
+			if (p != Coord(-1, -1)) {
+				auto pous = m_carte->get<moteur::Poussable>(p);
+
+				if (pous) {
+					(*m_carte)[p]->pop();
+					m_poussables.push_back(pous);
+				}
+			}
+
+			break;
+		}
+
 		case 'p':
 			if (m_poussables.size() == 0)
 				pop_poussables();
@@ -293,11 +307,6 @@ void DevScreen::pop_poussables() {
 }
 
 void DevScreen::reset_poussables() {
-	// Nettoyage
-	for (auto po : m_carte->liste<moteur::Poussable>()) {
-		(*m_carte)[po->coord()]->pop();
-	}
-
 	// Remise en place
 	bool p = false;
 	for (auto po : m_poussables) {
@@ -322,6 +331,7 @@ void DevScreen::afficher_status() const {
 		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",    "Afficher les zones empls"}},
 		{'H', {[] (DevScreen const& ds) { return ds.m_intersections;  },         "Cacher les intersections  ",  "Afficher les intersections"}},
 		{'I', {[] (DevScreen const& ds) { return ds.m_zone_interdite;  },        "Cacher la zone interdite  ",  "Afficher la zone interdite"}},
+		{'O', {[] (DevScreen const&)    { return true; },                        "Enlever un poussable ",       ""}},
 		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",     "Remettre les poussables"}},
 		{'S', {[] (DevScreen const& ds) { return ds.m_stone_reachable;  },       "Cacher la zone SR  ",         "Afficher la zone SR"}},
 		{'T', {[] (DevScreen const& ds) { return ds.m_tunnels;  },               "Cacher les tunnels  ",        "Afficher les tunnels"}},
@@ -370,7 +380,8 @@ void DevScreen::afficher_carte() const {
 	// Initialisation
 	std::vector<unsigned char> poussees = m_solv3->poussees(m_carte, m_pers->coord());
 	std::vector<bool> zone    = m_solv3->zone_accessible(m_carte, m_pers->coord());
-	std::vector<bool> zone_sr = m_solv3->zone_atteignable(m_carte);
+	std::vector<bool> zone_i  = m_solv3->zone_interdite(m_carte);
+	std::vector<bool> zone_sr = m_solv3->zone_sr(m_carte);
 	auto ref = manip::coord(5, 9);
 
 	// Repères
@@ -420,7 +431,7 @@ void DevScreen::afficher_carte() const {
 			// Poussable ?
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
 			if (pobj) {
-				std::vector<bool> z = m_solv3->zone_atteignable(m_carte, pobj->coord());
+				std::vector<bool> z = m_solv3->zone_sr(m_carte, pobj->coord());
 				bool f = false;
 
 				// le poussable peut-il aller jusqu'à la fin ?
@@ -463,13 +474,19 @@ void DevScreen::afficher_carte() const {
 		} else {
 			// Style
 			if (st.fnd() == style::DEFAUT_FOND) {
-				if (m_zone_interdite && m_solv3->zone_interdite(obj->coord())) {
-					st.fnd(style::ROUGE);
+				if (m_zone_interdite) {
+					if (m_solv3->zone_interdite(obj->coord())) {
+						st.fnd(style::ROUGE);
+					} else if (zone_i[hash(obj->coord())]) {
+						st.fnd(style::JAUNE);
+					}
 				}
 
 				if (m_stone_reachable && zone_sr[hash(obj->coord())]) {
 					if (st.fnd() == style::ROUGE) {
 						st.fnd(style::VIOLET);
+					} else if (st.fnd() == style::JAUNE) {
+						st.fnd(style::VERT);
 					} else {
 						st.fnd(style::CYAN);
 					}

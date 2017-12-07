@@ -182,33 +182,33 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 unsigned Solveur2::heuristique(std::shared_ptr<moteur::Carte> const& carte) const {
 	// Recherche des emplacement && boites
 	std::vector<Coord> empl;
-	
+
 	for (auto pt : carte->liste<moteur::Emplacement>()) {
 		// Oh ! un emplacement ! ;)
 		empl.push_back(pt->coord());
 	}
-	
+
 	// Calcul des distances
 	// il y a tjs autant d'emplacements que de boites :
 	struct Boites {
 		std::vector<int> distances;
 		int mini = INFINI;
 		int nb = 0;
-		
+
 		Boites(unsigned t) : distances(t, INFINI) {};
-		
+
 		bool operator < (Boites const& b) const {
 			if (nb == b.nb) {
 				return mini > b.mini;
 			}
-			
+
 			return nb > b.nb;
 		}
-		
+
 		int get(unsigned i) const {
 			return distances[i];
 		}
-		
+
 		void set(unsigned i, int d) {
 			// Evolution du compte de distances
 			if (d != INFINI) {
@@ -216,77 +216,77 @@ unsigned Solveur2::heuristique(std::shared_ptr<moteur::Carte> const& carte) cons
 				mini = std::min(d, mini);
 			} else if (distances[i] != INFINI) {
 				--nb;
-				
+
 				for (auto v : distances) {
 					mini = std::min(v, mini);
 				}
 			}
-			
+
 			distances[i] = d;
 		}
-		
+
 		void suppr(unsigned i) {
 			set(i, INFINI);
 		}
-		
+
 		size_t size() const {
 			return distances.size();
 		}
 	};
-	
+
 	std::vector<Boites> distances(empl.size(), Boites(empl.size()));
 	unsigned i = 0;
-	
+
 	for (auto pt : carte->liste<moteur::Poussable>()) {
 		auto dists = dists_empls(carte)[hash(pt->coord())];
-		
+
 		// Calcul !
 		for (unsigned j = 0; j < empl.size(); ++j) {
 			auto it = dists.find(empl[j]);
-			
+
 			if (it != dists.end()) {
 				distances[j].set(i, it->second);
 			}
 		}
-		
+
 		// incrementation !
 		++i;
 	}
-	
+
 	// Evaluation
 	std::sort(distances.begin(), distances.end());
 	unsigned r = 0;
-	
+
 	while (!distances.empty()) {
 		auto dist = distances.back();
 		distances.pop_back();
-		
+
 		// Test !
 		if (dist.nb == 0) return std::numeric_limits<unsigned>::max(); // Niveau impossible !
-		
+
 		// Recherche du minimum
 		unsigned mini = dist.size();
-		
+
 		for (unsigned j = 0; j < dist.size(); ++j) {
 			if (mini == dist.size() || dist.get(mini) > dist.get(j)) {
 				mini = j;
 			}
 		}
-		
+
 		if (mini != dist.size()) {
 			r += dist.get(mini);
-			
+
 			// suppression des autres tableaux
 			for (unsigned j = 0; j < distances.size(); ++j) {
 				distances[j].suppr(mini);
 			}
-			
+
 			std::sort(distances.begin(), distances.end());
 		} else {
 			return std::numeric_limits<unsigned>::max();
 		}
 	}
-	
+
 	return r;
 }
 

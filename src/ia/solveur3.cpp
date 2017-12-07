@@ -396,8 +396,6 @@ Solveur3::Empl const& Solveur3::infos_empls(Coord const& c) const {
 std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
 	// Détection des poussées en croisant les infos avec la zone accessible
 	std::vector<unsigned char> poussees(carte->taille_x() * carte->taille_y(), 0);
-	std::vector<Infos> const& infos = infos_cases();
-	std::vector<bool>         zone  = zone_accessible(carte, obj);
 
 	// Récupération du personnage
 	std::shared_ptr<moteur::Personnage> pers = carte->get<moteur::Personnage>(obj);
@@ -408,18 +406,11 @@ std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> car
 	for (auto po : carte->liste<moteur::Poussable>()) {
 		Coord c = po->coord();
 
-		// Propositions
-		unsigned char dirs = 0;
-
-		for (auto p : infos[hash(c)].empl_dirs) {
-			if (!carte->get<moteur::Emplacement>(p.first)->a_bloc()) dirs |= p.second;
-		}
-
 		// Test de directions
 		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
 			// Checks
-			if (!(dirs & get_mask(dir))) continue; // Proposée
-			if (!zone[hash(c - dir)])    continue; // Accessible
+			if (!carte->coord_valides(c - dir)) continue;
+			if (!(*carte)[c - dir]->accessible()) continue;
 			if (carte->deplacer(po->coord(), dir, pers->force() - po->poids(), true)) continue;
 
 			// Ajout !
@@ -432,7 +423,103 @@ std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> car
 	return poussees;
 }
 
-std::vector<bool> Solveur3::zone_atteignable(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
+std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte) const {
+	// Base statique
+	std::vector<Infos> const& infos = infos_cases();
+	std::vector<bool> zone = zone_interdite();
+
+	// Récupération du personnage
+	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
+	(*carte)[pers->coord()]->pop();
+
+	// Zones interdites causées par les poussables
+	std::queue<Coord> intersections;
+
+	for (auto pous : carte->liste<moteur::Poussable>()) {
+		Coord c = pous->coord();
+
+		// Cas du poussable sur intersection
+		if (infos[hash(c)].intersection) {
+			intersections.push(c);
+			continue;
+		}
+
+		// Tunnels : interdits jusqu'à sortie ou intersection
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			// Initialisation
+			Coord ct = c + dir;
+			if (!carte->coord_valides(ct)) continue;
+
+			// Parcours du tunnel
+			for (; carte->coord_valides(ct) && infos[hash(ct)].tunnel && infos[hash(ct)].interieur; ct += dir) {
+				zone[hash(ct)] = true;
+
+				if (infos[hash(ct)].intersection) {
+					intersections.push(ct);
+					break;
+				}
+			}
+
+			// Cas particulier des intersection hors du tunnel
+			if (infos[hash(ct)].intersection) {
+				intersections.push(ct);
+			}
+		}
+	}
+
+	// Prolongement des intersections
+	while (!intersections.empty()) {
+		// Défilage
+		Coord c = intersections.front();
+		intersections.pop();
+
+		// Tests
+		int nb_voies = 0;
+		int nb_inter = 0;
+
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			if (!carte->coord_valides(c + dir)) continue;
+
+			// Décomptes
+			if ((*carte)[c + dir]->accessible()) ++nb_voies;
+			if (zone[hash(c + dir)]) ++nb_inter;
+		}
+
+		// 2 voies pour 4 (ou 1 pour 3) : seule l'intersection est interdite
+		if (nb_voies - nb_inter == 2) {
+			zone[hash(c)] = true;
+		} else if ((nb_inter >= 2 || (nb_inter == 1 && nb_voies == 2)) && nb_inter != nb_voies) { // >= 2 voies => tunnel(s) restant(s) interdits
+			zone[hash(c)] = true;
+
+			for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+				if (!carte->coord_valides(c + dir)) continue;
+
+				// Interdiction de la voie restante
+				if (!zone[hash(c + dir)]) {
+					for (Coord ct = c + dir; carte->coord_valides(ct) && infos[hash(ct)].tunnel && infos[hash(ct)].interieur; ct += dir) {
+						zone[hash(ct)] = true;
+
+						if (infos[hash(ct)].intersection) {
+							intersections.push(ct);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Les emplacements ne sont pas interdits !
+	for (auto empl : carte->liste<moteur::Emplacement>()) {
+		zone[hash(empl->coord())] = false;
+	}
+
+	carte->set(pers->coord(), pers);
+
+	return zone;
+}
+
+std::vector<bool> Solveur3::zone_sr(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
 	// Initialisation
 	std::vector<bool> resultat(carte->taille_x() * carte->taille_y(), false);
 
@@ -497,12 +584,12 @@ std::vector<bool> Solveur3::zone_atteignable(std::shared_ptr<moteur::Carte> cart
 	return resultat;
 }
 
-std::vector<bool> Solveur3::zone_atteignable(std::shared_ptr<moteur::Carte> carte) const {
+std::vector<bool> Solveur3::zone_sr(std::shared_ptr<moteur::Carte> carte) const {
 	// Calcul
 	std::vector<bool> resultat(carte->taille_x() * carte->taille_y(), false);
 
 	for (auto pous : m_carte->liste<moteur::Poussable>()) {
-		std::vector<bool> r = zone_atteignable(carte, pous->coord());
+		std::vector<bool> r = zone_sr(carte, pous->coord());
 
 		for (int i = 0; i < carte->taille_x() * carte->taille_y(); ++i) {
 			resultat[i] = r[i] || resultat[i];
