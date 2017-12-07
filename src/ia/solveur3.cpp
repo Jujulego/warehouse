@@ -522,6 +522,7 @@ std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte)
 
 	for (auto pous : carte->liste<moteur::Poussable>()) {
 		Coord c = pous->coord();
+		zone[hash(c)] = true;
 
 		// Cas du poussable sur intersection
 		if (infos[hash(c)].intersection) {
@@ -540,14 +541,21 @@ std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte)
 				zone[hash(ct)] = true;
 
 				if (infos[hash(ct)].intersection) {
+					zone[hash(ct)] = false;
 					intersections.push(ct);
 					break;
-				}
-			}
+				} else if (infos[hash(ct)].coin) {
+					// on tourne au coins
+					for (auto ndir : {HAUT, BAS, GAUCHE, DROITE}) {
+						if ((ndir == dir) || (ndir == -dir)) continue;
+						if (!carte->coord_valides(ct + ndir)) continue;
 
-			// Cas particulier des intersection hors du tunnel
-			if (infos[hash(ct)].intersection) {
-				intersections.push(ct);
+						if ((*carte)[ct + ndir]->accessible()) {
+							dir = ndir;
+							break;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -561,19 +569,33 @@ std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte)
 		// Tests
 		int nb_voies = 0;
 		int nb_inter = 0;
+		std::vector<Coord> dir_inter;
 
 		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
 			if (!carte->coord_valides(c + dir)) continue;
 
 			// Décomptes
-			if ((*carte)[c + dir]->accessible()) ++nb_voies;
-			if (zone[hash(c + dir)]) ++nb_inter;
+			if ((*carte)[c + dir]->accessible()) {
+				++nb_voies;
+
+				if (zone[hash(c + dir)]) {
+					dir_inter.push_back(dir);
+					++nb_inter;
+				}
+			}
 		}
 
 		// 2 voies pour 4 (ou 1 pour 3) : seule l'intersection est interdite
 		if (nb_voies - nb_inter == 2) {
-			zone[hash(c)] = true;
-		} else if ((nb_inter >= 2 || (nb_inter == 1 && nb_voies == 2)) && nb_inter != nb_voies) { // >= 2 voies => tunnel(s) restant(s) interdits
+			if (nb_voies != 3) {
+				zone[hash(c)] = true;
+			} else {
+				if ((*carte)[c - dir_inter[0]]->accessible()) {
+					zone[hash(c)] = true;
+				}
+			}
+
+		} else if (nb_inter != nb_voies && ((nb_voies == 2 && nb_inter == 1) || (nb_voies == 3 && nb_inter == 2) || (nb_voies == 4 &&  nb_inter >= 2))) {
 			zone[hash(c)] = true;
 
 			for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
@@ -587,16 +609,22 @@ std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte)
 						if (infos[hash(ct)].intersection) {
 							intersections.push(ct);
 							break;
+						} else if (infos[hash(ct)].coin) {
+							// on tourne au coins
+							for (auto ndir : {HAUT, BAS, GAUCHE, DROITE}) {
+								if ((ndir == dir) || (ndir == -dir)) continue;
+								if (!carte->coord_valides(ct + ndir)) continue;
+
+								if ((*carte)[ct + ndir]->accessible()) {
+									dir = ndir;
+									break;
+								}
+							}
 						}
 					}
 				}
 			}
 		}
-	}
-
-	// Les emplacements ne sont pas interdits !
-	for (auto empl : carte->liste<moteur::Emplacement>()) {
-		zone[hash(empl->coord())] = false;
 	}
 
 	carte->set(pers->coord(), pers);
