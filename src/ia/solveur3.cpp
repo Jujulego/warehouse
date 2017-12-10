@@ -414,13 +414,8 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, std::list<Coord
 	);
 
 	// Pas de choix ...
+	if (empls.size() == 0) return Coord(-1, -1);
 	if (empls.size() == 1) return empls.front();
-	if (empls.size() == 0) {
-		// Sélection de tous les emplacements vides
-		for (auto empl : carte->liste<moteur::Emplacement>()) {
-			if (!empl->a_bloc()) empls.push_back(empl->coord());
-		}
-	}
 
 	// Suppression du personnage
 	std::vector<Empl> infos = infos_empls();
@@ -428,7 +423,7 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, std::list<Coord
 	(*carte)[pers->coord()]->pop();
 
 	// Choix !
-	size_t nb_prio = std::numeric_limits<size_t>::max();
+	int nb_prio = std::numeric_limits<int>::max();
 	Coord choix = ORIGINE;
 
 	for (auto empl : empls) {

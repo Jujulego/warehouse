@@ -84,7 +84,7 @@ void DevScreen::afficher() {
 
 		case 'b':
 			if (m_influence == Coord(-1, -1)) {
-				m_influence = select_case();
+				m_influence = select_case([this] (Coord const& c) { return m_carte->get<moteur::Poussable>(c) != nullptr; });
 			} else {
 				m_influence = Coord(-1, -1);
 			}
@@ -155,7 +155,7 @@ void DevScreen::afficher() {
 			break;
 
 		case 'o': {
-			Coord p = select_case();
+			Coord p = select_case([this] (Coord const& c) { return m_carte->get<moteur::Poussable>(c) != nullptr; });
 			if (p != Coord(-1, -1)) {
 				auto pous = m_carte->get<moteur::Poussable>(p);
 
@@ -204,10 +204,10 @@ void DevScreen::afficher() {
 			m_chemin.clear();
 
 		{	// Calcul du chemin
-			Coord dep = select_case();
+			Coord dep = select_case([this] (Coord const& c) { return m_solv3->infos_cases(c).interieur; });
 			if (dep == Coord(-1, -1)) break;
 
-			Coord arr = select_case();
+			Coord arr = select_case([this] (Coord const& c) { return m_solv3->infos_cases(c).interieur; });
 			if (arr == Coord(-1, -1)) break;
 
 			ia::Chemin res;
@@ -259,6 +259,10 @@ void DevScreen::afficher() {
 }
 
 Coord DevScreen::select_case() {
+	return select_case([] (Coord const&) -> bool { return true; });
+}
+
+Coord DevScreen::select_case(std::function<bool(Coord const&)> const& pred) {
 	// Déclarations
 	m_selection = ORIGINE;
 	bool fin = false;
@@ -298,8 +302,39 @@ Coord DevScreen::select_case() {
 		}
 
 		// Déplacement
-		if (m_carte->coord_valides(m_selection + dir)) {
+		if (dir != ORIGINE) {
 			m_selection += dir;
+			while (m_carte->coord_valides(m_selection)) {
+				if (pred(m_selection)) break;
+
+				m_selection += dir;
+
+				// Limites
+				if (m_selection.x() < 0) {
+					m_selection.x() = m_carte->taille_x()-1;
+					m_selection.y()--;
+				}
+
+				if (m_selection.x() >= m_carte->taille_x()) {
+					m_selection.x() = 0;
+					m_selection.y()++;
+				}
+
+				if (m_selection.y() < 0) {
+					m_selection.y() = m_carte->taille_y()-1;
+					m_selection.x()--;
+				}
+
+				if (m_selection.y() >= m_carte->taille_y()) {
+					m_selection.y() = 0;
+					m_selection.x()++;
+				}
+			}
+		}
+
+		// Retour à l'origine
+		if (!m_carte->coord_valides(m_selection)) {
+			m_selection = ORIGINE;
 		}
 	}
 
@@ -399,13 +434,20 @@ void DevScreen::afficher_carte() const {
 
 	if (m_influence == Coord(-1, -1)) {
 		zone_sr      = m_solv3->zone_sr(m_carte);
-		empl_conseil = m_solv3->choix_empl(m_carte, {});
+
+		std::list<Coord> empls;
+		for (auto empl : m_carte->liste<moteur::Emplacement>()) {
+			if (zone_sr[hash(empl->coord())]) empls.push_back(empl->coord());
+		}
+
+		empl_conseil = m_solv3->choix_empl(m_carte, empls);
+
 	} else {
 		zone_sr = m_solv3->zone_sr(m_carte, m_influence);
 
 		std::list<Coord> empls;
-		for (auto p : m_solv3->infos_cases(m_influence).distances) {
-			empls.push_back(p.first);
+		for (auto p : m_solv3->infos_cases(m_influence).empl_dirs) {
+			if (zone_sr[hash(p.first)]) empls.push_back(p.first);
 		}
 
 		empl_conseil = m_solv3->choix_empl(m_carte, empls);

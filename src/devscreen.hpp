@@ -28,6 +28,7 @@ class DevScreen {
 		void afficher_status() const;
 
 		Coord select_case();
+		Coord select_case(std::function<bool(Coord const&)> const& pred);
 
 		void pop_poussables();
 		void reset_poussables();
