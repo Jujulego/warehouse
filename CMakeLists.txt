@@ -17,13 +17,13 @@ option(QT_ENABLE     "Compile l'interface graphique." ON)
 #
 # Paramètres
 #
-set(CMAKE_AUTOMOC               OFF)   # Activé au cas par cas
-set(CMAKE_AUTORCC               OFF)   # Activé au cas par cas
+set(CMAKE_AUTOMOC               OFF)
+set(CMAKE_AUTORCC               OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR   ${QT})
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-set(QT_RC_DIR         "${PROJECT_SOURCE_DIR}/ressources")
+set(QT_RESOURCE_DIR   "${PROJECT_SOURCE_DIR}/res")
 
 # Commandes
 set(CLANG_C_PARSER   clang)
@@ -90,7 +90,7 @@ endif()
 # Graphe d'appel
 if (GRAPHE_APPEL)
 	include(graphe)
-    
+
     # Détections des sources
     add_graphe_appel(warehouse)
 endif()

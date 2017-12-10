@@ -21,7 +21,7 @@ add_executable(warehouse
 	moteur/poussable.cpp
 	moteur/sortie.hpp
 	moteur/sortie.cpp
-	
+
 	# IAs
 	ia/ia.hpp
 	ia/ia.cpp
@@ -50,7 +50,7 @@ add_executable(warehouse
 	menu.cpp
 	niveau.hpp
 	niveau.cpp
-	
+
 	# Outils
 	outils.hpp
 	outils/console.cpp
@@ -73,5 +73,15 @@ target_link_libraries(warehouse
 if (QT_ENABLE)
 	target_link_libraries(warehouse
 		Qt5::Widgets
+	)
+
+	set_target_properties(warehouse
+		PROPERTIES
+			AUTOMOC ON
+			AUTORCC ON
+	)
+
+	target_sources(warehouse
+		PUBLIC ../res/tileset/res-iso.qrc
 	)
 endif()

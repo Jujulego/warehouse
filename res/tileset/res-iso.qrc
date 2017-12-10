@@ -1,0 +1,101 @@
+<!DOCTYPE RCC>
+<RCC>
+<qresource prefix="tileset/bloc">
+	<file alias="briques.png">Blocks/block_01.png</file>
+	<file alias="gris.png"   >Blocks/block_02.png</file>
+	<file alias="marron.png" >Blocks/block_03.png</file>
+	<file alias="rouge.png"  >Blocks/block_08.png</file>
+</qresource>
+<qresource prefix="tileset/caisse">
+	<file alias="marron.png">Crates/crate_02.png</file>
+	<file alias="rouge.png" >Crates/crate_03.png</file>
+	<file alias="bleue.png" >Crates/crate_04.png</file>
+	<file alias="verte.png" >Crates/crate_05.png</file>
+	<file alias="grise.png" >Crates/crate_06.png</file>
+
+	<file alias="marron_sombre.png">Crates/crate_12.png</file>
+	<file alias="rouge_sombre.png" >Crates/crate_13.png</file>
+	<file alias="bleue_sombre.png" >Crates/crate_14.png</file>
+	<file alias="verte_sombre.png" >Crates/crate_15.png</file>
+	<file alias="grise_sombre.png" >Crates/crate_16.png</file>
+
+	<file alias="marron_sale.png">Crates/crate_22.png</file>
+	<file alias="rouge_sale.png" >Crates/crate_23.png</file>
+	<file alias="bleue_sale.png" >Crates/crate_24.png</file>
+	<file alias="verte_sale.png" >Crates/crate_25.png</file>
+	<file alias="grise_sale.png" >Crates/crate_26.png</file>
+
+	<file alias="marron_plate.png">Crates/crate_32.png</file>
+	<file alias="rouge_plate.png" >Crates/crate_33.png</file>
+	<file alias="bleue_plate.png" >Crates/crate_34.png</file>
+	<file alias="verte_plate.png" >Crates/crate_35.png</file>
+	<file alias="grise_plate.png" >Crates/crate_36.png</file>
+
+	<file alias="marron_validee.png">Crates/crate_37.png</file>
+	<file alias="rouge_validee.png" >Crates/crate_38.png</file>
+	<file alias="bleue_validee.png" >Crates/crate_39.png</file>
+	<file alias="verte_validee.png" >Crates/crate_40.png</file>
+	<file alias="grise_validee.png" >Crates/crate_41.png</file>
+</qresource>
+<qresource prefix="tileset/environ">
+	<file alias="emplacement.png">Environment/environment_15.png</file>
+	<file alias="empl_marron.png">Environment/environment_01.png</file>
+	<file alias="empl_rouge.png" >Environment/environment_04.png</file>
+	<file alias="empl_bleu.png"  >Environment/environment_07.png</file>
+	<file alias="empl_vert.png"  >Environment/environment_09.png</file>
+	<file alias="empl_gris.png"  >Environment/environment_13.png</file>
+
+	<file alias="piece_claire.png">Environment/environment_11.png</file>
+	<file alias="piece_sombre.png">Environment/environment_12.png</file>
+
+	<file alias="encadre.png">Environment/environment_06.png</file>
+	<file alias="encadre_20.png">Environment/environment_03.png</file>
+	<file alias="encadre_10.png">Environment/environment_16.png</file>
+</qresource>
+<qresource prefix="tileset/sol">
+	<file alias="vert.png"  >Ground/ground_05.png</file>
+	<file alias="gris.png"  >Ground/ground_06.png</file>
+	<file alias="marron.png">Ground/ground_01.png</file>
+
+	<file alias="vert_encadre.png"  >Ground/ground_02.png</file>
+	<file alias="gris_encadre.png"  >Ground/ground_03.png</file>
+	<file alias="marron_encadre.png">Ground/ground_04.png</file>
+</qresource>
+<qresource prefix="tileset/perso">
+	<file alias="bas_01.png">Player/player_23.png</file>
+	<file alias="bas_02.png">Player/player_24.png</file>
+	<file alias="bas_03.png">Player/player_01.png</file>
+
+	<file alias="haut_01.png">Player/player_02.png</file>
+	<file alias="haut_02.png">Player/player_03.png</file>
+	<file alias="haut_03.png">Player/player_04.png</file>
+
+	<file alias="droite_01.png">Player/player_11.png</file>
+	<file alias="droite_02.png">Player/player_12.png</file>
+	<file alias="droite_03.png">Player/player_13.png</file>
+
+	<file alias="gauche_01.png">Player/player_14.png</file>
+	<file alias="gauche_02.png">Player/player_15.png</file>
+	<file alias="gauche_03.png">Player/player_16.png</file>
+
+	<file alias="bas_sombre_01.png">Player/player_05.png</file>
+	<file alias="bas_sombre_02.png">Player/player_06.png</file>
+	<file alias="bas_sombre_03.png">Player/player_07.png</file>
+
+	<file alias="haut_sombre_01.png">Player/player_08.png</file>
+	<file alias="haut_sombre_02.png">Player/player_09.png</file>
+	<file alias="haut_sombre_03.png">Player/player_10.png</file>
+
+	<file alias="droite_sombre_01.png">Player/player_17.png</file>
+	<file alias="droite_sombre_02.png">Player/player_18.png</file>
+	<file alias="droite_sombre_03.png">Player/player_19.png</file>
+
+	<file alias="gauche_sombre_01.png">Player/player_20.png</file>
+	<file alias="gauche_sombre_02.png">Player/player_21.png</file>
+	<file alias="gaiche_sombre_03.png">Player/player_22.png</file>
+
+	<file alias="tete.png">./playerFace.png</file>
+	<file alias="tete_sombre.png">./playerFace_dark.png</file>
+	<file alias="tete_contour.png">./playerFace_outline.png</file>
+</qresource>
+</RCC>

@@ -1,8 +1,10 @@
-QT += widgets
+QT += core gui
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 QMAKE_CXXFLAGS += -std=c++14 -g3 -Wall -Wextra
-INCLUDEPATH += src
-DEFINES += QTCREATOR
+INCLUDEPATH    += src
+DEFINES        += QTCREATOR QT_DEPRECATED_WARNINGS
 
 DISTFILES += \ 
     carte.txt \ 
@@ -11,6 +13,9 @@ DISTFILES += \
     yoshio.xsb \ 
     microban1.xsb \ 
     microban2.xsb
+
+RESOURCES += \
+	res/tileset/res-iso.qrc
 
 HEADERS += src/moteur/carte.hpp \
 	src/moteur/deplacable.hpp \
