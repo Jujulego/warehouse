@@ -1,19 +1,10 @@
 #pragma once
 
 // Importations
+#include <algorithm>
 #include <sstream>
 #include <string>
 
-// Min et Max
-template<class T, class U>
-auto min(T const& t1, U const& t2) {
-	return t1 < t2 ? t1 : t2;
-}
-
-template<class T, class U>
-auto max(T const& t1, U const& t2) {
-	return t1 > t2 ? t1 : t2;
-}
 
 #ifdef __gnu_linux__
 using std::to_string;

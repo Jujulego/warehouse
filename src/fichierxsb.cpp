@@ -31,7 +31,7 @@ std::shared_ptr<moteur::Carte> generer_carte(std::vector<std::string> const& maz
 	unsigned larg = 0;
 
 	for (std::string s : maze) {
-		larg = max(s.size(), larg);
+        larg = std::max(s.size(), larg);
 	}
 
 	// Allocation de la carte

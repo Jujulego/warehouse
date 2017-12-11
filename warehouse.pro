@@ -2,7 +2,8 @@ QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-QMAKE_CXXFLAGS += -std=c++14 -g3 -Wall -Wextra
+CONFIG += c++14
+QMAKE_CXXFLAGS += -g3 -Wall -Wextra
 INCLUDEPATH    += src
 DEFINES        += QTCREATOR QT_DEPRECATED_WARNINGS
 
@@ -43,6 +44,7 @@ HEADERS += src/moteur/carte.hpp \
 	src/outils/coord.hpp \
 	src/outils/manip.hpp \
 	src/outils/style.hpp \
+    src/qt/fenetremenu.h
 	
 SOURCES += src/moteur/carte.cpp \
 	src/moteur/deplacable.cpp \
@@ -70,4 +72,5 @@ SOURCES += src/moteur/carte.cpp \
 	src/outils/coord.cpp \
 	src/outils/manip.cpp \
 	src/outils/style.cpp \
+    src/qt/fenetremenu.cpp
 	

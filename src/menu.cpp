@@ -42,25 +42,25 @@ void Menu::afficher() const {
 	// Ajout des entrées & évaluation de la largeur max des entrees
 	for (auto p : m_entrees) {
 		entrees[p.second.ordre] = p.first;
-		larg = max(larg, p.first.size());
+        larg = std::max(larg, p.first.size());
 	}
 	
 	larg += 2 + MARGE;
 	entrees.push_back("Quitter");
 	
 	// Evaluation du nombre necessaire de lignes
-	nb_lignes = max((larg * entrees.size()) / (LARGEUR - larg), NB_LIGNES);
+    nb_lignes = std::max((larg * entrees.size()) / (LARGEUR - larg), NB_LIGNES);
 	
 	if (nb_lignes > NB_LIGNES) {
 		nb_lignes = entrees.size() / (entrees.size() / nb_lignes +1) +1; // optimisation
 	}
 	
 	// Fonctions utiles
-	auto calcul_pos = [&] (int i) -> auto { return manip::coord(i/nb_lignes * larg, i % nb_lignes); };
+    auto calcul_pos = [&] (int i) { return manip::coord(i/nb_lignes * larg, i % nb_lignes); };
 	
 	posstream<std::ostream> stream(&std::cout, (LARGEUR - (larg * ((entrees.size() / nb_lignes) + 1))) / 2, 9);
 	auto maj_aff = [&] () -> void {
-		std::cout << manip::clear << manip::coord(0, 9 + min(entrees.size(), nb_lignes));
+        std::cout << manip::clear << manip::coord(0, 9 + std::min(entrees.size(), nb_lignes));
 
 		// Entete
 		afficher_entete(ORIGINE);

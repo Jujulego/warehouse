@@ -85,7 +85,7 @@ void Niveau::init_aff() {
 	std::cout << manip::coord(posx,    posy++) << " - " << style::gras << "Q" << style::nongras << " : quitter";
 	
 	if (!m_infos.empty()) {
-		auto dep = manip::coord(5, max(12 + m_carte->taille_y(), 20));
+        auto dep = manip::coord(5, std::max(12 + m_carte->taille_y(), 20));
 		
 		for (auto p : m_infos) {
 			if (p.first != "Title") {
@@ -194,7 +194,7 @@ bool Niveau::jouer() {
 			
 			case 'q':
 				fin = true;
-				__attribute__((fallthrough));
+//				__attribute__((fallthrough));
 			
 			case 'i':
 				if (fut_chemin.valid()) {
@@ -207,7 +207,7 @@ bool Niveau::jouer() {
 				if (fut_chemin.valid()) break;
 
 				DevScreen(carte).afficher();
-				__attribute__((fallthrough));
+//				__attribute__((fallthrough));
 
 			case 'l':
 				init_aff();

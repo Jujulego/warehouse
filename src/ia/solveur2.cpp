@@ -163,7 +163,7 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 		}
 
 		// Affichage
-		min_heu = min(min_heu, etat.ordre);
+        min_heu = std::min(min_heu, etat.ordre);
 		aff = (aff + 1) % MAJ_AFF;
 		if (!aff) {
 			auto lck = console::lock();

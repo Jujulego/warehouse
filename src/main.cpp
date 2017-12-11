@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include <QApplication>
-#include <QLabel>
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QTranslator>
@@ -12,6 +11,8 @@
 
 #include "outils/manip.hpp"
 #include "outils/style.hpp"
+
+#include "qt/fenetremenu.h"
 
 #include "affichage.hpp"
 #include "fichierxsb.hpp"
@@ -35,8 +36,8 @@ int main(int argc, char* argv[]) {
     app.installTranslator(&translator);
 
     // Petite fenetre
-    QLabel label(" Bon courage ! ;) ");
-    label.show();
+    FenetreMenu fen;
+    fen.show();
 
     return app.exec();
 }
