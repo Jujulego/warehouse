@@ -11,7 +11,9 @@ public:
 
 private:
 
-    QPushButton* m_bouttonJouer;
+    QPushButton* m_boutonJouer;
+    QPushButton* m_boutonQuitter;
+
 
 };
 

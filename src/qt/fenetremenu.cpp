@@ -1,17 +1,24 @@
 #include "fenetremenu.h"
 #include <QPushButton>
-#include <QHBoxLayout>
+#include <QVBoxLayout>
 FenetreMenu::FenetreMenu()
 {
     //Taille de la fenêtre
     setMinimumSize(600, 400);
 
-    //création du boutton jouer
-    m_bouttonJouer = new QPushButton(QIcon(":/tileset/caisse/bleue.png"), "Jouer");
+    //création du bouton jouer
+    m_boutonJouer = new QPushButton(QIcon(":/tileset/caisse/bleue.png"), "Jouer");
 
     //Création d'un layout
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addWidget(m_bouttonJouer);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(m_boutonJouer);
+
+    //Création du bouton quitter
+    m_boutonQuitter = new QPushButton("Quitter");
+    layout->addWidget(m_boutonQuitter);
+
+
+
     setLayout(layout);
 
 }
