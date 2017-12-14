@@ -610,7 +610,13 @@ void DevScreen::afficher_carte() const {
 
 			} else if (m_priorites && m_solv3->infos_empls(obj->coord()).zone) {
 				if (st.fnd() == style::DEFAUT_FOND) st.txt(style::CYAN);
-				std::cout << st << fleches[m_solv3->infos_empls(obj->coord()).dirs()];
+				int nb = 0;
+				for (auto p : m_solv3->infos_empls(obj->coord()).prios) {
+					if ((*m_carte)[p]->accessible() || (p == m_pers->coord())) ++nb;
+				}
+
+				std::cout << st << nb;
+//				std::cout << st << fleches[m_solv3->infos_empls(obj->coord()).dirs()];
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);

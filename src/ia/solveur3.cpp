@@ -61,8 +61,8 @@ bool Solveur3::Infos::test(Coord const& empl, Coord const& dir) const {
 unsigned char Solveur3::Empl::dirs() const {
 	unsigned char dirs = 0;
 
-	for (auto p : suivants) {
-		dirs |= get_mask((p.second - p.first) / 2);
+	for (auto p : prios) {
+		dirs |= get_mask(p - pos);
 	}
 
 	return dirs;
@@ -323,7 +323,12 @@ std::vector<Solveur3::Empl> const& Solveur3::infos_empls() const {
 
 	// Déduction depuis les infos
 	std::vector<Infos> const& infos = infos_cases();
-	c_infos_empls.resize(infos.size(), Empl {0, {}});
+	c_infos_empls.resize(infos.size(), Empl {0, ORIGINE, {}});
+
+	// Init pos attr
+	for (size_t h = 0; h < c_infos_empls.size(); ++h) {
+		c_infos_empls[h].pos = hash.unhash(h);
+	}
 
 	// Parcours des emplacements
 	int num = 1;
@@ -369,7 +374,9 @@ std::vector<Solveur3::Empl> const& Solveur3::infos_empls() const {
 				// Lien !
 				Coord pc = c - dir;
 				if (m_carte->coord_valides(pc) && !m_carte->get<moteur::Obstacle>(pc)) {
-					c_infos_empls[hash(c)].suivants.push_back({pc, nc});
+					c_infos_empls[hash(pc)].prios.push_back(nc);
+					c_infos_empls[hash(c) ].prios.push_back(nc);
+					//c_infos_empls[hash(c)].suivants.push_back({pc, nc});
 				}
 
 				// Marque
@@ -449,13 +456,14 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, std::list<Coord
 			}
 
 			// Suivants
-			for (auto prio : infos[hash(empl)].suivants) {
-				if (!(*carte)[prio.first]->accessible()) continue;
-				if (!(*carte)[prio.second]->accessible()) continue;
-				if (std::find(marques.begin(), marques.end(), prio.second) != marques.end()) continue;
+			for (auto prio : infos[hash(empl)].prios) {
+				Coord dir = prio - c;
+				if (!(*carte)[prio]->accessible()) continue;
+				if ((abs(dir.x() + dir.y()) == 2) && !(*carte)[c + dir/2]->accessible()) continue;
+				if (std::find(marques.begin(), marques.end(), prio) != marques.end()) continue;
 
-				marques.push_back(prio.second);
-				file.push(prio.second);
+				marques.push_back(prio);
+				file.push(prio);
 			}
 		}
 

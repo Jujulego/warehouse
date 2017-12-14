@@ -50,9 +50,8 @@ class Solveur3 : public IA {
 		struct Empl {
 			// Attributs
 			int zone;
-
-			// Doit être libre >vvvvv vvvvv< Pour accéder à
-			std::list<std::pair<Coord,Coord>> suivants;
+			Coord pos;
+			std::list<Coord> prios; // Cases prioritaires sur cet emplacement
 
 			// Méthodes
 			unsigned char dirs() const;
