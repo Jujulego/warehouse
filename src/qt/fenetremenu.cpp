@@ -1,6 +1,8 @@
 #include "fenetremenu.h"
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QApplication>
+
 FenetreMenu::FenetreMenu()
 {
     //Taille de la fenêtre
@@ -16,6 +18,11 @@ FenetreMenu::FenetreMenu()
     //Création du bouton quitter
     m_boutonQuitter = new QPushButton("Quitter");
     layout->addWidget(m_boutonQuitter);
+
+    //Configuration bouton quitter
+    QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
+
+    qApp->setStyleSheet("QWidget {background-image: url(./tilset/caisse.bleue.png) }");
 
 
 

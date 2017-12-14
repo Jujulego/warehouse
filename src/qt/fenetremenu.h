@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QPushButton>
+#include <QApplication>
 
 
 class FenetreMenu : public QWidget {
