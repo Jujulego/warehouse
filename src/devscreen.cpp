@@ -294,7 +294,7 @@ Coord DevScreen::select_case(std::function<bool(Coord const&)> const& pred) {
 
 		case 'c': // Annulation
 			m_selection = Coord(-1, -1);
-			__attribute__((fallthrough));
+//			__attribute__((fallthrough));
 
 		case ENTREE:
 			fin = true;
@@ -369,7 +369,7 @@ void DevScreen::reset_poussables() {
 
 void DevScreen::afficher_status() const {
 	// Initialisation
-	static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
+    /*static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
 		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ",          "Afficher les déplacables"}},
 		{'B', {[] (DevScreen const&)    { return true; },                        "Montrer l'influence d'un poussable ", ""}},
 		{'C', {[] (DevScreen const& ds) { return ds.m_poussees; },               "Cacher les poussees  ",             "Afficher les poussees"}},
@@ -403,9 +403,9 @@ void DevScreen::afficher_status() const {
 		}
 
 		stream << std::endl;
-	}
+    }
 
-	stream << "- " << style::gras << "Q" << style::nongras << " : Retour au jeu !";
+    stream << "- " << style::gras << "Q" << style::nongras << " : Retour au jeu !";*/
 }
 
 void DevScreen::afficher_carte() const {

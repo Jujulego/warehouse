@@ -64,7 +64,7 @@ std::shared_ptr<Carte> Carte::charger(std::string const& fichier) {
 	std::ifstream ifs(fichier);
 	
 	// Création de la carte
-	unsigned tx, ty;
+    size_t tx, ty;
 	ifs >> tx; ifs >> ty;
 	
 	auto carte = std::make_shared<Carte>(tx, ty);
@@ -80,7 +80,7 @@ std::shared_ptr<Carte> Carte::charger(std::string const& fichier) {
 		std::getline(ifs, buf);
 		
 		// Création des blocs
-		for (unsigned x = 0; x < min(buf.size(), tx); ++x) {
+        for (unsigned x = 0; x < std::min(buf.size(), tx); ++x) {
 			switch (buf[x]) {
 			case '#':
 				carte->set(x, y, std::make_shared<Obstacle>(x, y, Obstacle::mur));

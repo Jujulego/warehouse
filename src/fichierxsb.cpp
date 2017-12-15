@@ -28,10 +28,10 @@ FichierXSB::FichierXSB(std::string nom) {
 
 // Méthodes
 std::shared_ptr<moteur::Carte> generer_carte(std::vector<std::string> const& maze) {
-	unsigned larg = 0;
+    size_t larg = 0;
 
 	for (std::string s : maze) {
-		larg = max(s.size(), larg);
+        larg = std::max(s.size(), larg);
 	}
 
 	// Allocation de la carte
@@ -135,4 +135,8 @@ Menu FichierXSB::as_menu() const {
 	}
 
 	return menu;
+}
+
+std::vector<Niveau> const& FichierXSB::niveaux() const {
+	return m_niveaux;
 }
