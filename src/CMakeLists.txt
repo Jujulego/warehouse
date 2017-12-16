@@ -83,5 +83,11 @@ if (QT_ENABLE)
 
 	target_sources(warehouse
 		PUBLIC ../res/tileset/res-iso.qrc
+
+		PUBLIC qt/fenetremenu.h
+		PUBLIC qt/fenetremenu.cpp
 	)
+
+#	add_definitions(-DQTCREATOR)
+	add_definitions(-DQT_DEPRECATED_WARNINGS)
 endif()

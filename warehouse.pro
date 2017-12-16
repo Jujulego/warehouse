@@ -2,7 +2,7 @@ QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += C++14
+CONFIG         += c++14
 QMAKE_CXXFLAGS += -g3 -Wall -Wextra
 INCLUDEPATH    += src
 DEFINES        += QTCREATOR QT_DEPRECATED_WARNINGS
@@ -16,7 +16,7 @@ DISTFILES += \
     microban2.xsb
 
 RESOURCES += \
-        res/tileset/res-iso.qrc
+	res/tileset/res-iso.qrc
 
 HEADERS += src/moteur/carte.hpp \
 	src/moteur/deplacable.hpp \
@@ -44,7 +44,7 @@ HEADERS += src/moteur/carte.hpp \
 	src/outils/coord.hpp \
 	src/outils/manip.hpp \
 	src/outils/style.hpp \
-    src/qt/fenetremenu.h
+	src/qt/fenetremenu.h \
 	
 SOURCES += src/moteur/carte.cpp \
 	src/moteur/deplacable.cpp \
@@ -72,5 +72,5 @@ SOURCES += src/moteur/carte.cpp \
 	src/outils/coord.cpp \
 	src/outils/manip.cpp \
 	src/outils/style.cpp \
-    src/qt/fenetremenu.cpp
+	src/qt/fenetremenu.cpp \
 	

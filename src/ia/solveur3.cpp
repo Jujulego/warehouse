@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <queue>
+#include <set>
 #include <stack>
 #include <vector>
 
@@ -406,79 +407,111 @@ Solveur3::Empl const& Solveur3::infos_empls(Coord const& c) const {
 }
 
 unsigned Solveur3::heuristique(std::shared_ptr<moteur::Carte> carte) const {
-	return 0;
-}
+	// Structure
+	struct Arc {
+		// Attributs
+		Coord pous;
+		Coord empl;
+		int dist;
 
-Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, std::list<Coord> empls) const {
-	// Suppression de toutes les coordonées ne correspondant pas à un emplacement
-	empls.erase(
-		std::remove_if(empls.begin(), empls.end(),
-			[&carte] (Coord const& empl) {
-				return carte->get<moteur::Emplacement>(empl) == nullptr;
-			}
-		),
-		empls.end()
-	);
-
-	// Pas de choix ...
-	if (empls.size() == 0) return Coord(-1, -1);
-	if (empls.size() == 1) return empls.front();
-
-	// Suppression du personnage
-	std::vector<Empl> infos = infos_empls();
-	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
-	(*carte)[pers->coord()]->pop();
-
-	// Choix !
-	int nb_prio = std::numeric_limits<int>::max();
-	Coord choix = ORIGINE;
-
-	for (auto empl : empls) {
-		// Décompte des priorités
-		std::list<Coord> marques;
-		std::queue<Coord> file;
-		int nb = -1;
-
-		marques.push_back(empl);
-		file.push(empl);
-
-		// Algo
-		while (!file.empty()) {
-			Coord c = file.front();
-			file.pop();
-
-			// Décompte
-			if (carte->get<moteur::Emplacement>(c)) {
-				++nb;
-
-				// Condition d'arrêt prématuré
-				if (nb >= nb_prio) break;
-			}
-
-			// Suivants
-			for (auto prio : infos[hash(empl)].prios) {
-				Coord dir = prio - c;
-				if (!(*carte)[prio]->accessible()) continue;
-				if ((abs(dir.x() + dir.y()) == 2) && !(*carte)[c + dir/2]->accessible()) continue;
-				if (std::find(marques.begin(), marques.end(), prio) != marques.end()) continue;
-
-				marques.push_back(prio);
-				file.push(prio);
-			}
+		// Opérateurs
+		bool operator < (Arc const& a) const {
+			return dist < a.dist;
 		}
+	};
 
-		// Choix !
-		if (nb < nb_prio) {
-			choix = empl;
-			nb_prio = nb;
+	// Récupération des distances
+	std::set<Coord> pouss = std::set<Coord>(std::less<Coord>(hash));
+	std::set<Coord> empls = std::set<Coord>(std::less<Coord>(hash));
+	std::list<Arc> arcs;
+
+	for (auto pous : carte->liste<moteur::Poussable>()) {
+		pouss.insert(pous->coord());
+
+		for (auto p : infos_cases(pous->coord()).distances) {
+			arcs.push_back(Arc { pous->coord(), p.first, p.second });
+			empls.insert(p.first);
 		}
-
-		if (nb_prio == 0) break; // peu pas faire mieux !
 	}
 
-	carte->set(pers->coord(), pers);
+	// Associations
+	arcs.sort();
+	unsigned heu = 0;
 
-	return choix;
+	for (Arc arc : arcs) {
+		auto ite = empls.find(arc.empl);
+		auto itp = pouss.find(arc.pous);
+
+		if (ite != empls.end() && itp != pouss.end()) {
+			// Majs
+			heu += arc.dist;
+			empls.erase(ite);
+			pouss.erase(itp);
+
+			if (empls.empty() && pouss.empty()) break;
+		}
+	}
+
+	return heu;
+}
+
+Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
+	// Checks
+	if (carte->get<moteur::Poussable>(obj) == nullptr) return Coord(-1, -1);
+
+	// Structure
+	struct Arc {
+		// Attributs
+		Coord pous;
+		Coord empl;
+		int dist;
+
+		// Opérateurs
+		bool operator < (Arc const& a) const {
+			return dist < a.dist;
+		}
+	};
+
+	// Ne concerne que les emplacements accessibles au poussable
+	std::vector<bool> zone = zone_sr(carte, obj);
+
+	// Récupération des distances
+	std::set<Coord> pouss = std::set<Coord>(std::less<Coord>(hash));
+	std::set<Coord> empls = std::set<Coord>(std::less<Coord>(hash));
+	std::list<Arc> arcs;
+
+	for (auto pous : carte->liste<moteur::Poussable>()) {
+		int nb = 0;
+		for (auto p : infos_cases(pous->coord()).distances) {
+			if (!zone[hash(p.first)]) continue;
+
+			arcs.push_back(Arc { pous->coord(), p.first, p.second });
+			empls.insert(p.first);
+			++nb;
+		}
+
+		if (pous->coord() != obj && nb) pouss.insert(pous->coord());
+	}
+
+	// Associations
+	arcs.sort();
+	unsigned heu = 0;
+
+	for (Arc arc : arcs) {
+		auto ite = empls.find(arc.empl);
+		auto itp = pouss.find(arc.pous);
+
+		if (ite != empls.end() && itp != pouss.end()) {
+			// Majs
+			heu += arc.dist;
+			empls.erase(ite);
+			pouss.erase(itp);
+
+			if (empls.size() == 1) break;
+		}
+	}
+
+	return *(empls.begin());
 }
 
 std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {

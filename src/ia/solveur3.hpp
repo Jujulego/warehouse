@@ -75,7 +75,7 @@ class Solveur3 : public IA {
 
 		// - analyse dynamique
 		unsigned heuristique(std::shared_ptr<moteur::Carte> carte) const;
-		Coord choix_empl(std::shared_ptr<moteur::Carte> carte, std::list<Coord> empls) const;
+		Coord choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 
 		std::vector<bool> zone_interdite(std::shared_ptr<moteur::Carte> carte) const;

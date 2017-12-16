@@ -36,7 +36,6 @@ class DevScreen {
 		// Attributs
 		std::hash<Coord> hash;
 		bool m_aff_chemin     = false;
-		bool m_empl_conseil   = false;
 		bool m_deplacables    = true;
 		bool m_directions     = false;
 		bool m_intersections  = false;
@@ -54,6 +53,7 @@ class DevScreen {
 		ia::Solveur3* m_solv3;
 		std::shared_ptr<moteur::Carte> m_carte;
 		std::shared_ptr<moteur::Personnage> m_pers;
+		std::shared_ptr<moteur::Poussable> m_empl_conseil = nullptr;
 		std::list<std::shared_ptr<moteur::Poussable>> m_poussables;
 		std::map<Coord,unsigned char> m_chemin;
 };

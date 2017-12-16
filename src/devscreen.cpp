@@ -46,12 +46,32 @@ void DevScreen::afficher() {
 	std::cout << manip::clear;
 	afficher_entete(ORIGINE);
 
+	// Streams
+	posstream<std::ostream> heu_stream(&std::cout, 5, 11 + m_carte->taille_y());
+	posstream<std::ostream> pec_stream(&std::cout, 5, 12 + m_carte->taille_y());
+
 	// Getch !
 	bool continuer = true;
 	while (continuer) {
 		// Affichage !
 		afficher_carte();
 		afficher_status();
+
+		// Maj heuristique
+		heu_stream << manip::eff_ligne;
+		heu_stream << "Heuristique : " << m_solv3->heuristique(m_carte);
+
+		pec_stream << manip::eff_ligne;
+		pec_stream << "PEC         : ";
+
+		if (m_empl_conseil) {
+			pec_stream << (char)('A' + m_empl_conseil->coord().x()) << m_empl_conseil->coord().y() +1 << " > ";
+
+			Coord c = m_solv3->choix_empl(m_carte, m_empl_conseil->coord());
+			pec_stream << (char)('A' + c.x()) << c.y() +1;
+		} else {
+			pec_stream << "nullptr";
+		}
 
 		// Interaction !
 		Coord dir = ORIGINE;
@@ -150,9 +170,16 @@ void DevScreen::afficher() {
 			m_zone_interdite = !m_zone_interdite;
 			break;
 
-		case 'j':
-			m_empl_conseil = !m_empl_conseil;
+		case 'j': {
+			if (m_empl_conseil) {
+				m_empl_conseil = nullptr;
+			} else {
+				Coord p = select_case([this] (Coord const& c) { return m_carte->get<moteur::Poussable>(c) != nullptr; });
+				m_empl_conseil = m_carte->get<moteur::Poussable>(p);
+			}
+
 			break;
+		}
 
 		case 'o': {
 			Coord p = select_case([this] (Coord const& c) { return m_carte->get<moteur::Poussable>(c) != nullptr; });
@@ -294,7 +321,10 @@ Coord DevScreen::select_case(std::function<bool(Coord const&)> const& pred) {
 
 		case 'c': // Annulation
 			m_selection = Coord(-1, -1);
-//			__attribute__((fallthrough));
+
+            #ifdef __gnu_linux__
+            __attribute__((fallthrough));
+            #endif
 
 		case ENTREE:
 			fin = true;
@@ -368,8 +398,9 @@ void DevScreen::reset_poussables() {
 }
 
 void DevScreen::afficher_status() const {
+#ifdef __gnu_linux__
 	// Initialisation
-    /*static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
+    static std::map<char,std::tuple<std::function<bool(DevScreen const&)>,std::string,std::string>> options = {
 		{'A', {[] (DevScreen const& ds) { return ds.m_deplacables; },            "Cacher les déplacables  ",          "Afficher les déplacables"}},
 		{'B', {[] (DevScreen const&)    { return true; },                        "Montrer l'influence d'un poussable ", ""}},
 		{'C', {[] (DevScreen const& ds) { return ds.m_poussees; },               "Cacher les poussees  ",             "Afficher les poussees"}},
@@ -379,7 +410,7 @@ void DevScreen::afficher_status() const {
 		{'G', {[] (DevScreen const& ds) { return ds.m_zones_empls;  },           "Cacher les zones empls  ",          "Afficher les zones empls"}},
 		{'H', {[] (DevScreen const& ds) { return ds.m_intersections;  },         "Cacher les intersections  ",        "Afficher les intersections"}},
 		{'I', {[] (DevScreen const& ds) { return ds.m_zone_interdite;  },        "Cacher la zone interdite  ",        "Afficher la zone interdite"}},
-		{'J', {[] (DevScreen const& ds) { return ds.m_empl_conseil;  },          "Cacher l'emplacement conseillé  ",  "Afficher l'emplacement conseillé"}},
+		{'J', {[] (DevScreen const& ds) { return ds.m_empl_conseil != nullptr; },"Cacher l'emplacement conseillé  ",  "Afficher l'emplacement conseillé"}},
 		{'O', {[] (DevScreen const&)    { return true; },                        "Enlever un poussable ",             ""}},
 		{'P', {[] (DevScreen const& ds) { return ds.m_poussables.size() == 0; }, "Enlever les poussables ",           "Remettre les poussables"}},
 		{'S', {[] (DevScreen const& ds) { return ds.m_stone_reachable;  },       "Cacher la zone SR  ",               "Afficher la zone SR"}},
@@ -405,7 +436,8 @@ void DevScreen::afficher_status() const {
 		stream << std::endl;
     }
 
-    stream << "- " << style::gras << "Q" << style::nongras << " : Retour au jeu !";*/
+    stream << "- " << style::gras << "Q" << style::nongras << " : Retour au jeu !";
+#endif
 }
 
 void DevScreen::afficher_carte() const {
@@ -433,24 +465,11 @@ void DevScreen::afficher_carte() const {
 	Coord empl_conseil;
 
 	if (m_influence == Coord(-1, -1)) {
-		zone_sr      = m_solv3->zone_sr(m_carte);
+		zone_sr = m_solv3->zone_sr(m_carte);
+	}
 
-		std::list<Coord> empls;
-		for (auto empl : m_carte->liste<moteur::Emplacement>()) {
-			if (zone_sr[hash(empl->coord())]) empls.push_back(empl->coord());
-		}
-
-		empl_conseil = m_solv3->choix_empl(m_carte, empls);
-
-	} else {
-		zone_sr = m_solv3->zone_sr(m_carte, m_influence);
-
-		std::list<Coord> empls;
-		for (auto p : m_solv3->infos_cases(m_influence).empl_dirs) {
-			if (zone_sr[hash(p.first)]) empls.push_back(p.first);
-		}
-
-		empl_conseil = m_solv3->choix_empl(m_carte, empls);
+	if (m_empl_conseil) {
+		empl_conseil = m_solv3->choix_empl(m_carte, m_empl_conseil->coord());
 	}
 
 	// "suppression" des poussables
