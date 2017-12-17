@@ -466,6 +466,8 @@ void DevScreen::afficher_carte() const {
 
 	if (m_influence == Coord(-1, -1)) {
 		zone_sr = m_solv3->zone_sr(m_carte);
+	} else {
+		zone_sr = m_solv3->zone_sr(m_carte, m_influence);
 	}
 
 	if (m_empl_conseil) {

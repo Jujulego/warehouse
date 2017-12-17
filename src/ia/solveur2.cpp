@@ -290,7 +290,7 @@ unsigned Solveur2::heuristique(std::shared_ptr<moteur::Carte> const& carte) cons
 	return r;
 }
 
-std::list<Solveur2::Poussee> Solveur2::recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj, Coord const& prec) const {
+std::list<Solveur2::Poussee> Solveur2::recup_poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj, Coord const& /*prec*/) const {
 	// Evaluation des positions accessibles
 	std::vector<bool> zone = zone_accessible(carte, obj);
 	

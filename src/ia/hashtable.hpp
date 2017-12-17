@@ -18,7 +18,7 @@ struct Egal {
 	bool operator () (std::vector<int> const& r1, std::vector<int> const& r2) const;
 };
 
-// HashTable !
+// HashTable ! pour carte reduite
 using HashTable = std::unordered_set<std::vector<int>,Hash,Egal>;
 
 } // ia

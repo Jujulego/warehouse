@@ -33,64 +33,64 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 	std::queue<std::shared_ptr<Noeud>> file;
 	file.push(std::make_shared<Noeud>());
 	HashTable historique;
-	
+
 	// Stats
 	steady_clock::time_point debut = steady_clock::now();
 	int noeuds_t = 0, noeuds_at = 1, aff = 0;
-	
+
 	// Algo
 	while (!file.empty()) {
 		// Interruption ?
 		if (m_interruption) break;
-		
+
 		// Extraction du noeud suivant
 		auto noeud = file.front();
 		file.pop();
-		
+
 		noeuds_t++;
-		
+
 		// Calcul de la nouvelle carte
 		Coord obj = m_obj->coord();
 		std::shared_ptr<moteur::Carte> carte = noeud->carte(m_carte, obj, m_obj->force());
-		
+
 		// A-t-on (enfin) trouvé ?
 		if (carte->test_fin()) {
 			auto lck = console::lock();
-			
+
 			// nb de noeuds traités
 			stream << manip::eff_ligne;
 			stream << ((double) noeuds_t) / noeuds_at * 100 << " % (" << noeuds_t << " / " << noeuds_at << ")";
-			
+
 			// temps passé
 			stream << " en " << duration_cast<milliseconds>(steady_clock::now() - debut).count() << " ms";
-			
+
 			return noeud->chemin_complet();
 		}
-		
+
 		// Ajout à l'historique
-		auto p = historique.insert(reduire(carte));
+		auto p = historique.insert(reduire(carte, true));
 		if (!p.second) { // Si la carte à déjà été traitée ...
 			continue;
 		}
-		
+
 		// Ignoré en cas de deadlock
 		bool dl = false;
 		for (auto pt : carte->liste<moteur::Poussable>()) {
 			dl |= deadlock(carte, pt, obj, m_obj->force());
-			
+
 			if (dl) break;
 		}
-		
+
 		if (dl) {
 			continue;
 		}
-		
+
 		// Préparation des noeuds suivants
 		for (Coord m : mouvements(carte->get<moteur::Deplacable>(obj))) {
 			file.push(std::make_shared<Noeud>(m, noeud));
 			noeuds_at++;
 		}
-		
+
 		// Affichage
 		aff = (aff + 1) % MAJ_AFF;
 		if (!aff) {
@@ -99,7 +99,7 @@ Chemin Solveur::resoudre(posstream<std::ostream>& stream) {
 			stream << ((double) noeuds_t) / noeuds_at * 100 << " % (" << noeuds_t << " / " << noeuds_at << ")";
 		}
 	}
-	
+
 	// Y a pas de solution
 	return Chemin();
 }

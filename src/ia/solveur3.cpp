@@ -23,6 +23,8 @@
 #include "outils/posstream.hpp"
 
 #include "chemin.hpp"
+#include "hashtable.hpp"
+#include "noeud.hpp"
 #include "solveur3.hpp"
 
 // Macros
@@ -73,7 +75,19 @@ unsigned char Solveur3::Empl::dirs() const {
 Chemin Solveur3::resoudre(posstream<std::ostream>&) {
 	// Outils
 	struct Etat {
+		// Attributs
+		std::shared_ptr<Noeud> noeud;
+		unsigned dist;
 	};
+
+	// Initialisation, iterative deepning A*
+	std::list<Etat> feuilles;
+	HashTable historique;
+
+	feuilles.push_back(Etat { std::make_shared<Noeud>(), 0 });
+	historique.insert(reduire(m_carte));
+
+	
 
 	return Chemin();
 }
@@ -494,20 +508,20 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& ob
 	}
 
 	// Associations
-	arcs.sort();
-	unsigned heu = 0;
+	if (empls.size() > 1) {
+		arcs.sort();
 
-	for (Arc arc : arcs) {
-		auto ite = empls.find(arc.empl);
-		auto itp = pouss.find(arc.pous);
+		for (Arc arc : arcs) {
+			auto ite = empls.find(arc.empl);
+			auto itp = pouss.find(arc.pous);
 
-		if (ite != empls.end() && itp != pouss.end()) {
-			// Majs
-			heu += arc.dist;
-			empls.erase(ite);
-			pouss.erase(itp);
+			if (ite != empls.end() && itp != pouss.end()) {
+				// Majs
+				empls.erase(ite);
+				pouss.erase(itp);
 
-			if (empls.size() == 1) break;
+				if (empls.size() == 1) break;
+			}
 		}
 	}
 

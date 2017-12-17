@@ -68,7 +68,7 @@ class IA {
 		std::atomic<bool> m_interruption;
 
 		// Outils
-		std::vector<int> reduire(std::shared_ptr<moteur::Carte> const& c) const;
+		std::vector<int> reduire(std::shared_ptr<moteur::Carte> const& c, bool pos_pers = false) const; // pos_pers => stockage précis des coord personnage
 		std::list<Coord> mouvements(std::shared_ptr<moteur::Deplacable> const& obj) const;
 		bool comparer(std::shared_ptr<moteur::Carte> const& c1, std::shared_ptr<moteur::Carte> const& c2) const;
 };

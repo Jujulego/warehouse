@@ -307,18 +307,26 @@ bool IA::trouver_chemin(std::shared_ptr<moteur::Carte> carte, Coord const& dep, 
 	return false;
 }
 
-std::vector<int> IA::reduire(std::shared_ptr<moteur::Carte> const& carte) const {
+std::vector<int> IA::reduire(std::shared_ptr<moteur::Carte> const& carte, bool pos_pers) const {
 	// Déclarations
 	int tc = carte->taille_x() * carte->taille_y();
 	std::vector<int> reduction(1, 0);
 
-	// Personnage
-	for (auto pt : carte->liste<moteur::Deplacable>()) {
-		Coord c = pt->coord();
+	// Réduction !
+	for (auto pt : carte->liste<moteur::Poussable>()) {
+		reduction.push_back(pt->poids() * tc + hash(pt->coord()));
+	}
 
-		// Réduction !
-		     if (cast<moteur::Personnage>(pt) != nullptr) reduction[0] = hash(c);
-		else if (cast<moteur::Poussable>( pt) != nullptr) reduction.push_back(cast<moteur::Poussable>(pt)->poids() * tc + hash(c));
+	// Infos personnage
+	Coord p = carte->personnage()->coord();
+	if (pos_pers) {
+		reduction.push_back(hash(p));
+
+	} else {
+		// Stockage de la "zone" => coord 1ere case zone accessible
+		std::vector<bool> zone = zone_accessible(carte, p);
+		auto it = std::find(zone.begin(), zone.end(), true);
+		reduction.push_back(zone.begin() - it);
 	}
 
 	// Tri !
