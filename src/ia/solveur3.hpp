@@ -57,6 +57,13 @@ class Solveur3 : public IA {
 			unsigned char dirs() const;
 		};
 
+		struct Mouv {
+			// Attributs
+			Chemin chemin;
+			unsigned heuristique;
+			std::shared_ptr<moteur::Poussable> poussable;
+		};
+
 		// Constructeur
 		Solveur3(std::shared_ptr<moteur::Carte> carte, std::shared_ptr<moteur::Deplacable> obj);
 
@@ -81,6 +88,8 @@ class Solveur3 : public IA {
 		std::vector<bool> zone_interdite(std::shared_ptr<moteur::Carte> carte) const;
 		std::vector<bool> zone_sr(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;  // Par le poussable obj
 		std::vector<bool> zone_sr(std::shared_ptr<moteur::Carte> carte) const; // "Somme" de celle de touts les poussables
+
+		std::list<Mouv> mouvements(std::shared_ptr<moteur::Carte> carte) const; // Calculs des mouvements possibles
 
 	private:
 		// Cache

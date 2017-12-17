@@ -49,28 +49,58 @@ void DevScreen::afficher() {
 	// Streams
 	posstream<std::ostream> heu_stream(&std::cout, 5, 11 + m_carte->taille_y());
 	posstream<std::ostream> pec_stream(&std::cout, 5, 12 + m_carte->taille_y());
+	posstream<std::ostream> mvt_stream(&std::cout, 5, 13 + m_carte->taille_y());
 
 	// Getch !
 	bool continuer = true;
+	int poussees = 1;
+	bool maj_pec = false;
+
 	while (continuer) {
 		// Affichage !
 		afficher_carte();
-		afficher_status();
+//		afficher_status();
 
-		// Maj heuristique
-		heu_stream << manip::eff_ligne;
-		heu_stream << "Heuristique : " << m_solv3->heuristique(m_carte);
+		if (poussees > 0) {
+			// Maj heuristique
+			heu_stream << manip::eff_ligne;
+			heu_stream << "Heuristique : " << m_solv3->heuristique(m_carte);
 
-		pec_stream << manip::eff_ligne;
-		pec_stream << "PEC         : ";
+			// Maj mouvements
+			mvt_stream << manip::eff_ligne;
+			mvt_stream << "Mouvements  : ";
 
-		if (m_empl_conseil) {
-			pec_stream << (char)('A' + m_empl_conseil->coord().x()) << m_empl_conseil->coord().y() +1 << " > ";
+			auto mvts = m_solv3->mouvements(m_carte);
+			mvts.sort(
+				[] (ia::Solveur3::Mouv const& mvt1, ia::Solveur3::Mouv const& mvt2) {
+					return mvt1.heuristique < mvt2.heuristique;
+				}
+			);
 
-			Coord c = m_solv3->choix_empl(m_carte, m_empl_conseil->coord());
-			pec_stream << (char)('A' + c.x()) << c.y() +1;
-		} else {
-			pec_stream << "nullptr";
+			for (auto mvt : mvts) {
+				Coord pous = mvt.poussable->coord();
+				Coord dest = mvt.chemin.appliquer(pous);
+
+				mvt_stream << (char)('A' + pous.x()) << pous.y() +1 << " > " << (char)('A' + dest.x()) << dest.y() +1 << " (" << mvt.heuristique << "), ";
+			}
+		}
+
+		if (poussees > 0 || maj_pec) {
+			// Maj Poussable Emplacement Choix
+			pec_stream << manip::eff_ligne;
+			pec_stream << "PEC         : ";
+
+			if (m_empl_conseil) {
+				pec_stream << (char)('A' + m_empl_conseil->coord().x()) << m_empl_conseil->coord().y() +1 << " > ";
+
+				Coord c = m_solv3->choix_empl(m_carte, m_empl_conseil->coord());
+				pec_stream << (char)('A' + c.x()) << c.y() +1;
+			} else {
+				pec_stream << "nullptr";
+			}
+
+			poussees = 0;
+			maj_pec = false;
 		}
 
 		// Interaction !
@@ -178,6 +208,8 @@ void DevScreen::afficher() {
 				m_empl_conseil = m_carte->get<moteur::Poussable>(p);
 			}
 
+			maj_pec = true;
+
 			break;
 		}
 
@@ -279,8 +311,7 @@ void DevScreen::afficher() {
 
 		// Déplacement
 		if (m_deplacables && dir != ORIGINE && m_influence == Coord(-1, -1)) {
-			int p;
-			m_pers->deplacer(dir, p);
+			m_pers->deplacer(dir, poussees);
 		}
 	}
 }
@@ -424,6 +455,7 @@ void DevScreen::afficher_status() const {
 	Coord ref(std::max(5 + m_carte->taille_x() * 2 + 4, 30), 9);
 	posstream<std::ostream> stream(&std::cout, ref);
 	stream << "Commandes : " << std::endl;
+
 	for (auto opt : options) {
 		stream << "- " << style::gras << opt.first << style::nongras << " : ";
 

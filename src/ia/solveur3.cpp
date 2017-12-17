@@ -77,17 +77,19 @@ Chemin Solveur3::resoudre(posstream<std::ostream>&) {
 	struct Etat {
 		// Attributs
 		std::shared_ptr<Noeud> noeud;
-		unsigned dist;
+		unsigned dist; // Distance parcourue
+		unsigned heu;  // Resultat de l'heuristique
 	};
 
 	// Initialisation, iterative deepning A*
 	std::list<Etat> feuilles;
 	HashTable historique;
 
-	feuilles.push_back(Etat { std::make_shared<Noeud>(), 0 });
+	feuilles.push_back(Etat { std::make_shared<Noeud>(), 0, heuristique(m_carte) });
 	historique.insert(reduire(m_carte));
 
-	
+	while (!feuilles.empty()) {
+	}
 
 	return Chemin();
 }
@@ -504,7 +506,7 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& ob
 			++nb;
 		}
 
-		if (pous->coord() != obj && nb) pouss.insert(pous->coord());
+		if (nb) pouss.insert(pous->coord());
 	}
 
 	// Associations
@@ -516,6 +518,8 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& ob
 			auto itp = pouss.find(arc.pous);
 
 			if (ite != empls.end() && itp != pouss.end()) {
+				if (arc.pous == obj) return arc.empl;
+
 				// Majs
 				empls.erase(ite);
 				pouss.erase(itp);
@@ -761,3 +765,101 @@ std::vector<bool> Solveur3::zone_sr(std::shared_ptr<moteur::Carte> carte) const 
 
 	return resultat;
 }
+
+std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> carte) const {
+	// Analyse générale
+	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
+	std::vector<Infos> infos = infos_cases();
+	std::vector<bool> z_a = zone_accessible(carte, pers->coord());
+
+	std::list<Coord> empls;
+	for (auto empl : m_carte->liste<moteur::Emplacement>()) {
+		empls.push_back(empl->coord());
+	}
+
+	// Analyse par poussable
+	std::list<Mouv> goal_cuts;
+	std::list<Mouv> mvts;
+
+	for (auto pous : carte->liste<moteur::Poussable>()) {
+		// Analyses
+		std::vector<bool> z_sr = zone_sr(carte, pous->coord());
+
+		(*carte)[pous->coord()]->pop();
+		std::vector<bool> z_i = zone_interdite(carte);
+		carte->set(pous->coord(), pous);
+
+		// Goal cut
+		bool goal_cut = false;
+
+		for (Coord empl : empls) {
+			if (pous->coord() == empl) {
+				goal_cut = false;
+				break;
+			}
+
+			goal_cut |= z_sr[hash(empl)];
+		}
+
+		if (goal_cut) {
+			// Choix de l'emplacement
+			Coord empl = choix_empl(carte, pous->coord());
+
+			// Calcul d'un chemin
+			Coord c = pous->coord();
+			Mouv mvt = { Chemin(), 0, pous };
+			if (trouver_chemin(carte, c, empl, mvt.chemin, pers->force())) {
+				// Evaluation de l'heuristique
+				auto copie = std::make_shared<moteur::Carte>(*carte);
+				mvt.chemin.appliquer(copie, c, pers->force());
+				mvt.heuristique = heuristique(copie);
+
+				goal_cuts.push_back(mvt);
+
+				continue; // on ignore le reste
+			}
+		}
+
+		if (!goal_cuts.empty()) continue;
+
+		// On retire le personnage
+		(*carte)[pers->coord()]->pop();
+
+		// Poussees unitaires
+		Coord c = pous->coord();
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			// Checks
+			if (!carte->coord_valides(c - dir)) continue; // validité
+			if (!z_a[hash(c - dir)]) continue;            // accessibilité
+			if (z_i[hash(c + dir)])  continue;            // deadlock ?
+			if (carte->deplacer(c, dir, pers->force() - pous->poids(), true)) continue; // possible
+
+			// Préparation
+			Mouv mvt = { Chemin(), 0, pous };
+			mvt.chemin.ajouter(dir);
+
+			// tunnel macro
+/*			if (infos[hash(c + dir)].tunnel && !infos[hash(c + dir)].intersection) {
+				Coord pos = c;
+
+				while ((infos[hash(pos)].porte & get_mask(dir)) == 0) {
+					pos += dir;
+					mvt.chemin.ajouter(dir);
+				}
+			}*/
+
+			// Evaluation de l'heuristique
+			auto copie = std::make_shared<moteur::Carte>(*carte);
+			mvt.chemin.appliquer(copie, c, pers->force());
+			mvt.heuristique = heuristique(copie);
+
+			mvts.push_back(mvt);
+		}
+
+		// On remet le personnage
+		carte->set(pers->coord(), pers);
+	}
+
+	return goal_cuts.empty() ? mvts : goal_cuts;
+}
+
