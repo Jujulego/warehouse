@@ -59,7 +59,7 @@ void DevScreen::afficher() {
 	while (continuer) {
 		// Affichage !
 		afficher_carte();
-		afficher_status();
+//		afficher_status();
 
 		if (poussees > 0) {
 			// Maj heuristique
@@ -568,19 +568,13 @@ void DevScreen::afficher_carte() const {
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
 			if (pobj) {
 				std::vector<bool> z = m_solv3->zone_sr(m_carte, pobj->coord());
-				bool f = false;
-
-				// le poussable peut-il aller jusqu'à la fin ?
-				for (auto e : m_carte->liste<moteur::Emplacement>()) {
-					f |= z[hash(e->coord())];
-					if (f) break;
-				}
+				Coord empl = m_solv3->choix_empl(m_carte, pobj->coord());
 
 				if (st.fnd() == style::DEFAUT_FOND) {
-					if (m_carte->get<moteur::Emplacement>(pobj->coord())) {
+					if (obj->coord() == empl) {
 						st.txt(style::VERT);
-					} else if (f) {
-						st.txt(style::CYAN);
+					} else if (empl != Coord(-1, -1) && z[hash(empl)]) {
+						st.txt(style::BLEU);
 					} else {
 						st.txt(style::JAUNE);
 					}
@@ -669,7 +663,6 @@ void DevScreen::afficher_carte() const {
 				}
 
 				std::cout << st << nb;
-//				std::cout << st << fleches[m_solv3->infos_empls(obj->coord()).dirs()];
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);

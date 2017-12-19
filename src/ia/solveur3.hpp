@@ -4,11 +4,14 @@
 #include <map>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <vector>
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
 #include "outils/coord.hpp"
+#include "outils/matrice.hpp"
+#include "outils/nombre.hpp"
 #include "outils/posstream.hpp"
 
 #include "chemin.hpp"
@@ -34,11 +37,11 @@ class Solveur3 : public IA {
 			bool interieur = false;       // A l'intérieur des murs
 
 			unsigned char directions = 0;            // Directions vers tous les emplacements
-			std::map<Coord,int> distances;           // Distance aux emplacements
 			std::map<Coord,unsigned char> empl_dirs; // Directions aux emplacements
+			std::multimap<Coord,std::pair<Coord,unsigned>> distances; // Distances aux emplacements
 
 			// Constructeur
-			Infos(size_t factx) : distances(std::less<Coord>(factx)), empl_dirs(std::less<Coord>(factx)) {}
+			Infos(size_t factx) : empl_dirs(std::less<Coord>(factx)), distances(std::less<Coord>(factx)) {}
 
 			// Méthodes
 			void ajouter(Coord const& empl, Coord const& dir);
@@ -60,7 +63,7 @@ class Solveur3 : public IA {
 		struct Mouv {
 			// Attributs
 			Chemin chemin;
-			unsigned heuristique;
+			Nombre<unsigned> heuristique;
 			std::shared_ptr<moteur::Poussable> poussable;
 		};
 
@@ -81,7 +84,12 @@ class Solveur3 : public IA {
 		Empl const& infos_empls(Coord const& c) const;
 
 		// - analyse dynamique
-		unsigned heuristique(std::shared_ptr<moteur::Carte> carte) const;
+		std::pair<Matrice<Nombre<unsigned>>,std::set<Coord>> associations(std::shared_ptr<moteur::Carte> carte) const;
+		std::pair<Matrice<Nombre<unsigned>>,std::set<Coord>> associations(std::vector<Coord> const& poussables, std::vector<Coord> const& emplacements, Coord const& pers) const;
+
+		Nombre<unsigned> heuristique(std::shared_ptr<moteur::Carte> carte) const;
+		Nombre<unsigned> heuristique(Matrice<Nombre<unsigned>> const& matrice, std::set<Coord> const& selection) const;
+
 		Coord choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 

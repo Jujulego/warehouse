@@ -11,6 +11,7 @@
 #include <stack>
 #include <vector>
 
+#include <iomanip>
 #include <iostream>
 
 #include "moteur/carte.hpp"
@@ -20,6 +21,9 @@
 #include "moteur/poussable.hpp"
 #include "outils.hpp"
 #include "outils/coord.hpp"
+#include "outils/hongrois.hpp"
+#include "outils/matrice.hpp"
+#include "outils/nombre.hpp"
 #include "outils/posstream.hpp"
 
 #include "chemin.hpp"
@@ -77,8 +81,8 @@ Chemin Solveur3::resoudre(posstream<std::ostream>&) {
 	struct Etat {
 		// Attributs
 		std::shared_ptr<Noeud> noeud;
-		unsigned dist; // Distance parcourue
-		unsigned heu;  // Resultat de l'heuristique
+		unsigned dist;        // Distance parcourue
+		Nombre<unsigned> heu; // Resultat de l'heuristique
 	};
 
 	// Initialisation, iterative deepning A*
@@ -101,49 +105,91 @@ std::vector<Solveur3::Infos> const& Solveur3::infos_cases() const {
 	// Création du tableau
 	c_infos.resize(m_carte->taille_x() * m_carte->taille_y(), Infos(m_carte->taille_y()));
 
-	// Parcours des emplacements
-	for (auto empl : m_carte->liste<moteur::Emplacement>()) {
-		// Init BFS
-		std::queue<Coord> file;
+	// Vidage de la carte
+	std::vector<std::shared_ptr<moteur::Deplacable>> deplacables;
+	for (auto depl : m_carte->liste<moteur::Deplacable>()) {
+		(*m_carte)[depl->coord()]->pop();
+		deplacables.push_back(depl);
+	}
 
-		c_infos[hash(empl->coord())].distances[empl->coord()] = 0;
-		file.push(empl->coord());
+	// Evaluation de la distance aux emplacements (pour poussables) => base heuristique
+	auto pous = std::make_shared<moteur::Poussable>(m_carte.get(), 1);
+
+	for (auto empl : m_carte->liste<moteur::Emplacement>()) {
+		// Initialisation BFS
+		std::map<std::pair<Coord,Coord>,bool,std::function<bool(std::pair<Coord,Coord> const&,std::pair<Coord,Coord> const&)>> marques(
+			[this] (std::pair<Coord,Coord> const& p1, std::pair<Coord,Coord> const& p2) {
+				return (hash(p1.first) == hash(p2.first)) ? (hash(p1.second) < hash(p2.second)) : (hash(p1.first) < hash(p2.first));
+			}
+		);
+		std::queue<std::pair<Coord,Coord>> file;
+
+		// Points de départs
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			Coord nc = empl->coord();
+			Coord np = empl->coord() - dir;
+
+			// Check
+			if (m_carte->get<moteur::Obstacle>(np)) continue;
+
+			// Initialisation
+			c_infos[hash(nc)].distances.emplace(empl->coord(), std::pair<Coord,int>(np, 0));
+			marques[{nc, np}] = true;
+			file.push({nc, np});
+		}
 
 		// Algo !
 		while (!file.empty()) {
 			// Défilage
-			Coord c = file.front();
+			Coord c = file.front().first;
+			Coord p = file.front().second;
 			file.pop();
 
-			// Evalutation des suivants !
-			int nd = c_infos[hash(c)].distances[empl->coord()] + 1;
+			// Zone accessible
+			m_carte->set(c, pous);
+			std::vector<bool> zone = zone_accessible(m_carte, p);
+			(*m_carte)[c]->pop();
 
+			// Evaluation de la distance des noeuds suivants
+			auto pit = c_infos[hash(c)].distances.equal_range(empl->coord());
+			unsigned dist = std::numeric_limits<unsigned>::max();
+
+			for (auto it = pit.first; it != pit.second; ++it) {
+				if (zone[hash(it->second.first)]) dist = std::min(dist, it->second.second);
+			}
+
+			dist += 1;
+
+			// Noeuds suivants !
 			for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
 				Coord nc = c - dir;
+				Coord np = c - 2*dir;
 
 				// Checks
 				if (!m_carte->coord_valides(nc))        continue; // validité
 				if (m_carte->get<moteur::Obstacle>(nc)) continue; // La case est un espace libre
 
-				// La case précédante est espace libre
-				if (m_carte->get<moteur::Obstacle>(nc - dir)) continue;
+				// La case précédante est espace libre accessible
+				if (m_carte->get<moteur::Obstacle>(np)) continue;
+				if (!zone[hash(np)])                    continue;
 
-				// Marquage
-				auto p = c_infos[hash(nc)].distances.emplace(empl->coord(), nd);
-				if (!p.second) {
-					// Ajout de la direction
-					if (p.first->second == nd) c_infos[hash(nc)].ajouter(empl->coord(), dir);
+				// Marques
+				if (marques[{nc, np}]) continue;
+				marques[{nc, np}] = true;
 
-					continue; // Déjà traité !
-				}
-
-				// Ajout de la direction
+				// Stockage des infos
+				c_infos[hash(nc)].distances.emplace(empl->coord(), std::pair<Coord,int>(np, dist));
 				c_infos[hash(nc)].ajouter(empl->coord(), dir);
 
 				// Enfilage
-				file.push(nc);
+				file.push({nc, np});
 			}
 		}
+	}
+
+	// Retour des objets
+	for (auto depl : deplacables) {
+		m_carte->set(depl->coord(), depl);
 	}
 
 	// Init DFS
@@ -393,7 +439,6 @@ std::vector<Solveur3::Empl> const& Solveur3::infos_empls() const {
 				if (m_carte->coord_valides(pc) && !m_carte->get<moteur::Obstacle>(pc)) {
 					c_infos_empls[hash(pc)].prios.push_back(nc);
 					c_infos_empls[hash(c) ].prios.push_back(nc);
-					//c_infos_empls[hash(c)].suivants.push_back({pc, nc});
 				}
 
 				// Marque
@@ -422,50 +467,86 @@ Solveur3::Empl const& Solveur3::infos_empls(Coord const& c) const {
 	return infos_empls()[hash(c)];
 }
 
-unsigned Solveur3::heuristique(std::shared_ptr<moteur::Carte> carte) const {
-	// Structure
-	struct Arc {
-		// Attributs
-		Coord pous;
-		Coord empl;
-		int dist;
-
-		// Opérateurs
-		bool operator < (Arc const& a) const {
-			return dist < a.dist;
-		}
-	};
-
-	// Récupération des distances
-	std::set<Coord> pouss = std::set<Coord>(std::less<Coord>(hash));
-	std::set<Coord> empls = std::set<Coord>(std::less<Coord>(hash));
-	std::list<Arc> arcs;
-
+std::pair<Matrice<Nombre<unsigned>>,std::set<Coord>> Solveur3::associations(std::shared_ptr<moteur::Carte> carte) const {
+	// Récupération des poussables
+	std::vector<Coord> poussables;
 	for (auto pous : carte->liste<moteur::Poussable>()) {
-		pouss.insert(pous->coord());
-
-		for (auto p : infos_cases(pous->coord()).distances) {
-			arcs.push_back(Arc { pous->coord(), p.first, p.second });
-			empls.insert(p.first);
-		}
+		poussables.push_back(pous->coord());
 	}
 
-	// Associations
-	arcs.sort();
-	unsigned heu = 0;
+	// Récupération des emplacements
+	std::vector<Coord> emplacements;
+	for (auto empl : carte->liste<moteur::Emplacement>()) {
+		emplacements.push_back(empl->coord());
+	}
 
-	for (Arc arc : arcs) {
-		auto ite = empls.find(arc.empl);
-		auto itp = pouss.find(arc.pous);
+	// Application de l'algo
+	return associations(poussables, emplacements, carte->personnage()->coord());
+}
 
-		if (ite != empls.end() && itp != pouss.end()) {
-			// Majs
-			heu += arc.dist;
-			empls.erase(ite);
-			pouss.erase(itp);
+std::pair<Matrice<Nombre<unsigned>>,std::set<Coord>> Solveur3::associations(std::vector<Coord> const& poussables, std::vector<Coord> const& emplacements, Coord const& pers) const {
+	// Vidage de la carte
+	std::vector<std::shared_ptr<moteur::Deplacable>> deplacables;
+	for (auto depl : m_carte->liste<moteur::Deplacable>()) {
+		(*m_carte)[depl->coord()]->pop();
+		deplacables.push_back(depl);
+	}
 
-			if (empls.empty() && pouss.empty()) break;
+	// Déclaration et remplissage de la matrice
+	Matrice<Nombre<unsigned>> matrice(poussables.size());
+	matrice.fill(INFINI);
+
+	auto pous = std::make_shared<moteur::Poussable>(m_carte.get(), 1);
+	bool ok = true;
+
+	for (int p = 0; p < poussables.size(); ++p) {
+		std::multimap<Coord,std::pair<Coord,unsigned>> distances = infos_cases(poussables[p]).distances;
+
+		// Zone accessible
+		m_carte->set(poussables[p], pous);
+		std::vector<bool> zone = zone_accessible(m_carte, pers);
+		(*m_carte)[poussables[p]]->pop();
+
+		// Récupération de la distance
+		int nb = 0;
+		for (int e = 0; e < emplacements.size(); ++e) {
+			auto pit = distances.equal_range(emplacements[e]);
+
+			for (auto it = pit.first; it != pit.second; ++it) {
+				if (!zone[hash(it->second.first)]) continue;
+
+				matrice[Coord(p, e)] = std::min(matrice[Coord(p, e)].val(), it->second.second);
+				++nb;
+			}
 		}
+
+		ok &= (nb != 0);
+	}
+
+	// Retour des objets
+	for (auto depl : deplacables) {
+		m_carte->set(depl->coord(), depl);
+	}
+
+	// Erreur
+	if (!ok) return {matrice, std::set<Coord>(std::less<Coord>(matrice.nb_lig()))};
+
+	// Application de l'algo
+	std::set<Coord> selection = algorithme_hongrois(matrice);
+	return {matrice, selection};
+}
+
+Nombre<unsigned> Solveur3::heuristique(std::shared_ptr<moteur::Carte> carte) const {
+	auto p = associations(carte);
+	return heuristique(p.first, p.second);
+}
+
+Nombre<unsigned> Solveur3::heuristique(Matrice<Nombre<unsigned>> const& matrice, std::set<Coord> const& selection) const {
+	if (selection.size() == 0) return INFINI;
+
+	unsigned heu = 0;
+	for (Coord sel : selection) {
+		heu += matrice[sel].val();
 	}
 
 	return heu;
@@ -475,61 +556,33 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& ob
 	// Checks
 	if (carte->get<moteur::Poussable>(obj) == nullptr) return Coord(-1, -1);
 
-	// Structure
-	struct Arc {
-		// Attributs
-		Coord pous;
-		Coord empl;
-		int dist;
-
-		// Opérateurs
-		bool operator < (Arc const& a) const {
-			return dist < a.dist;
-		}
-	};
-
-	// Ne concerne que les emplacements accessibles au poussable
-	std::vector<bool> zone = zone_sr(carte, obj);
-
-	// Récupération des distances
-	std::set<Coord> pouss = std::set<Coord>(std::less<Coord>(hash));
-	std::set<Coord> empls = std::set<Coord>(std::less<Coord>(hash));
-	std::list<Arc> arcs;
+	// Récupération des poussables
+	std::vector<Coord> poussables;
+	int id = 0;
 
 	for (auto pous : carte->liste<moteur::Poussable>()) {
-		int nb = 0;
-		for (auto p : infos_cases(pous->coord()).distances) {
-			if (!zone[hash(p.first)]) continue;
-
-			arcs.push_back(Arc { pous->coord(), p.first, p.second });
-			empls.insert(p.first);
-			++nb;
-		}
-
-		if (nb) pouss.insert(pous->coord());
+		if (pous->coord() == obj) id = poussables.size();
+		poussables.push_back(pous->coord());
 	}
 
-	// Associations
-	if (empls.size() > 1) {
-		arcs.sort();
-
-		for (Arc arc : arcs) {
-			auto ite = empls.find(arc.empl);
-			auto itp = pouss.find(arc.pous);
-
-			if (ite != empls.end() && itp != pouss.end()) {
-				if (arc.pous == obj) return arc.empl;
-
-				// Majs
-				empls.erase(ite);
-				pouss.erase(itp);
-
-				if (empls.size() == 1) break;
-			}
-		}
+	// Récupération des emplacements
+	std::vector<Coord> emplacements;
+	for (auto empl : carte->liste<moteur::Emplacement>()) {
+		emplacements.push_back(empl->coord());
 	}
 
-	return *(empls.begin());
+	// Application de l'algo
+	auto p = associations(poussables, emplacements, carte->personnage()->coord());
+	Coord empl(-1, -1);
+
+	for (Coord sel : p.second) {
+		if (sel.x() != id) continue;
+
+		empl = emplacements[sel.y()];
+		break;
+	}
+
+	return empl;
 }
 
 std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const {
@@ -811,6 +864,7 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 			if (trouver_chemin(carte, c, empl, mvt.chemin, pers->force())) {
 				// Evaluation de l'heuristique
 				auto copie = std::make_shared<moteur::Carte>(*carte);
+				copie->set(pers->coord(), std::make_shared<moteur::Personnage>(copie.get(), pers->force()));
 				mvt.chemin.appliquer(copie, c, pers->force());
 				mvt.heuristique = heuristique(copie);
 
@@ -850,6 +904,7 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 
 			// Evaluation de l'heuristique
 			auto copie = std::make_shared<moteur::Carte>(*carte);
+			copie->set(pers->coord(), std::make_shared<moteur::Personnage>(copie.get(), pers->force()));
 			mvt.chemin.appliquer(copie, c, pers->force());
 			mvt.heuristique = heuristique(copie);
 

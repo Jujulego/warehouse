@@ -20,9 +20,9 @@ class Nombre {
 
 	public:
 		// Constructeur
-		Nombre() {};
-		Nombre(Int const& val) : m_val(val), m_est_inf(false) {};
-		Nombre(Infini const& inf) : m_inf(inf), m_est_inf(true) {};
+		Nombre() {}
+		Nombre(Int const& val)    { set(val); }
+		Nombre(Infini const& inf) { set(inf); }
 
 		// Opérateurs
 		// - cast
@@ -196,7 +196,7 @@ class Nombre {
 		}
 
 		void set(Infini const& inf) {
-			m_inf = inf;
+			m_inf = std::numeric_limits<Int>::is_signed ? inf : INFINI;
 			m_est_inf = true;
 		}
 
@@ -218,3 +218,17 @@ class Nombre {
 			return m_est_inf;
 		}
 };
+
+// Numeric limits
+namespace std {
+
+template<class Int>
+struct numeric_limits<Nombre<Int>> : numeric_limits<Int> {
+	// Propriétés
+	static constexpr bool is_specialized = true;
+
+	static constexpr bool has_infinity = true;
+	static constexpr Nombre<Int> infinity() { return Nombre<Int>(INFINI); }
+};
+
+} // std

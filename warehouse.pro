@@ -42,6 +42,7 @@ HEADERS += src/moteur/carte.hpp \
 	src/outils.hpp \
 	src/outils/console.hpp \
 	src/outils/coord.hpp \
+	src/outils/hongrois.hpp \
 	src/outils/infini.hpp \
 	src/outils/manip.hpp \
 	src/outils/matrice.hpp \

@@ -57,6 +57,7 @@ add_executable(warehouse
 	outils/console.hpp
 	outils/coord.hpp
 	outils/coord.cpp
+	outils/hongrois.hpp
 	outils/infini.hpp
 	outils/infini.cpp
 	outils/manip.cpp
