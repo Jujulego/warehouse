@@ -27,7 +27,7 @@ class Matrice {
 		using difference_type  = ptrdiff_t;
 
 		// Sous-classes
-		class line_iterator {
+		class column_iterator {
 			private:
 				// Attributs
 				iterator m_it;
@@ -40,8 +40,8 @@ class Matrice {
 				using iterator_category = std::random_access_iterator_tag;
 
 				// Constructeurs
-				line_iterator() : m_it() {};
-				line_iterator(iterator const& it) : m_it(it) {};
+				column_iterator() : m_it() {};
+				column_iterator(iterator const& it) : m_it(it) {};
 
 				// Opérateurs
 				// - déférenciation
@@ -50,49 +50,49 @@ class Matrice {
 				reference operator [] (Matrice::size_type v) const { return m_it[v]; }
 
 				// - comparaison
-				bool operator <  (line_iterator const& lit) const { return m_it <  lit.m_it; };
-				bool operator <= (line_iterator const& lit) const { return m_it <= lit.m_it; };
-				bool operator == (line_iterator const& lit) const { return m_it == lit.m_it; };
-				bool operator != (line_iterator const& lit) const { return m_it != lit.m_it; };
-				bool operator >= (line_iterator const& lit) const { return m_it >= lit.m_it; };
-				bool operator >  (line_iterator const& lit) const { return m_it >  lit.m_it; };
+				bool operator <  (column_iterator const& cit) const { return m_it <  cit.m_it; };
+				bool operator <= (column_iterator const& cit) const { return m_it <= cit.m_it; };
+				bool operator == (column_iterator const& cit) const { return m_it == cit.m_it; };
+				bool operator != (column_iterator const& cit) const { return m_it != cit.m_it; };
+				bool operator >= (column_iterator const& cit) const { return m_it >= cit.m_it; };
+				bool operator >  (column_iterator const& cit) const { return m_it >  cit.m_it; };
 
 				// - incrémentation & décrémentation
-				line_iterator& operator ++ () { m_it += LIG; return *this; }
-				line_iterator& operator -- () { m_it -= LIG; return *this; }
+				column_iterator& operator ++ () { m_it += COL; return *this; }
+				column_iterator& operator -- () { m_it -= COL; return *this; }
 
-				line_iterator operator ++ (int) {
-					line_iterator tmp(*this);
+				column_iterator operator ++ (int) {
+					column_iterator tmp(*this);
 					++(*this);
 					return tmp;
 				}
 
-				line_iterator operator -- (int) {
-					line_iterator tmp(*this);
+				column_iterator operator -- (int) {
+					column_iterator tmp(*this);
 					--(*this);
 					return tmp;
 				}
 
 				// - assignation
-				line_iterator& operator += (Matrice::size_type v) { m_it += v * LIG; return *this; }
-				line_iterator& operator -= (Matrice::size_type v) { m_it -= v * LIG; return *this; }
+				column_iterator& operator += (Matrice::size_type v) { m_it += v * COL; return *this; }
+				column_iterator& operator -= (Matrice::size_type v) { m_it -= v * COL; return *this; }
 
 				// - arithmétique
-				line_iterator operator + (Matrice::size_type v) const { line_iterator r(*this); r += v; return r; };
-				line_iterator operator - (Matrice::size_type v) const { line_iterator r(*this); r -= v; return r; };
+				column_iterator operator + (Matrice::size_type v) const { column_iterator r(*this); r += v; return r; };
+				column_iterator operator - (Matrice::size_type v) const { column_iterator r(*this); r -= v; return r; };
 
-				friend line_iterator operator + (Matrice::size_type v, line_iterator const& it) {
-					line_iterator r(it);
+				friend column_iterator operator + (Matrice::size_type v, column_iterator const& it) {
+					column_iterator r(it);
 					r += v;
 					return r;
 				};
 
-				difference_type operator - (line_iterator lit) const {
-					return (m_it - lit.m_it) / LIG;
+				difference_type operator - (column_iterator cit) const {
+					return (m_it - cit.m_it) / COL;
 				};
 		};
 
-		class const_line_iterator {
+		class const_column_iterator {
 			private:
 				// Attributs
 				const_iterator m_it;
@@ -105,9 +105,9 @@ class Matrice {
 				using iterator_category = std::random_access_iterator_tag;
 
 				// Constructeurs
-				const_line_iterator() : m_it() {};
-				const_line_iterator(const_iterator const& it) : m_it(it) {};
-				const_line_iterator(line_iterator const& lit) : m_it(lit.m_it) {};
+				const_column_iterator() : m_it() {};
+				const_column_iterator(const_iterator const& it) : m_it(it) {};
+				const_column_iterator(column_iterator const& cit) : m_it(cit.m_it) {};
 
 				// Opérateurs
 				// - déférenciation
@@ -116,45 +116,45 @@ class Matrice {
 				reference operator [] (Matrice::size_type v) const { return m_it[v]; }
 
 				// - comparaison
-				bool operator <  (const_line_iterator const& lit) const { return m_it <  lit.m_it; };
-				bool operator <= (const_line_iterator const& lit) const { return m_it <= lit.m_it; };
-				bool operator == (const_line_iterator const& lit) const { return m_it == lit.m_it; };
-				bool operator != (const_line_iterator const& lit) const { return m_it != lit.m_it; };
-				bool operator >= (const_line_iterator const& lit) const { return m_it >= lit.m_it; };
-				bool operator >  (const_line_iterator const& lit) const { return m_it >  lit.m_it; };
+				bool operator <  (const_column_iterator const& cit) const { return m_it <  cit.m_it; };
+				bool operator <= (const_column_iterator const& cit) const { return m_it <= cit.m_it; };
+				bool operator == (const_column_iterator const& cit) const { return m_it == cit.m_it; };
+				bool operator != (const_column_iterator const& cit) const { return m_it != cit.m_it; };
+				bool operator >= (const_column_iterator const& cit) const { return m_it >= cit.m_it; };
+				bool operator >  (const_column_iterator const& cit) const { return m_it >  cit.m_it; };
 
 				// - incrémentation & décrémentation
-				const_line_iterator& operator ++ () { m_it += LIG; return *this; }
-				const_line_iterator& operator -- () { m_it -= LIG; return *this; }
+				const_column_iterator& operator ++ () { m_it += COL; return *this; }
+				const_column_iterator& operator -- () { m_it -= COL; return *this; }
 
-				const_line_iterator operator ++ (int) {
-					const_line_iterator tmp(*this);
+				const_column_iterator operator ++ (int) {
+					const_column_iterator tmp(*this);
 					++(*this);
 					return tmp;
 				}
 
-				const_line_iterator operator -- (int) {
-					const_line_iterator tmp(*this);
+				const_column_iterator operator -- (int) {
+					const_column_iterator tmp(*this);
 					--(*this);
 					return tmp;
 				}
 
 				// - assignation
-				const_line_iterator& operator += (Matrice::size_type v) { m_it += v * LIG; return *this; }
-				const_line_iterator& operator -= (Matrice::size_type v) { m_it -= v * LIG; return *this; }
+				const_column_iterator& operator += (Matrice::size_type v) { m_it += v * COL; return *this; }
+				const_column_iterator& operator -= (Matrice::size_type v) { m_it -= v * COL; return *this; }
 
 				// - arithmétique
-				const_line_iterator operator + (Matrice::size_type v) const { const_line_iterator r(*this); r += v; return r; };
-				const_line_iterator operator - (Matrice::size_type v) const { const_line_iterator r(*this); r -= v; return r; };
+				const_column_iterator operator + (Matrice::size_type v) const { const_column_iterator r(*this); r += v; return r; };
+				const_column_iterator operator - (Matrice::size_type v) const { const_column_iterator r(*this); r -= v; return r; };
 
-				friend const_line_iterator operator + (Matrice::size_type v, const_line_iterator const& it) {
-					const_line_iterator r(it);
+				friend const_column_iterator operator + (Matrice::size_type v, const_column_iterator const& it) {
+					const_column_iterator r(it);
 					r += v;
 					return r;
 				};
 
-				difference_type operator - (const_line_iterator lit) const {
-					return (m_it - lit.m_it) / LIG;
+				difference_type operator - (const_column_iterator cit) const {
+					return (m_it - cit.m_it) / COL;
 				};
 		};
 
@@ -179,12 +179,12 @@ class Matrice {
 
 				// Opérateurs
 				// - accès éléments
-				reference operator [] (size_type const& c) {
-					return *(m_deb + c);
+				reference operator [] (size_type const& i) {
+					return *(m_deb + i);
 				}
 
-				const_reference operator [] (size_type const& c) const {
-					return *(const_iterator(m_deb) + c);
+				const_reference operator [] (size_type const& i) const {
+					return *(const_iterator(m_deb) + i);
 				}
 
 				// Méthodes
@@ -193,7 +193,7 @@ class Matrice {
 				}
 
 				void fill(Int const& v) {
-					for (size_type i = 0; i < size(); ++i) (*this)[i] = v;
+					for (int i = 0; i < size(); ++i) (*this)[i] = v;
 				}
 
 				// Itérateurs
@@ -240,17 +240,68 @@ class Matrice {
 		};
 
 		// Constructeur
-		Matrice() : hash(LIG) {};
-		Matrice(std::array<Int, LIG * COL> const& matrice) : hash(LIG), m_matrice(matrice) {};
+		Matrice() : hash(COL) {};
+		Matrice(std::array<Int, LIG * COL> const& matrice) : hash(COL), m_matrice(matrice) {};
 
 		// Opérateurs
 		// - accès élément
-		reference operator [] (Coord const& c) { // (col, lig)
+		reference operator [] (Coord const& c) { // (lig, col)
 			return m_matrice[hash(c)];
 		}
 
-		const_reference operator [] (Coord const& c) const { // (col, lig)
+		const_reference operator [] (Coord const& c) const { // (lig, col)
 			return m_matrice[hash(c)];
+		}
+
+		// - arithmétique
+		Matrice operator - () const {
+			Matrice r;
+
+			for (int i = 0; i < size(); ++i) {
+				r.m_matrice[i] = -m_matrice[i];
+			}
+
+			return r;
+		}
+
+		Matrice operator + (Matrice m) const { m += (*this); return m; }
+		Matrice operator - (Matrice m) const { m -= (*this); return m; }
+
+		Matrice operator / (Int const& lambda) const { Matrice r(*this); r /= lambda; return r; }
+		Matrice operator * (Int const& lambda) const { Matrice r(*this); r *= lambda; return r; }
+		friend Matrice operator * (Int const& lambda, Matrice m) { m *= lambda; return m; }
+
+		// - assignation
+		Matrice& operator += (Matrice const& m) {
+			for (int i = 0; i < size(); ++i) {
+				m_matrice[i] += m.m_matrice[i];
+			}
+
+			return *this;
+		}
+
+		Matrice& operator -= (Matrice const& m) {
+			for (int i = 0; i < size(); ++i) {
+				m_matrice[i] -= m.m_matrice[i];
+			}
+
+			return *this;
+		}
+
+		Matrice& operator *= (Int const& lambda) {
+			for (Int& v : *this) {
+				v *= lambda;
+			}
+
+			return *this;
+		}
+
+		Matrice& operator /= (Int const& lambda) {
+			for (Int& v : *this) {
+				v /= lambda;
+			}
+
+			return *this;
 		}
 
 		// Méthodes
@@ -270,20 +321,20 @@ class Matrice {
 			m_matrice.fill(val);
 		}
 
-		auto column(size_type c) {
-			return part<iterator,const_iterator,LIG>(begin() + (c * LIG));
+		auto colonne(size_type c) {
+			return part<column_iterator,const_column_iterator,LIG>(begin() + c);
 		}
 
-		auto column(size_type c) const {
-			return const_part<const_iterator,LIG>(begin() + (c * LIG));
+		auto colonne(size_type c) const {
+			return const_part<const_column_iterator,LIG>(begin() + c);
 		}
 
-		auto line(size_type l) {
-			return part<line_iterator,const_line_iterator,COL>(begin() + l);
+		auto ligne(size_type l) {
+			return part<iterator,const_iterator,COL>(begin() + (l * COL));
 		}
 
-		auto line(size_type l) const {
-			return const_part<const_line_iterator,COL>(begin() + l);
+		auto ligne(size_type l) const {
+			return const_part<const_iterator,COL>(begin() + (l * COL));
 		}
 
 		// Itérateurs
@@ -293,3 +344,22 @@ class Matrice {
 		const_iterator begin() const { return m_matrice.cbegin(); }
 		const_iterator end()   const { return m_matrice.cend(); }
 };
+
+// Produit matriciel
+template<class Int, size_t LIG, size_t LIGCOL, size_t COL>
+Matrice<Int,LIG,COL> operator * (Matrice<Int,LIG,LIGCOL> const& m1, Matrice<Int,LIGCOL,COL> const& m2) {
+	Matrice<Int,LIG,COL> r;
+	r.fill(0);
+
+	for (int l = 0; l < LIG; ++l) {
+		for (int c = 0; c < COL; ++c) {
+			Coord co(l, c);
+
+			for (int i = 0; i < LIGCOL; ++i) {
+				r[co] += m1[Coord(l, i)] * m2[Coord(i, c)];
+			}
+		}
+	}
+
+	return r;
+}
