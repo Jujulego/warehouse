@@ -839,14 +839,14 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 			mvt.chemin.ajouter(dir);
 
 			// tunnel macro
-/*			if (infos[hash(c + dir)].tunnel && !infos[hash(c + dir)].intersection) {
-				Coord pos = c;
+			if (infos[hash(c + dir)].tunnel && !infos[hash(c + dir)].intersection) {
+				Coord pos = c + dir;
 
 				while ((infos[hash(pos)].porte & get_mask(dir)) == 0) {
 					pos += dir;
 					mvt.chemin.ajouter(dir);
 				}
-			}*/
+			}
 
 			// Evaluation de l'heuristique
 			auto copie = std::make_shared<moteur::Carte>(*carte);

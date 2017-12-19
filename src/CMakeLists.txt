@@ -57,8 +57,12 @@ add_executable(warehouse
 	outils/console.hpp
 	outils/coord.hpp
 	outils/coord.cpp
+	outils/infini.hpp
+	outils/infini.cpp
 	outils/manip.cpp
 	outils/manip.hpp
+	outils/matrice.hpp
+	outils/nombre.hpp
 	outils/style.cpp
 	outils/style.hpp
 )

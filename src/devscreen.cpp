@@ -59,7 +59,7 @@ void DevScreen::afficher() {
 	while (continuer) {
 		// Affichage !
 		afficher_carte();
-//		afficher_status();
+		afficher_status();
 
 		if (poussees > 0) {
 			// Maj heuristique

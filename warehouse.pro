@@ -42,7 +42,10 @@ HEADERS += src/moteur/carte.hpp \
 	src/outils.hpp \
 	src/outils/console.hpp \
 	src/outils/coord.hpp \
+	src/outils/infini.hpp \
 	src/outils/manip.hpp \
+	src/outils/matrice.hpp \
+	src/outils/nombre.hpp \
 	src/outils/style.hpp \
 	src/qt/fenetremenu.h \
 	
@@ -70,6 +73,7 @@ SOURCES += src/moteur/carte.cpp \
 	src/niveau.cpp \
 	src/outils/console.cpp \
 	src/outils/coord.cpp \
+	src/outils/infini.cpp \
 	src/outils/manip.cpp \
 	src/outils/style.cpp \
 	src/qt/fenetremenu.cpp \
