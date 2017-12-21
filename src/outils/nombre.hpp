@@ -137,7 +137,8 @@ class Nombre {
 
 		Nombre& operator -= (Nombre const& nb) {
 			if (m_est_inf && nb.m_est_inf) {
-				m_inf -= nb.m_inf;
+				set(0);
+//				m_inf -= nb.m_inf;
 
 			} else if (m_est_inf) {
 			} else if (nb.m_est_inf) {

@@ -369,9 +369,7 @@ std::vector<std::map<Coord,int>> Solveur2::dists_empls(std::shared_ptr<moteur::C
 	// Déclarations
 	std::vector<std::map<Coord,int>> dists(
 		carte->taille_x() * carte->taille_y(),
-		std::map<Coord,int>(
-			std::less<Coord>(hash)
-		)
+		std::map<Coord,int>()
 	);
 	
 	// Parcours des emplacements

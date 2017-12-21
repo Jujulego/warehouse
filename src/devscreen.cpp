@@ -29,7 +29,7 @@
 
 // Constructeur
 DevScreen::DevScreen(std::shared_ptr<moteur::Carte> carte)
-	: hash(carte->taille_y()), m_carte(std::make_shared<moteur::Carte>(*carte)), m_chemin(std::less<Coord>(hash)) {
+	: hash(carte->taille_y()), m_carte(std::make_shared<moteur::Carte>(*carte)), m_chemin() {
 
 	m_pers  = m_carte->personnage();
 	m_solv3 = new ia::Solveur3(m_carte, m_pers);
@@ -491,6 +491,7 @@ void DevScreen::afficher_carte() const {
 #endif
 
 	// Initialisation
+	std::map<Coord,std::pair<Coord,unsigned>> assos = m_solv3->associations(m_carte);
 	std::vector<bool> zone = m_solv3->zone_accessible(m_carte, m_pers->coord());
 	auto ref = manip::coord(5, 9);
 	std::vector<bool> zone_sr;
@@ -503,7 +504,7 @@ void DevScreen::afficher_carte() const {
 	}
 
 	if (m_empl_conseil) {
-		empl_conseil = m_solv3->choix_empl(m_carte, m_empl_conseil->coord());
+		empl_conseil = m_solv3->choix_empl(assos, m_empl_conseil->coord());
 	}
 
 	// "suppression" des poussables
@@ -568,7 +569,7 @@ void DevScreen::afficher_carte() const {
 			auto pobj = std::dynamic_pointer_cast<moteur::Poussable>(dobj);
 			if (pobj) {
 				std::vector<bool> z = m_solv3->zone_sr(m_carte, pobj->coord());
-				Coord empl = m_solv3->choix_empl(m_carte, pobj->coord());
+				Coord empl = m_solv3->choix_empl(assos, pobj->coord());
 
 				if (st.fnd() == style::DEFAUT_FOND) {
 					if (obj->coord() == empl) {

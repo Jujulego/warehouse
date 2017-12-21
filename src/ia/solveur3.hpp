@@ -40,9 +40,6 @@ class Solveur3 : public IA {
 			std::map<Coord,unsigned char> empl_dirs; // Directions aux emplacements
 			std::multimap<Coord,std::pair<Coord,unsigned>> distances; // Distances aux emplacements
 
-			// Constructeur
-			Infos(size_t factx) : empl_dirs(std::less<Coord>(factx)), distances(std::less<Coord>(factx)) {}
-
 			// Méthodes
 			void ajouter(Coord const& empl, Coord const& dir);
 
@@ -84,13 +81,15 @@ class Solveur3 : public IA {
 		Empl const& infos_empls(Coord const& c) const;
 
 		// - analyse dynamique
-		std::pair<Matrice<Nombre<unsigned>>,std::set<Coord>> associations(std::shared_ptr<moteur::Carte> carte) const;
-		std::pair<Matrice<Nombre<unsigned>>,std::set<Coord>> associations(std::vector<Coord> const& poussables, std::vector<Coord> const& emplacements, Coord const& pers) const;
+		Nombre<unsigned> distance_empl(Coord const& pous, Coord const& empl, Coord const& pers) const;
+		std::map<Coord,std::pair<Coord,unsigned>> associations(std::shared_ptr<moteur::Carte> carte) const;
 
 		Nombre<unsigned> heuristique(std::shared_ptr<moteur::Carte> carte) const;
-		Nombre<unsigned> heuristique(Matrice<Nombre<unsigned>> const& matrice, std::set<Coord> const& selection) const;
+		Nombre<unsigned> heuristique(std::map<Coord,std::pair<Coord,unsigned>> const& assos) const;
 
 		Coord choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
+		Coord choix_empl(std::map<Coord,std::pair<Coord,unsigned>> const& assos, Coord const& obj) const;
+
 		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 
 		std::vector<bool> zone_interdite(std::shared_ptr<moteur::Carte> carte) const;
@@ -104,6 +103,9 @@ class Solveur3 : public IA {
 		mutable std::vector<Infos> c_infos;
 		mutable std::vector<bool> c_zone_interdite;
 		mutable std::vector<Empl> c_infos_empls;
+
+		mutable std::vector<int> c_carte_assos;
+		mutable std::map<Coord,std::pair<Coord,unsigned>> c_assos;
 };
 
 } // ia

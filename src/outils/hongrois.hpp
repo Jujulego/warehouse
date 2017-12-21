@@ -14,9 +14,9 @@ template<class Int>
 std::set<Coord> algorithme_hongrois(Matrice<Int> mat) {
 	const auto LIG = mat.nb_lig();
 
-	std::less<Coord> less(LIG);
-	std::set<Coord> selection(less);
-	std::set<Coord> primes(less);
+	std::set<Coord> selection;
+	std::set<Coord> primes;
+
 	std::set<int> lig_sel, col_sel;
 	std::set<int> lig_couv, col_couv;
 
