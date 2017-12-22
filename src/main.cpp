@@ -6,6 +6,8 @@
 #include "outils/manip.hpp"
 #include "outils/style.hpp"
 
+#include "moteur/carte.hpp"
+
 #include "affichage.hpp"
 #include "fichierxsb.hpp"
 #include "menu.hpp"
@@ -24,6 +26,7 @@ void charger();
 #include <QString>
 
 #include "qt/fenetremenu.h"
+#include "qt/fenetreniveau.h"
 
 int main(int argc, char* argv[]) {
     // Initialiation de Qt
@@ -39,6 +42,8 @@ int main(int argc, char* argv[]) {
     // Petite fenetre
     FenetreMenu fen;
     fen.show();
+
+
 
     return app.exec();
 }

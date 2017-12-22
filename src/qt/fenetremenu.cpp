@@ -1,4 +1,5 @@
 #include "fenetremenu.h"
+#include "fenetreniveau.h"
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QApplication>
@@ -21,10 +22,19 @@ FenetreMenu::FenetreMenu()
 
     //Configuration bouton quitter
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
+    QObject::connect(m_boutonJouer, SIGNAL(clicked()), this, SLOT(fen_open()));
 
-    qApp->setStyleSheet("QWidget {background-image: url(./tilset/caisse.bleue.png) }");
+    //Création du bouton règles
+    m_boutonRegles = new QPushButton(QIcon(":/tileset/caisse/rouge.png"), "Règles");
+
 
     setLayout(layout);
 
+}
+
+//Fonction pour ouvrir une fenêtre contenant la carte
+void FenetreMenu::fen_open(){
+    FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
+    carte->show();
 }
 

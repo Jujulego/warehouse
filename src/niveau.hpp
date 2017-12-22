@@ -20,7 +20,7 @@ class Niveau {
 		// Accesseurs
 		std::shared_ptr<moteur::Carte> carte() const; // c'est une copie !
 		
-		std::map<std::string,std::string>& infos();
+        std::map<std::string,std::string>& infos(); //informations sur le niveau ex: titre
 		std::map<std::string,std::string> const& infos() const;
 	
 	private:

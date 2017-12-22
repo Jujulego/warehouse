@@ -7,13 +7,19 @@
 
 
 class FenetreMenu : public QWidget {
+    Q_OBJECT
+
 public:
     FenetreMenu();
+
+public slots:
+     void fen_open();
 
 private:
 
     QPushButton* m_boutonJouer;
     QPushButton* m_boutonQuitter;
+    QPushButton* m_boutonRegles;
 
 
 };
