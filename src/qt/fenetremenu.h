@@ -15,11 +15,14 @@ public:
 public slots:
      void fen_open();
 
+
 private:
 
     QPushButton* m_boutonJouer;
     QPushButton* m_boutonQuitter;
     QPushButton* m_boutonRegles;
+    QPushButton* m_boutonIA;
+
 
 
 };

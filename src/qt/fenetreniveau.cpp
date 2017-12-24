@@ -17,7 +17,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     setDragMode(QGraphicsView::ScrollHandDrag);
     setRenderHint(QPainter::Antialiasing, true);
     setRenderHint(QPainter::SmoothPixmapTransform, true);
-
+    setWindowTitle("LET'S PLAY !");
     setScene(new QGraphicsScene(this)); //création de la scène
 
     QImage mur(":/tileset/bloc/marron.png");
