@@ -32,8 +32,10 @@ FenetreMenu::FenetreMenu()
 
     //Configuration bouton quitter
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
-    QObject::connect(m_boutonJouer, SIGNAL(clicked()), this, SLOT(fen_open()));
-    QObject::connect(m_boutonRegles, SIGNAL(clicked()), this, SLOT(fen_open()));
+    QObject::connect(m_boutonJouer, SIGNAL(clicked()), this, SLOT(fenNiveau_open()));
+
+    //Configuration bouton règles
+    QObject::connect(m_boutonRegles, SIGNAL(clicked()), this, SLOT(fenRegles_open()));
 
 
     setLayout(layout);
@@ -41,13 +43,20 @@ FenetreMenu::FenetreMenu()
 }
 
 //Fonction pour ouvrir une fenêtre contenant la carte
-void FenetreMenu::fen_open(){
+void FenetreMenu::fenNiveau_open(){
 
-    {FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
-    carte->show();}
+    FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
+    carte->show();
 
+
+}
+
+//Fonction pour ouvrir une fenêtre contenant les règles
+void FenetreMenu::fenRegles_open(){
     FenetreRegles* regles = new FenetreRegles();
     regles->show();
 
+
 }
+
 

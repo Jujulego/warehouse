@@ -48,7 +48,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
              item->setZValue(2);
         }
 
-        // affichage deplacables
+        // affichage déplaçables
         std::shared_ptr<moteur::Deplacable> dobj = obj->get();
 
         if (std::dynamic_pointer_cast<moteur::Poussable>(dobj)) {  //vérifie si c'est un poussable

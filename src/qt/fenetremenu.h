@@ -13,7 +13,8 @@ public:
     FenetreMenu();
 
 public slots:
-     void fen_open();
+     void fenNiveau_open();
+     void fenRegles_open();
 
 
 private:
