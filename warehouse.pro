@@ -3,7 +3,7 @@ QT += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG         += c++14
-QMAKE_CXXFLAGS += -g3 -Wall -Wextra -Wno-sign-compare
+QMAKE_CXXFLAGS += -g3 -Wall -Wextra
 INCLUDEPATH    += src
 DEFINES        += QTCREATOR QT_DEPRECATED_WARNINGS
 
@@ -47,9 +47,9 @@ HEADERS += src/moteur/carte.hpp \
 	src/outils/manip.hpp \
 	src/outils/matrice.hpp \
 	src/outils/nombre.hpp \
-        src/outils/style.hpp \
-        src/qt/fenetremenu.h \
-        src/qt/fenetreniveau.h
+	src/outils/style.hpp \
+	src/qt/fenetremenu.h \
+	src/qt/fenetreniveau.h \
 	
 SOURCES += src/moteur/carte.cpp \
 	src/moteur/deplacable.cpp \
@@ -78,6 +78,6 @@ SOURCES += src/moteur/carte.cpp \
 	src/outils/infini.cpp \
 	src/outils/manip.cpp \
 	src/outils/style.cpp \
-        src/qt/fenetremenu.cpp \
-        src/qt/fenetreniveau.cpp
+	src/qt/fenetremenu.cpp \
+	src/qt/fenetreniveau.cpp \
 	

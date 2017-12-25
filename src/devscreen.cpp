@@ -663,7 +663,7 @@ void DevScreen::afficher_carte() const {
 					if ((*m_carte)[p]->accessible() || (p == m_pers->coord())) ++nb;
 				}
 
-				std::cout << st << nb;
+				std::cout << st << nb << " ";
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);

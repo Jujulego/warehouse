@@ -7,6 +7,7 @@
 #include <memory>
 #include <ostream>
 #include <queue>
+#include <random>
 #include <set>
 #include <stack>
 #include <vector>
@@ -533,9 +534,22 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 
 	// Récupération des emplacements
 	std::vector<Coord> emplacements;
+	std::map<Coord,double> prios;
 	for (auto empl : carte->liste<moteur::Emplacement>()) {
 		emplacements.push_back(empl->coord());
+
+		// Calcul priorités
+		int nb = 0;
+		for (auto p : infos_empls(empl->coord()).prios) {
+			if ((*carte)[p]->accessible() || (p == pers)) ++nb;
+		}
+
+		prios[empl->coord()] = nb+1;
 	}
+
+	// On mélange !
+	std::shuffle(emplacements.begin(), emplacements.end(), std::default_random_engine());
+	std::shuffle(poussables.begin(),   poussables.end(),   std::default_random_engine());
 
 	// Vidage de la carte
 	std::vector<std::shared_ptr<moteur::Deplacable>> deplacables;
@@ -547,7 +561,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 	}
 
 	// Déclaration et remplissage de la matrice
-	Matrice<Nombre<unsigned>> matrice(poussables.size());
+	Matrice<Nombre<double>> matrice(poussables.size());
 	matrice.fill(INFINI);
 
 	auto pous = std::make_shared<moteur::Poussable>(m_carte.get(), 1);
@@ -570,9 +584,11 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 				for (auto it = pit.first; it != pit.second; ++it) {
 					if (!zone[hash(it->second.first)]) continue;
 
-					matrice[Coord(p, e)] = std::min(matrice[Coord(p, e)].val(), it->second.second);
+					matrice[Coord(p, e)] = std::min(matrice[Coord(p, e)].val(), (double) it->second.second);
 					++nb;
 				}
+
+				matrice[Coord(p, e)] /= prios[emplacements[e]];
 			}
 
 			ok &= (nb != 0);
@@ -600,7 +616,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 
 		// Déduction du résultat
 		for (Coord sel : selection) {
-			c_assos[poussables[sel.x()]] = {emplacements[sel.y()], matrice[sel].val()};
+			c_assos[poussables[sel.x()]] = {emplacements[sel.y()], matrice[sel].val() * prios[emplacements[sel.y()]]};
 		}
 	}
 
@@ -943,8 +959,9 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 					pos += dir;
 
 					// Checks
-					if (!carte->coord_valides(pos))   break;
-					if (!infos[hash(c + dir)].tunnel) break; // On peut rentrer dans un angle !
+					if (!carte->coord_valides(pos)) break;
+					if (!infos[hash(pos)].tunnel)   break; // On peut sortir du tunnel !
+					if (infos[hash(pos)].coin)      break; // On peut rentrer dans un angle !
 
 					// ajout au chemin
 					mvt.chemin.ajouter(dir);

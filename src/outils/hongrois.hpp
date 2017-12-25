@@ -42,13 +42,13 @@ std::set<Coord> algorithme_hongrois(Matrice<Int> mat) {
 
 	while (true) {
 		// Etape 1
-		int anc_taille = selection.size();
+        size_t anc_taille = selection.size();
 
-		for (int col = 0; col < LIG; ++col) {
+        for (size_t col = 0; col < LIG; ++col) {
 			// Colonne déjà sélectionnée ?
 			if (col_sel.find(col) != col_sel.end()) continue;
 
-			for (int lig = 0; lig < LIG; ++lig) {
+            for (size_t lig = 0; lig < LIG; ++lig) {
 				// Ligne déjà sélectionnée ?
 				if (lig_sel.find(lig) != lig_sel.end()) continue;
 
@@ -88,8 +88,8 @@ std::set<Coord> algorithme_hongrois(Matrice<Int> mat) {
 		do {
 			check = false;
 
-			for (int j = 0; j < LIG; ++j) {
-				for (int i = 0; i < LIG; ++i) {
+            for (size_t j = 0; j < LIG; ++j) {
+                for (size_t i = 0; i < LIG; ++i) {
 					Coord ij(i, j);
 
 					// pas couvert
@@ -154,7 +154,7 @@ std::set<Coord> algorithme_hongrois(Matrice<Int> mat) {
 			}
 
 			// Sélecetions et dé-sélections
-			for (int i = 0; i < z.size(); ++i) {
+            for (size_t i = 0; i < z.size(); ++i) {
 				if (i % 2) {
 					// Pas besoin de supprimer => la ligne & la colonne seront reprises
 					selection.erase(z[i]);
@@ -173,8 +173,8 @@ std::set<Coord> algorithme_hongrois(Matrice<Int> mat) {
 			// Etape 3
 			Int lambda = std::numeric_limits<Int>::max();
 
-			for (int j = 0; j < LIG; ++j) {
-				for (int i = 0; i < LIG; ++i) {
+            for (size_t j = 0; j < LIG; ++j) {
+                for (size_t i = 0; i < LIG; ++i) {
 					Coord ij(i, j);
 
 					// pas couvert
@@ -190,7 +190,7 @@ std::set<Coord> algorithme_hongrois(Matrice<Int> mat) {
 				for (Int& v : mat.ligne(lig)) v += lambda;
 			}
 
-			for (int col = 0; col < LIG; ++col) {
+            for (size_t col = 0; col < LIG; ++col) {
 				// pas couvert
 				if (col_couv.find(col) != col_couv.end()) continue;
 
