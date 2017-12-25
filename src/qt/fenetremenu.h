@@ -22,7 +22,7 @@ private:
     QPushButton* m_boutonJouer;
     QPushButton* m_boutonQuitter;
     QPushButton* m_boutonRegles;
-    QPushButton* m_boutonIA;
+    /*QPushButton* m_boutonIA;*/
 
 
 

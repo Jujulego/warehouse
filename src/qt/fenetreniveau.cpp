@@ -7,6 +7,10 @@
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
 
+
+#include <QPushButton>
+#include <QGraphicsProxyWidget>
+
 #define HAUTEUR_IMAGE 64
 #define LARGEUR_IMAGE 64
 
@@ -25,6 +29,31 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     QImage boite(":/tileset/caisse/bleue.png");
     QImage emplacement(":/tileset/environ/empl_bleu.png");
     QImage personnage(":/tileset/perso/bas_01.png");
+
+    //Création du bouton IA
+    m_boutonIAs = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
+
+    //Création du bouton retour menu
+    m_boutonRetourMenu = new QPushButton(QIcon(":/tileset/perso/tete_sombre.png"), "Main Menu");
+
+    //Intégration du bouton IA dans la scène
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
+    proxy->setWidget(m_boutonIAs);
+    scene()->addItem(proxy);
+    proxy->setPos(0, 40);
+    proxy->setZValue(3);
+
+    //Intégration du bouton IA dans la scène
+    QGraphicsProxyWidget *proxyBis = new QGraphicsProxyWidget();
+    proxyBis->setWidget(m_boutonRetourMenu);
+    scene()->addItem(proxyBis);
+    proxyBis->setZValue(3);
+
+
+
+
+   /* m_boutonRetourMenu->show();*/
+
 
     for (std::shared_ptr<moteur::Immuable> obj: *m_carte){ //boucle pour parcourir la carte
         // affichage sol et mur
@@ -84,6 +113,7 @@ void FenetreNiveau::updateCarte() {
 
 void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     Coord dir;
+    QImage personGauche(":/tileset/perso/gauche_01.png");
 
     switch (event->key()) {
     case Qt::Key_Left:

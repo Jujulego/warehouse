@@ -8,6 +8,7 @@
 #include <QGraphicsPixmapItem>
 #include "moteur/personnage.hpp"
 #include "moteur/poussable.hpp"
+#include <QPushButton>
 
 
 class FenetreNiveau : public QGraphicsView{
@@ -25,6 +26,9 @@ private:
 
     QGraphicsPixmapItem* m_perso; // l'image doit pouvoir suivre le personnage
     std::shared_ptr<moteur::Personnage> m_personnage; //pour le déplacement du personnage
+
+    QPushButton* m_boutonIAs;
+    QPushButton* m_boutonRetourMenu;
 
 };
 

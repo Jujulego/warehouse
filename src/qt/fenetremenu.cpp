@@ -22,9 +22,9 @@ FenetreMenu::FenetreMenu()
     m_boutonRegles = new QPushButton(QIcon(":/tileset/caisse/rouge.png"), "Rules");
     layout->addWidget(m_boutonRegles);
 
-    //Création du bouton IA
+    /*//Création du bouton IA
     m_boutonIA = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
-    layout->addWidget(m_boutonIA);
+    layout->addWidget(m_boutonIA);*/
 
     //Création du bouton quitter
     m_boutonQuitter = new QPushButton(QIcon(":/tileset/perso/haut_01.png"), "Quit");
