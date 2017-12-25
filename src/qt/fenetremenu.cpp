@@ -13,6 +13,7 @@ FenetreMenu::FenetreMenu()
 
     //Création du bouton jouer
     m_boutonJouer = new QPushButton(QIcon(":/tileset/perso/tete_sombre.png"), "PLAY");
+    //Personnalisation de la police
     QFont Police1("Calibri", 10, QFont::Bold);
     m_boutonJouer->setFont(Police1);
 
@@ -43,6 +44,9 @@ FenetreMenu::FenetreMenu()
 
     //Configuration bouton règles
     QObject::connect(m_boutonRegles, SIGNAL(clicked()), this, SLOT(fenRegles_open()));
+
+    //Signal et slot pour fermer la fenêtre menu quand on ouvre la fenêtre niveau
+    QObject::connect(m_boutonJouer, SIGNAL(clicked()), this, SLOT(close()));
 
 
     setLayout(layout);

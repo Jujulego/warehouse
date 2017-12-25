@@ -56,7 +56,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
 
 
-   /* m_boutonRetourMenu->show();*/
+
 
 
     for (std::shared_ptr<moteur::Immuable> obj: *m_carte){ //boucle pour parcourir la carte
