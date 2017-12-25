@@ -38,24 +38,40 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
     //Création du bouton retour menu
     m_boutonRetourMenu = new QPushButton("MAIN MENU");
-    QFont PoliceRetourMenu("Calibri", 10, QFont::Bold);
+    QFont PoliceRetourMenu("Calibri", 9, QFont::Bold);
     m_boutonRetourMenu->setStyleSheet("background-color: silver;");
     m_boutonRetourMenu->setFont(PoliceRetourMenu);
+
+    //Création du bouton nouvelle partie
+    m_NouvellePartie = new QPushButton("NEW GAME");
+    QFont PoliceNouvellePartie("Calibri", 10, QFont::Bold);
+    m_NouvellePartie->setStyleSheet("background-color: green;");
+    m_NouvellePartie->setFont(PoliceNouvellePartie);
 
     //Intégration du bouton IA dans la scène
     QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
     proxy->setWidget(m_boutonIAs);
     scene()->addItem(proxy);
     m_boutonIAs->setStyleSheet("background-color: red;");
-    proxy->setPos(0, 40);
+    proxy->setPos(512, 200);
     proxy->setZValue(3);
 
     //Intégration du bouton Retour Menu dans la scène
-    QGraphicsProxyWidget *proxyBis = new QGraphicsProxyWidget();
-    proxyBis->setWidget(m_boutonRetourMenu);
-    scene()->addItem(proxyBis);
-    proxyBis->setZValue(3);
+    QGraphicsProxyWidget *proxy2 = new QGraphicsProxyWidget();
+    proxy2->setWidget(m_boutonRetourMenu);
+    scene()->addItem(proxy2);
+    proxy2->setPos(512, 100);
+    proxy2->setZValue(3);
 
+    //Intégration du bouton nouvelle partie dans la scène
+    QGraphicsProxyWidget *proxy3 = new QGraphicsProxyWidget();
+    proxy3->setWidget(m_NouvellePartie);
+    scene()->addItem(proxy3);
+    proxy3->setPos(512, 300);
+    proxy3->setZValue(3);
+
+
+    this->setStyleSheet("background-color: black;");
 
     //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
