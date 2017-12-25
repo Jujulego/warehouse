@@ -25,6 +25,9 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     setWindowTitle("LET'S PLAY !");
     setScene(new QGraphicsScene(this)); //création de la scène
 
+    //Fond de la fenêtre
+    this->setStyleSheet("background-color: black;");
+
     QImage mur(":/tileset/bloc/marron.png");
     QImage sol(":/tileset/sol/gris.png");
     QImage boite(":/tileset/caisse/bleue.png");
@@ -71,12 +74,13 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy3->setZValue(3);
 
 
-    this->setStyleSheet("background-color: black;");
 
     //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
-
+    //Pour recommencer la partie
+    QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(nouvellePartie_open()));
+    QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
 
 
 
@@ -179,5 +183,12 @@ void FenetreNiveau::fenMenu_open(){
 }
 
 
+
+void FenetreNiveau::nouvellePartie_open(){
+
+    FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
+    carte->show();
+
+}
 
 

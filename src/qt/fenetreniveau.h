@@ -9,10 +9,13 @@
 #include "moteur/personnage.hpp"
 #include "moteur/poussable.hpp"
 #include <QPushButton>
+#include <QWidget>
+#include <QApplication>
 
 
 class FenetreNiveau : public QGraphicsView{
 
+    Q_OBJECT
 public:
     FenetreNiveau(std::shared_ptr<moteur::Carte> _carte);
     virtual void keyPressEvent(QKeyEvent* event);
@@ -20,6 +23,7 @@ public:
 
 public slots:
     void fenMenu_open();
+    void nouvellePartie_open();
 
 private:
     std::shared_ptr<moteur::Carte> m_carte;
