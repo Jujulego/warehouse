@@ -15,6 +15,8 @@ FenetreMenu::FenetreMenu()
     m_boutonJouer = new QPushButton(QIcon(":/tileset/perso/tete_sombre.png"), "PLAY");
     //Personnalisation de la police
     QFont Police1("Calibri", 10, QFont::Bold);
+    m_boutonJouer->setStyleSheet("background-color: green;");
+
     m_boutonJouer->setFont(Police1);
 
     //Création d'un layout
@@ -22,9 +24,10 @@ FenetreMenu::FenetreMenu()
     layout->addWidget(m_boutonJouer);
 
     //Création du bouton règles
-    m_boutonRegles = new QPushButton(QIcon(":/tileset/caisse/rouge.png"), "RULES");
+    m_boutonRegles = new QPushButton(QIcon(":/tileset/caisse/verte.png"), "RULES");
     QFont Police2("Calibri", 10, QFont::Bold);
     m_boutonRegles->setFont(Police2);
+    m_boutonRegles->setStyleSheet("background-color: yellow;");
     layout->addWidget(m_boutonRegles);
 
 
@@ -36,6 +39,7 @@ FenetreMenu::FenetreMenu()
     m_boutonQuitter = new QPushButton(QIcon(":/tileset/perso/haut_01.png"), "QUIT");
     QFont Police3("Calibri", 10, QFont::Bold);
     m_boutonQuitter->setFont(Police3);
+    m_boutonQuitter->setStyleSheet("background-color: silver;");
     layout->addWidget(m_boutonQuitter);
 
     //Configuration bouton quitter

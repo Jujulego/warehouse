@@ -55,7 +55,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxyBis->setZValue(3);
 
 
-    //Signal et slot pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
+    //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
 
