@@ -12,22 +12,29 @@ FenetreMenu::FenetreMenu()
     setWindowTitle("MENU");
 
     //Création du bouton jouer
-    m_boutonJouer = new QPushButton(QIcon(":/tileset/perso/tete_sombre.png"), "Play");
+    m_boutonJouer = new QPushButton(QIcon(":/tileset/perso/tete_sombre.png"), "PLAY");
+    QFont Police1("Calibri", 10, QFont::Bold);
+    m_boutonJouer->setFont(Police1);
 
     //Création d'un layout
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(m_boutonJouer);
 
     //Création du bouton règles
-    m_boutonRegles = new QPushButton(QIcon(":/tileset/caisse/rouge.png"), "Rules");
+    m_boutonRegles = new QPushButton(QIcon(":/tileset/caisse/rouge.png"), "RULES");
+    QFont Police2("Calibri", 10, QFont::Bold);
+    m_boutonRegles->setFont(Police2);
     layout->addWidget(m_boutonRegles);
+
 
     /*//Création du bouton IA
     m_boutonIA = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
     layout->addWidget(m_boutonIA);*/
 
     //Création du bouton quitter
-    m_boutonQuitter = new QPushButton(QIcon(":/tileset/perso/haut_01.png"), "Quit");
+    m_boutonQuitter = new QPushButton(QIcon(":/tileset/perso/haut_01.png"), "QUIT");
+    QFont Police3("Calibri", 10, QFont::Bold);
+    m_boutonQuitter->setFont(Police3);
     layout->addWidget(m_boutonQuitter);
 
     //Configuration bouton quitter

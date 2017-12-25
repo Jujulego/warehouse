@@ -32,9 +32,13 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
     //Création du bouton IA
     m_boutonIAs = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
+    QFont PoliceIA("Calibri", 10, QFont::Bold);
+    m_boutonIAs->setFont(PoliceIA);
 
     //Création du bouton retour menu
-    m_boutonRetourMenu = new QPushButton(QIcon(":/tileset/perso/tete_sombre.png"), "Main Menu");
+    m_boutonRetourMenu = new QPushButton("MAIN MENU");
+    QFont PoliceRetourMenu("Calibri", 10, QFont::Bold);
+    m_boutonRetourMenu->setFont(PoliceRetourMenu);
 
     //Intégration du bouton IA dans la scène
     QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
@@ -43,7 +47,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy->setPos(0, 40);
     proxy->setZValue(3);
 
-    //Intégration du bouton IA dans la scène
+    //Intégration du bouton Retour Menu dans la scène
     QGraphicsProxyWidget *proxyBis = new QGraphicsProxyWidget();
     proxyBis->setWidget(m_boutonRetourMenu);
     scene()->addItem(proxyBis);
