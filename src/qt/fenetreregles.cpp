@@ -12,5 +12,4 @@ FenetreRegles::FenetreRegles()
     scene()->addText("TEST POUR ECRIRE LES REGLES");
 
 
-
 }

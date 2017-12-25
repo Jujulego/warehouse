@@ -18,6 +18,8 @@ public:
     virtual void keyPressEvent(QKeyEvent* event);
     void updateCarte();
 
+public slots:
+    void fenMenu_open();
 
 private:
     std::shared_ptr<moteur::Carte> m_carte;
