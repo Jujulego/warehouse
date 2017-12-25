@@ -36,7 +36,7 @@ private:
     QPushButton* m_boutonIAs;
     QPushButton* m_boutonRetourMenu;
     QPushButton* m_NouvellePartie;
-
+    QPushButton* m_boutonQuitter;
 };
 
 #endif // FENETRENIVEAU_H

@@ -51,6 +51,12 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     m_NouvellePartie->setStyleSheet("background-color: green;");
     m_NouvellePartie->setFont(PoliceNouvellePartie);
 
+    //Création du bouton quitter
+    m_boutonQuitter = new QPushButton("QUIT");
+    QFont PoliceBoutonQuitter("Calibri", 10, QFont::Bold);
+    m_boutonQuitter->setStyleSheet("background-color: silver;");
+    m_boutonQuitter->setFont(PoliceBoutonQuitter);
+
     //Intégration du bouton IA dans la scène
     QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
     proxy->setWidget(m_boutonIAs);
@@ -73,6 +79,13 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy3->setPos(512, 300);
     proxy3->setZValue(3);
 
+    //Intégration du bouton quitter dans la scène
+    QGraphicsProxyWidget *proxy4 = new QGraphicsProxyWidget();
+    proxy4->setWidget(m_boutonQuitter);
+    scene()->addItem(proxy4);
+    proxy4->setPos(512, 400);
+    proxy4->setZValue(3);
+
 
 
     //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
@@ -80,7 +93,10 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
     //Pour recommencer la partie
     QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(nouvellePartie_open()));
+    //Pour que lorsqu'on commence une nouvelle partie la fenêtre précédente se ferme
     QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
+
+    QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
 
 
 
