@@ -9,7 +9,7 @@ FenetreMenu::FenetreMenu()
 {
     //Taille de la fenêtre
     setMinimumSize(600, 400);
-    setWindowTitle("MENU");
+    setWindowTitle("THE WAREHOUSE");
 
     //Création du bouton jouer
     m_boutonJouer = new QPushButton(QIcon(":/tileset/perso/tete_sombre.png"), "PLAY");
@@ -54,6 +54,8 @@ FenetreMenu::FenetreMenu()
 
 
     setLayout(layout);
+
+    this->setStyleSheet("background-color: black;");
 
 }
 

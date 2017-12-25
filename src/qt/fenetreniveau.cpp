@@ -39,12 +39,14 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     //Création du bouton retour menu
     m_boutonRetourMenu = new QPushButton("MAIN MENU");
     QFont PoliceRetourMenu("Calibri", 10, QFont::Bold);
+    m_boutonRetourMenu->setStyleSheet("background-color: silver;");
     m_boutonRetourMenu->setFont(PoliceRetourMenu);
 
     //Intégration du bouton IA dans la scène
     QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
     proxy->setWidget(m_boutonIAs);
     scene()->addItem(proxy);
+    m_boutonIAs->setStyleSheet("background-color: red;");
     proxy->setPos(0, 40);
     proxy->setZValue(3);
 
