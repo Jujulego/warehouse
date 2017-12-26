@@ -111,7 +111,7 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 			std::shared_ptr<moteur::Carte> carte = noeud->carte(m_carte, obj, m_obj->force());
 			
 			// Suppression du personnage
-			auto pers = carte->get<moteur::Deplacable>(obj);
+			auto pers = carte->get<moteur::Personnage>(obj);
 			carte->get<moteur::Immuable>(obj)->pop();
 			
 			// Calcul d'un chemin

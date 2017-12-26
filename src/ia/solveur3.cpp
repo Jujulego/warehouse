@@ -1,5 +1,6 @@
 // Importations
 #include <algorithm>
+#include <chrono>
 #include <functional>
 #include <limits>
 #include <list>
@@ -37,6 +38,7 @@
 
 // Namespace
 using namespace ia;
+using namespace std::chrono;
 
 // Fonctions
 unsigned char ia::get_mask(Coord const& dir) {
@@ -77,23 +79,51 @@ unsigned char Solveur3::Empl::dirs() const {
 }
 
 // Méthodes
-Chemin Solveur3::resoudre(posstream<std::ostream>&) {
+Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 	// Outils
 	struct Etat {
 		// Attributs
 		std::shared_ptr<Noeud> noeud;
 		unsigned dist;        // Distance parcourue
 		Nombre<unsigned> heu; // Resultat de l'heuristique
+
+		// Opérateurs
+		bool operator < (Etat const& e) const {
+			return heu > e.heu;
+		}
 	};
 
-	// Initialisation, iterative deepning A*
-	std::list<Etat> feuilles;
+	// Initialisation, A*
+	std::priority_queue<Etat> file;
 	HashTable historique;
 
-	feuilles.push_back(Etat { std::make_shared<Noeud>(), 0, heuristique(m_carte) });
+	file.push(Etat { std::make_shared<Noeud>(), 0, heuristique(m_carte) });
 	historique.insert(reduire(m_carte));
 
-	while (!feuilles.empty()) {
+	// Stats
+	steady_clock::time_point debut = steady_clock::now();
+	int noeuds_traites = 0, noeuds_a_traites = 1;
+	Nombre<unsigned> min_heu = INFINI;
+
+	// Algorithme
+	while (!file.empty()) {
+		// Interruption ?
+		if (m_interruption) break;
+
+		// Dépilage
+		Etat etat = file.top();
+		file.pop();
+
+		// Calcul de la carte
+		Coord pers = m_obj->coord();
+		std::shared_ptr<Noeud> noeud = etat.noeud;
+		std::shared_ptr<moteur::Carte> carte = noeud->carte(m_carte, pers, m_obj->force());
+
+		// Stats
+		noeuds_traites++;
+
+		for (Mouv mvt : mouvements(carte)) {
+		}
 	}
 
 	return Chemin();
@@ -803,6 +833,11 @@ std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte)
 		}
 	}
 
+	// Suppression des emplacements
+	for (auto empl : carte->liste<moteur::Emplacement>()) {
+		zone[hash(empl->coord())] = false;
+	}
+
 	carte->set(pers->coord(), pers);
 
 	return zone;
@@ -984,4 +1019,33 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 	}
 
 	return goal_cuts.empty() ? mvts : goal_cuts;
+}
+
+Chemin Solveur3::conversion(std::shared_ptr<moteur::Carte> carte, Chemin const& chemin_pous, Coord pous, Coord pers, int force) const {
+	// Initialisation
+	carte = std::make_shared<moteur::Carte>(*carte);
+	Chemin chemin_pers;
+
+	// Calculs
+	for (auto dir : chemin_pous) {
+		auto pt_pers = (*carte)[pers]->pop();
+		Coord npers = pous - dir;
+
+		// Calcul du chemin
+		Chemin c;
+		if (!pt_pers) break;
+		if (!trouver_chemin(carte, pers, npers, c)) break;
+
+		chemin_pers.ajouter(c);
+		chemin_pers.ajouter(dir);
+
+		// Application des mouvements
+		carte->set(npers, pt_pers);
+		carte->deplacer(npers, dir, force);
+
+		pers = npers + dir;
+		pous += dir;
+	}
+
+	return chemin_pers;
 }
