@@ -11,6 +11,8 @@ FenetreMenu::FenetreMenu()
     setMinimumSize(600, 400);
     //Titre de la fenêtre
     setWindowTitle("THE WAREHOUSE");
+    //Fond du menu
+    this->setStyleSheet("background-color: black;");
 
 
     //Création du bouton jouer
@@ -53,12 +55,11 @@ FenetreMenu::FenetreMenu()
 
     //Signal et slot pour fermer la fenêtre menu quand on ouvre la fenêtre niveau
     QObject::connect(m_boutonJouer, SIGNAL(clicked()), this, SLOT(close()));
-
+    //Signal et slot pour fermer la fenêtre menu quand on ouvre la fenêtre règles
+    QObject::connect(m_boutonRegles, SIGNAL(clicked()), this, SLOT(close()));
 
     setLayout(layout);
 
-    //Fond du menu
-    this->setStyleSheet("background-color: black;");
 
 }
 
