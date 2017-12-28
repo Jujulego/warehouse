@@ -153,6 +153,10 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 			// Ignoré si deadlock
 			if (deadlock(carte, pous, pers->coord(), pers->force())) continue;
 
+			// Ignoré si heuristique == INFINI
+			Nombre<unsigned> heu = heuristique(carte);
+			if (heu == INFINI) continue;
+
 			// Fini ?
 			if (carte->test_fin()) {
 				auto lock = console::lock();
@@ -173,7 +177,7 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 
 			{ auto lck = console::lock();
 				afficher_carte(carte, 55, 20);
-				std::cout << " " << mvt.heuristique << " " << heuristique(carte) << "      ";
+				std::cout << " " << mvt.heuristique << " " << heu << "      ";
 //				std::cin.get();
 			}
 
@@ -181,7 +185,7 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 			file.push(Etat {
 				std::make_shared<Noeud>(chemin, noeud),
 				etat.dist + chemin.longueur(),
-				heuristique(carte)
+				heu
 			});
 
 			++noeuds_a_traites;
