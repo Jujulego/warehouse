@@ -15,6 +15,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include "affichage.hpp"
 
 #include "moteur/carte.hpp"
 #include "moteur/deplacable.hpp"
@@ -22,6 +23,7 @@
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
 #include "outils.hpp"
+#include "outils/console.hpp"
 #include "outils/coord.hpp"
 #include "outils/hongrois.hpp"
 #include "outils/matrice.hpp"
@@ -33,12 +35,13 @@
 #include "noeud.hpp"
 #include "solveur3.hpp"
 
-// Macros
-#define MAJ_AFF 250
-
 // Namespace
 using namespace ia;
 using namespace std::chrono;
+
+// Macros
+#define MAJ_AFF  0ms
+#define PRIO_MAX 9
 
 // Fonctions
 unsigned char ia::get_mask(Coord const& dir) {
@@ -101,7 +104,8 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 	historique.insert(reduire(m_carte));
 
 	// Stats
-	steady_clock::time_point debut = steady_clock::now();
+	steady_clock::time_point debut   = steady_clock::now();
+	steady_clock::time_point der_aff = steady_clock::now();
 	int noeuds_traites = 0, noeuds_a_traites = 1;
 	Nombre<unsigned> min_heu = INFINI;
 
@@ -114,15 +118,86 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 		Etat etat = file.top();
 		file.pop();
 
-		// Calcul de la carte
-		Coord pers = m_obj->coord();
-		std::shared_ptr<Noeud> noeud = etat.noeud;
-		std::shared_ptr<moteur::Carte> carte = noeud->carte(m_carte, pers, m_obj->force());
-
 		// Stats
-		noeuds_traites++;
+		++noeuds_traites;
+		min_heu = std::min(min_heu, etat.heu);
 
-		for (Mouv mvt : mouvements(carte)) {
+		// Calcul de la carte
+		Coord obj = m_obj->coord();
+		std::shared_ptr<Noeud> noeud = etat.noeud;
+		std::shared_ptr<moteur::Carte> noeud_carte = noeud->carte(m_carte, obj, m_obj->force());
+
+		{ auto lck = console::lock();
+			afficher_carte(noeud_carte, 5, 20);
+			std::cout << " " << etat.heu << "      ";
+		}
+
+		for (Mouv mvt : mouvements(noeud_carte)) {
+			// Copie de la carte
+			auto carte = std::make_shared<moteur::Carte>(*noeud_carte);
+			auto pous = carte->get<moteur::Poussable>(mvt.poussable->coord());
+			auto pers = carte->personnage();
+
+			// Calcul du chemin
+			Chemin chemin = conversion(carte, mvt.chemin, mvt.poussable->coord(), pers->coord(), pers->force());
+
+			// Application du mouvement
+			for (auto dir : chemin) {
+				pers->deplacer(dir);
+			}
+
+			// Ajout à l'historique
+			auto pair = historique.insert(reduire(carte));
+			if (!pair.second) continue; // Déjà traité !
+
+			// Ignoré si deadlock
+			if (deadlock(carte, pous, pers->coord(), pers->force())) continue;
+
+			// Fini ?
+			if (carte->test_fin()) {
+				auto lock = console::lock();
+
+				// nb de noeuds traités
+				stream << manip::eff_ligne;
+				stream << ((double) noeuds_traites) / noeuds_a_traites * 100 << " % (" << noeuds_traites << " / " << noeuds_a_traites << ")";
+
+				// temps passé
+				stream << " en " << duration_cast<milliseconds>(steady_clock::now() - debut).count() << " ms";
+
+				// Calcul du résultat
+				Chemin res = noeud->chemin_complet();
+				res.ajouter(chemin);
+
+				return res;
+			}
+
+			{ auto lck = console::lock();
+				afficher_carte(carte, 55, 20);
+				std::cout << " " << mvt.heuristique << " " << heuristique(carte) << "      ";
+//				std::cin.get();
+			}
+
+			// Enfilage !
+			file.push(Etat {
+				std::make_shared<Noeud>(chemin, noeud),
+				etat.dist + chemin.longueur(),
+				heuristique(carte)
+			});
+
+			++noeuds_a_traites;
+		}
+
+		// Affichage
+		if (steady_clock::now() - der_aff > MAJ_AFF) {
+			der_aff = steady_clock::now();
+
+			auto lock = console::lock();
+
+			// nb de noeuds traités
+			stream << manip::eff_ligne;
+			stream << ((double) noeuds_traites) / noeuds_a_traites * 100 << " % (" << noeuds_traites << " / " << noeuds_a_traites << ") " << min_heu;
+
+			min_heu = INFINI;
 		}
 	}
 
@@ -564,7 +639,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 
 	// Récupération des emplacements
 	std::vector<Coord> emplacements;
-	std::map<Coord,double> prios;
+	std::map<Coord,unsigned> prios;
 	for (auto empl : carte->liste<moteur::Emplacement>()) {
 		emplacements.push_back(empl->coord());
 
@@ -574,7 +649,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 			if ((*carte)[p]->accessible() || (p == pers)) ++nb;
 		}
 
-		prios[empl->coord()] = nb+1;
+		prios[empl->coord()] = nb;
 	}
 
 	// On mélange !
@@ -583,15 +658,15 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 
 	// Vidage de la carte
 	std::vector<std::shared_ptr<moteur::Deplacable>> deplacables;
-	for (auto depl : m_carte->liste<moteur::Deplacable>()) {
+	for (auto depl : carte->liste<moteur::Deplacable>()) {
 		if (unmovable.find(depl->coord()) == unmovable.end()) {
-			(*m_carte)[depl->coord()]->pop();
+			(*carte)[depl->coord()]->pop();
 			deplacables.push_back(depl);
 		}
 	}
 
 	// Déclaration et remplissage de la matrice
-	Matrice<Nombre<double>> matrice(poussables.size());
+	Matrice<Nombre<unsigned>> matrice(poussables.size());
 	matrice.fill(INFINI);
 
 	auto pous = std::make_shared<moteur::Poussable>(m_carte.get(), 1);
@@ -602,9 +677,9 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 			std::multimap<Coord,std::pair<Coord,unsigned>> distances = infos[hash(poussables[p])].distances;
 
 			// Zone accessible
-			m_carte->set(poussables[p], pous);
-			std::vector<bool> zone = zone_accessible(m_carte, pers);
-			(*m_carte)[poussables[p]]->pop();
+			carte->set(poussables[p], pous);
+			std::vector<bool> zone = zone_accessible(carte, pers);
+			(*carte)[poussables[p]]->pop();
 
 			// Récupération de la distance
 			int nb = 0;
@@ -614,11 +689,11 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 				for (auto it = pit.first; it != pit.second; ++it) {
 					if (!zone[hash(it->second.first)]) continue;
 
-					matrice[Coord(p, e)] = std::min(matrice[Coord(p, e)].val(), (double) it->second.second);
+					matrice[Coord(p, e)] = std::min(matrice[Coord(p, e)].val(), it->second.second);
 					++nb;
 				}
 
-				matrice[Coord(p, e)] /= prios[emplacements[e]];
+				matrice[Coord(p, e)] *= PRIO_MAX - prios[emplacements[e]];
 			}
 
 			ok &= (nb != 0);
@@ -627,6 +702,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 			for (int e = 0; e < emplacements.size(); ++e) {
 				if (emplacements[e] == poussables[p]) {
 					matrice[Coord(p, e)] = 0;
+					break;
 				}
 			}
 		}
@@ -634,7 +710,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 
 	// Retour des objets
 	for (auto depl : deplacables) {
-		m_carte->set(depl->coord(), depl);
+		carte->set(depl->coord(), depl);
 	}
 
 	// Application de l'algo
@@ -646,7 +722,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 
 		// Déduction du résultat
 		for (Coord sel : selection) {
-			c_assos[poussables[sel.x()]] = {emplacements[sel.y()], matrice[sel].val() * prios[emplacements[sel.y()]]};
+			c_assos[poussables[sel.x()]] = {emplacements[sel.y()], matrice[sel].val() / (PRIO_MAX - prios[emplacements[sel.y()]])};
 		}
 	}
 
@@ -884,12 +960,12 @@ std::vector<bool> Solveur3::zone_sr(std::shared_ptr<moteur::Carte> carte, Coord 
 			Coord nc = c + dir;
 
 			// La case précédante est accessible
-			if (!m_carte->coord_valides(c - dir)) continue; // validité
+			if (!carte->coord_valides(c - dir)) continue; // validité
 			if (!z[hash(c - dir)])                continue; // accessibilité
 
 			// Mouvement possible ?
-			if (!m_carte->coord_valides(nc))   continue; // validité
-			if (!(*m_carte)[nc]->accessible()) continue; // accessibilité
+			if (!carte->coord_valides(nc))   continue; // validité
+			if (!(*carte)[nc]->accessible()) continue; // accessibilité
 
 			// Marquage
 			if (marques[{nc, c}]) continue; // Déjà traité !
@@ -950,7 +1026,7 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 		carte->set(pous->coord(), pous);
 
 		// Goal cut
-/*		if (empl != c && z_sr[hash(empl)]) {
+		if (empl != c && z_sr[hash(empl)]) {
 			// Calcul d'un chemin
 			Mouv mvt = { Chemin(), 0, pous };
 
@@ -967,7 +1043,7 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 
 				continue; // on ignore le reste
 			}
-		}*/
+		}
 
 		if (!goal_cuts.empty()) continue;
 
@@ -1018,7 +1094,19 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 		carte->set(pers->coord(), pers);
 	}
 
-	return goal_cuts.empty() ? mvts : goal_cuts;
+	// Tris
+	if (goal_cuts.empty()) {
+		mvts.sort([] (Mouv const& m1, Mouv const& m2) {
+			return m1.heuristique < m2.heuristique;
+		});
+		return mvts;
+
+	} else {
+		goal_cuts.sort([] (Mouv const& m1, Mouv const& m2) {
+			return m1.heuristique < m2.heuristique;
+		});
+		return goal_cuts;
+	}
 }
 
 Chemin Solveur3::conversion(std::shared_ptr<moteur::Carte> carte, Chemin const& chemin_pous, Coord pous, Coord pers, int force) const {

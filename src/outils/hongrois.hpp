@@ -173,6 +173,10 @@ std::set<Coord> algorithme_hongrois(Matrice<Int> mat) {
 			// Etape 3
 			Int lambda = std::numeric_limits<Int>::max();
 
+			if (std::numeric_limits<Int>::has_infinity) {
+				lambda = std::numeric_limits<Int>::infinity();
+			}
+
             for (size_t j = 0; j < LIG; ++j) {
                 for (size_t i = 0; i < LIG; ++i) {
 					Coord ij(i, j);

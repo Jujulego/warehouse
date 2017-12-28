@@ -98,7 +98,7 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 		auto noeud = etat.noeud;
 		
 		// Stats ...
-		noeuds_t++;
+		++noeuds_t;
 		
 		// Préparation des noeuds suivants
 		for (Poussee p : etat.poussees) {
@@ -159,7 +159,7 @@ Chemin Solveur2::resoudre(posstream<std::ostream>& stream) {
 				heuristique(carte)
 			));
 
-			noeuds_at++;
+			++noeuds_at;
 		}
 
 		// Affichage
