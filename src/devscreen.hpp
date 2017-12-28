@@ -8,6 +8,7 @@
 #include "moteur/personnage.hpp"
 #include "moteur/poussable.hpp"
 
+#include "ia/chemin.hpp"
 #include "ia/solveur3.hpp"
 
 // Classe
@@ -56,4 +57,6 @@ class DevScreen {
 		std::shared_ptr<moteur::Poussable> m_empl_conseil = nullptr;
 		std::list<std::shared_ptr<moteur::Poussable>> m_poussables;
 		std::map<Coord,unsigned char> m_chemin;
+		ia::Chemin m_chemin_obj;
+		Coord m_chemin_dep;
 };

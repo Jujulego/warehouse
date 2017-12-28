@@ -13,16 +13,16 @@ class Niveau {
 		// Constructeur
 		Niveau(std::string const& fichier);
 		Niveau(std::shared_ptr<moteur::Carte> const& carte);
-		
+
 		// Méthodes
 		bool jouer(); // renvoie vrai en cas de victoire
-		
+
 		// Accesseurs
 		std::shared_ptr<moteur::Carte> carte() const; // c'est une copie !
-		
+
         std::map<std::string,std::string>& infos(); //informations sur le niveau ex: titre
 		std::map<std::string,std::string> const& infos() const;
-	
+
 	private:
 		// Méthodes
 		void init_aff();

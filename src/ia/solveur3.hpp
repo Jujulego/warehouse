@@ -97,6 +97,7 @@ class Solveur3 : public IA {
 		std::vector<bool> zone_sr(std::shared_ptr<moteur::Carte> carte) const; // "Somme" de celle de touts les poussables
 
 		std::list<Mouv> mouvements(std::shared_ptr<moteur::Carte> carte) const; // Calculs des mouvements possibles
+		Chemin conversion(std::shared_ptr<moteur::Carte> carte, Chemin const& chemin_pous, Coord pous, Coord pers, int force) const; // Convertit un chemin poussable en chemin personnage
 
 	private:
 		// Cache

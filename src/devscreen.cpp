@@ -276,12 +276,15 @@ void DevScreen::afficher() {
 			if (pous != nullptr) force = m_pers->force();
 
 			if (m_solv3->trouver_chemin(m_carte, dep, arr, res, force)) {
+				m_chemin_dep = dep;
+
 				// Résultat
 				for (auto dir : res) {
 					m_chemin[dep] |= ia::get_mask(dir);
 					dep += dir;
 				}
 
+				m_chemin_obj = res;
 				m_aff_chemin = true;
 			}
 		}
@@ -296,6 +299,23 @@ void DevScreen::afficher() {
 			m_tunnels     = false;
 			m_zones_empls = false;
 			m_zone_access = false;
+			break;
+
+		case 'x':
+			if (m_chemin_obj.longueur() != 0) {
+				Coord dep = m_pers->coord();
+				ia::Chemin res = m_solv3->conversion(m_carte, m_chemin_obj, m_chemin_dep, dep, m_pers->force());
+				m_chemin_obj = ia::Chemin();
+
+				// Maj
+				m_chemin.clear();
+
+				for (auto dir : res) {
+					m_chemin[dep] |= ia::get_mask(dir);
+					dep += dir;
+				}
+			}
+
 			break;
 
 		case 'z':
@@ -624,6 +644,8 @@ void DevScreen::afficher_carte() const {
 				}
 			}
 
+			if (m_empl_conseil && obj->coord() == empl_conseil) st.fnd(style::BLEU);
+
 			// Affichage
 			if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)) {
 				std::cout << st << select_mur(m_carte, std::dynamic_pointer_cast<moteur::Obstacle>(obj));
@@ -663,12 +685,10 @@ void DevScreen::afficher_carte() const {
 					if ((*m_carte)[p]->accessible() || (p == m_pers->coord())) ++nb;
 				}
 
-				std::cout << st << nb;
+				std::cout << st << nb << " ";
 
 			} else if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)) {
 				st.txt(style::DEFAUT_TEXTE);
-				if (m_empl_conseil && obj->coord() == empl_conseil) st.fnd(style::BLEU);
-
 				std::cout << st << EMPL;
 
 			} else if (m_zone_access && zone[hash(obj->coord())]) {

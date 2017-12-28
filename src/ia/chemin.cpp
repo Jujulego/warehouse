@@ -40,7 +40,7 @@ Coord Chemin::appliquer(Coord coord) const {
 	for (auto a : m_actions) {
 		coord += a;
 	}
-	
+
 	return coord;
 }
 
@@ -48,7 +48,7 @@ bool Chemin::appliquer(std::shared_ptr<moteur::Deplacable> const& obj) const {
 	for (auto a : m_actions) {
 		if (obj->deplacer(a)) return true;
 	}
-	
+
 	return false;
 }
 
@@ -57,7 +57,7 @@ bool Chemin::appliquer(std::shared_ptr<moteur::Carte> const& carte, Coord& obj, 
 		if (carte->deplacer(obj, a, force)) return true;
 		obj += a;
 	}
-	
+
 	return false;
 }
 

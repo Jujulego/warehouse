@@ -91,6 +91,10 @@ if (QT_ENABLE)
 
 		PUBLIC qt/fenetremenu.h
 		PUBLIC qt/fenetremenu.cpp
+		PUBLIC qt/fenetreniveau.h
+		PUBLIC qt/fenetreniveau.cpp
+		PUBLIC qt/fenetreregles.h
+		PUBLIC qt/fenetreregles.cpp
 	)
 
 #	add_definitions(-DQTCREATOR)

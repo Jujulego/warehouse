@@ -11,6 +11,7 @@
 #include "ia/chemin.hpp"
 #include "ia/solveur.hpp"
 #include "ia/solveur2.hpp"
+#include "ia/solveur3.hpp"
 
 #include "moteur/carte.hpp"
 #include "moteur/emplacement.hpp"
@@ -113,6 +114,7 @@ bool Niveau::jouer() {
 	// Solveurs
 	ia::Solveur  solveur( carte, pers);
 	ia::Solveur2 solveur2(carte, pers);
+	ia::Solveur3 solveur3(carte, pers);
 	ia::IA*      ia = nullptr;
 	ia::Chemin   chemin;
 
@@ -232,7 +234,7 @@ bool Niveau::jouer() {
 					do {
 						int num = 0;
 
-						infostream << manip::eff_ligne << "Quelle IA (1 ou 2) ? ";
+						infostream << manip::eff_ligne << "Quelle IA (1, 2 ou 3) ? ";
 						std::cout << infostream.coord() + manip::y;
 						std::cin >> num;
 
@@ -243,6 +245,10 @@ bool Niveau::jouer() {
 
 						case 2:
 							ia = &solveur2;
+							break;
+
+						case 3:
+							ia = &solveur3;
 							break;
 						}
 					} while(!ia);

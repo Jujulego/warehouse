@@ -335,7 +335,7 @@ class Matrice {
 		}
 
 		void fill(Int const& val) {
-			for (int i = 0; i < size(); ++i) m_matrice[i] = val;
+            for (size_t i = 0; i < size(); ++i) m_matrice[i] = val;
 		}
 
 		auto colonne(size_type c) {
