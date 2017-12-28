@@ -166,25 +166,29 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     QImage personHaut(":/tileset/perso/haut_01.png");
     QImage personBas(":/tileset/perso/bas_01.png");
 
-    scene()->removeItem(m_perso);
-
     switch (event->key()) {
 
     case Qt::Key_Left:
+        scene()->removeItem(m_perso);
         dir = GAUCHE;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personGauche));
         scene()->addItem(m_perso);
         m_perso->setZValue(3);
         break;
 
+
+
     case Qt::Key_Up:
+        scene()->removeItem(m_perso);
         dir = HAUT;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personHaut));
         scene()->addItem(m_perso);
         m_perso->setZValue(3);
         break;
 
+
     case Qt::Key_Right:
+        scene()->removeItem(m_perso);
         dir = DROITE;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personDroite));
         scene()->addItem(m_perso);
@@ -192,11 +196,15 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         break;
 
     case Qt::Key_Down:
+        scene()->removeItem(m_perso);
         dir = BAS;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personBas));
         scene()->addItem(m_perso);
         m_perso->setZValue(3);
         break;
+
+
+
     }
 
     if (dir != ORIGINE) {
