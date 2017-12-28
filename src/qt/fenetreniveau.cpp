@@ -165,6 +165,8 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     QImage personHaut(":/tileset/perso/haut_01.png");
     QImage personBas(":/tileset/perso/bas_01.png");
 
+    scene()->removeItem(m_perso);
+
     switch (event->key()) {
 
     case Qt::Key_Left:
