@@ -1,4 +1,5 @@
 #include "fenetreniveau.h"
+#include "fenetremenu.h"
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QMessageBox>
@@ -6,6 +7,10 @@
 #include "moteur/poussable.hpp"
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
+
+
+#include <QPushButton>
+#include <QGraphicsProxyWidget>
 
 #define HAUTEUR_IMAGE 64
 #define LARGEUR_IMAGE 64
@@ -17,14 +22,85 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     setDragMode(QGraphicsView::ScrollHandDrag);
     setRenderHint(QPainter::Antialiasing, true);
     setRenderHint(QPainter::SmoothPixmapTransform, true);
-
+    setWindowTitle("LET'S PLAY !");
     setScene(new QGraphicsScene(this)); //création de la scène
+
+    //Fond de la fenêtre
+    this->setStyleSheet("background-color: black;");
 
     QImage mur(":/tileset/bloc/marron.png");
     QImage sol(":/tileset/sol/gris.png");
     QImage boite(":/tileset/caisse/bleue.png");
     QImage emplacement(":/tileset/environ/empl_bleu.png");
     QImage personnage(":/tileset/perso/bas_01.png");
+
+    //Création du bouton IA
+    m_boutonIAs = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
+    QFont PoliceIA("Calibri", 10, QFont::Bold);
+    m_boutonIAs->setFont(PoliceIA);
+
+    //Création du bouton retour menu
+    m_boutonRetourMenu = new QPushButton("MAIN MENU");
+    QFont PoliceRetourMenu("Calibri", 9, QFont::Bold);
+    m_boutonRetourMenu->setStyleSheet("background-color: silver;");
+    m_boutonRetourMenu->setFont(PoliceRetourMenu);
+
+    //Création du bouton nouvelle partie
+    m_NouvellePartie = new QPushButton("NEW GAME");
+    QFont PoliceNouvellePartie("Calibri", 10, QFont::Bold);
+    m_NouvellePartie->setStyleSheet("background-color: green;");
+    m_NouvellePartie->setFont(PoliceNouvellePartie);
+
+    //Création du bouton quitter
+    m_boutonQuitter = new QPushButton("QUIT");
+    QFont PoliceBoutonQuitter("Calibri", 10, QFont::Bold);
+    m_boutonQuitter->setStyleSheet("background-color: silver;");
+    m_boutonQuitter->setFont(PoliceBoutonQuitter);
+
+    //Intégration du bouton IA dans la scène
+    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
+    proxy->setWidget(m_boutonIAs);
+    scene()->addItem(proxy);
+    m_boutonIAs->setStyleSheet("background-color: red;");
+    proxy->setPos(512, 200);
+    proxy->setZValue(3);
+
+    //Intégration du bouton Retour Menu dans la scène
+    QGraphicsProxyWidget *proxy2 = new QGraphicsProxyWidget();
+    proxy2->setWidget(m_boutonRetourMenu);
+    scene()->addItem(proxy2);
+    proxy2->setPos(512, 100);
+    proxy2->setZValue(3);
+
+    //Intégration du bouton nouvelle partie dans la scène
+    QGraphicsProxyWidget *proxy3 = new QGraphicsProxyWidget();
+    proxy3->setWidget(m_NouvellePartie);
+    scene()->addItem(proxy3);
+    proxy3->setPos(512, 300);
+    proxy3->setZValue(3);
+
+    //Intégration du bouton quitter dans la scène
+    QGraphicsProxyWidget *proxy4 = new QGraphicsProxyWidget();
+    proxy4->setWidget(m_boutonQuitter);
+    scene()->addItem(proxy4);
+    proxy4->setPos(512, 400);
+    proxy4->setZValue(3);
+
+
+
+    //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
+    QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
+    QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
+    //Pour recommencer la partie
+    QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(nouvellePartie_open()));
+    //Pour que lorsqu'on commence une nouvelle partie la fenêtre précédente se ferme
+    QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
+
+    QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
+
+
+
+
 
     for (std::shared_ptr<moteur::Immuable> obj: *m_carte){ //boucle pour parcourir la carte
         // affichage sol et mur
@@ -48,7 +124,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
              item->setZValue(2);
         }
 
-        // affichage deplacables
+        // affichage déplaçables
         std::shared_ptr<moteur::Deplacable> dobj = obj->get();
 
         if (std::dynamic_pointer_cast<moteur::Poussable>(dobj)) {  //vérifie si c'est un poussable
@@ -84,6 +160,7 @@ void FenetreNiveau::updateCarte() {
 
 void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     Coord dir;
+    QImage personGauche(":/tileset/perso/gauche_01.png");
 
     switch (event->key()) {
     case Qt::Key_Left:
@@ -112,3 +189,22 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         }
     }
 }
+
+
+
+void FenetreNiveau::fenMenu_open(){
+
+    FenetreMenu* Menu = new FenetreMenu();
+    Menu->show();
+}
+
+
+
+void FenetreNiveau::nouvellePartie_open(){
+
+    FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
+    carte->show();
+
+}
+
+

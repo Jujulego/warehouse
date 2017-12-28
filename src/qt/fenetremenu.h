@@ -1,6 +1,8 @@
 #ifndef FENETREMENU_H
 #define FENETREMENU_H
 
+
+
 #include <QWidget>
 #include <QPushButton>
 #include <QApplication>
@@ -13,13 +15,15 @@ public:
     FenetreMenu();
 
 public slots:
-     void fen_open();
+     void fenNiveau_open();
+     void fenRegles_open();
 
-private:
+ private:
 
     QPushButton* m_boutonJouer;
     QPushButton* m_boutonQuitter;
     QPushButton* m_boutonRegles;
+    /*QPushButton* m_boutonIA;*/
 
 
 };

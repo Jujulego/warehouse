@@ -8,15 +8,22 @@
 #include <QGraphicsPixmapItem>
 #include "moteur/personnage.hpp"
 #include "moteur/poussable.hpp"
+#include <QPushButton>
+#include <QWidget>
+#include <QApplication>
 
 
 class FenetreNiveau : public QGraphicsView{
 
+    Q_OBJECT
 public:
     FenetreNiveau(std::shared_ptr<moteur::Carte> _carte);
     virtual void keyPressEvent(QKeyEvent* event);
     void updateCarte();
 
+public slots:
+    void fenMenu_open();
+    void nouvellePartie_open();
 
 private:
     std::shared_ptr<moteur::Carte> m_carte;
@@ -26,6 +33,10 @@ private:
     QGraphicsPixmapItem* m_perso; // l'image doit pouvoir suivre le personnage
     std::shared_ptr<moteur::Personnage> m_personnage; //pour le déplacement du personnage
 
+    QPushButton* m_boutonIAs;
+    QPushButton* m_boutonRetourMenu;
+    QPushButton* m_NouvellePartie;
+    QPushButton* m_boutonQuitter;
 };
 
 #endif // FENETRENIVEAU_H
