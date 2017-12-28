@@ -161,26 +161,43 @@ void FenetreNiveau::updateCarte() {
 void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     Coord dir;
     QImage personGauche(":/tileset/perso/gauche_01.png");
+    QImage personDroite(":/tileset/perso/droite_01.png");
+    QImage personHaut(":/tileset/perso/haut_01.png");
+    QImage personBas(":/tileset/perso/bas_01.png");
 
     switch (event->key()) {
+
     case Qt::Key_Left:
         dir = GAUCHE;
+        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personGauche));
+        scene()->addItem(m_perso);
+        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Up:
         dir = HAUT;
+        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personHaut));
+        scene()->addItem(m_perso);
+        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Right:
         dir = DROITE;
+        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personDroite));
+        scene()->addItem(m_perso);
+        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Down:
         dir = BAS;
+        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personBas));
+        scene()->addItem(m_perso);
+        m_perso->setZValue(3);
         break;
     }
 
     if (dir != ORIGINE) {
+
         m_personnage->deplacer(dir);
         updateCarte();
 
@@ -192,6 +209,8 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
 
 
 
+
+//Slots
 void FenetreNiveau::fenMenu_open(){
 
     FenetreMenu* Menu = new FenetreMenu();

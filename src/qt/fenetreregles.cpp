@@ -47,8 +47,6 @@ FenetreRegles::FenetreRegles()
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
 
 
-
-
 }
 
 
