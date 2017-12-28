@@ -176,8 +176,6 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         m_perso->setZValue(3);
         break;
 
-
-
     case Qt::Key_Up:
         scene()->removeItem(m_perso);
         dir = HAUT;
@@ -185,7 +183,6 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         scene()->addItem(m_perso);
         m_perso->setZValue(3);
         break;
-
 
     case Qt::Key_Right:
         scene()->removeItem(m_perso);
@@ -202,9 +199,6 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         scene()->addItem(m_perso);
         m_perso->setZValue(3);
         break;
-
-
-
     }
 
     if (dir != ORIGINE) {
@@ -213,8 +207,10 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         updateCarte();
 
         if (m_carte->test_fin()) {
-            this->setStyleSheet("background-color: silver;");
-            QMessageBox::information(this,"Victoire", "Bien joué !");
+
+            //QMessageBox::information(this,"Victoire", "Bien joué !");
+            QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
+
 
 
         }
