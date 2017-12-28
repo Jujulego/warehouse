@@ -7,6 +7,7 @@
 #include "moteur/poussable.hpp"
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
+#include "QPalette"
 
 
 #include <QPushButton>
@@ -204,7 +205,10 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         updateCarte();
 
         if (m_carte->test_fin()) {
-            QMessageBox::information(this, "Victoire", "Bien joué !");
+            this->setStyleSheet("background-color: silver;");
+            QMessageBox::information(this,"Victoire", "Bien joué !");
+
+
         }
     }
 }
