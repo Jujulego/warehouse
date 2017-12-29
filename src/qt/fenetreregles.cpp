@@ -14,8 +14,10 @@ FenetreRegles::FenetreRegles()
     setWindowTitle("RULES");
     //Fond de la fenêtre
     this->setStyleSheet("background-color: black;");
+
     QLabel *label = new QLabel(this);
     QLabel *label2 = new QLabel(this);
+
 
     QFont f( "Arial", 10, QFont::Bold);
 
@@ -30,12 +32,12 @@ FenetreRegles::FenetreRegles()
     //label2->setPixmap(QPixmap("C:/Users/Nawel Lalioui/Documents/warehouse/playerFace.png"));
     label2->setPixmap(QPixmap(":/tileset/perso/tete_sombre.png"));
 
-
     // create horizontal layout
     QHBoxLayout* layout=new QHBoxLayout;
     // and add label to it
     layout->addWidget(label);
     layout->addWidget(label2);
+
 
     // set layout to widget
     setLayout(layout);
@@ -51,8 +53,6 @@ FenetreRegles::FenetreRegles()
 
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(Menu_open()));
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
-
-
 
 
 }

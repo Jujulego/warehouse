@@ -8,6 +8,7 @@
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
 #include "QPalette"
+#include <QMediaPlayer>
 
 
 #include <QPushButton>
@@ -19,7 +20,13 @@
 FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
               :m_carte(_carte)
 {
-//Initialisation graphics
+    QMediaPlayer* player = new QMediaPlayer(this);
+    // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/felices.mp3"));
+     player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/felices.mp3"));
+     player->setVolume(50);
+     player->play();
+
+    //Initialisation graphics
     setDragMode(QGraphicsView::ScrollHandDrag);
     setRenderHint(QPainter::Antialiasing, true);
     setRenderHint(QPainter::SmoothPixmapTransform, true);
