@@ -211,13 +211,9 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
             //QMessageBox::information(this,"Victoire", "Bien joué !");
             QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
 
-
-
         }
     }
 }
-
-
 
 
 //Slots
