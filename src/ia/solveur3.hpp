@@ -62,6 +62,8 @@ class Solveur3 : public IA {
 			Chemin chemin;
 			Nombre<unsigned> heuristique;
 			std::shared_ptr<moteur::Poussable> poussable;
+
+			bool goal_move = false;
 		};
 
 		// Constructeur
@@ -82,13 +84,13 @@ class Solveur3 : public IA {
 
 		// - analyse dynamique
 		Nombre<unsigned> distance_empl(Coord const& pous, Coord const& empl, Coord const& pers) const;
-		std::map<Coord,std::pair<Coord,unsigned>> associations(std::shared_ptr<moteur::Carte> carte) const;
+		std::map<Coord,std::pair<Coord,Nombre<unsigned>>> associations(std::shared_ptr<moteur::Carte> carte) const;
 
 		Nombre<unsigned> heuristique(std::shared_ptr<moteur::Carte> carte) const;
-		Nombre<unsigned> heuristique(std::map<Coord,std::pair<Coord,unsigned>> const& assos) const;
+		Nombre<unsigned> heuristique(std::map<Coord,std::pair<Coord,Nombre<unsigned>>> const& assos) const;
 
 		Coord choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
-		Coord choix_empl(std::map<Coord,std::pair<Coord,unsigned>> const& assos, Coord const& obj) const;
+		Coord choix_empl(std::map<Coord,std::pair<Coord,Nombre<unsigned>>> const& assos, Coord const& obj) const;
 
 		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
 
@@ -97,6 +99,7 @@ class Solveur3 : public IA {
 		std::vector<bool> zone_sr(std::shared_ptr<moteur::Carte> carte) const; // "Somme" de celle de touts les poussables
 
 		std::list<Mouv> mouvements(std::shared_ptr<moteur::Carte> carte) const; // Calculs des mouvements possibles
+		std::list<Mouv> mouvements(std::shared_ptr<moteur::Carte> carte, Coord const& pous) const; // mise en avant des mouvements concernant le meme poussable
 		Chemin conversion(std::shared_ptr<moteur::Carte> carte, Chemin const& chemin_pous, Coord pous, Coord pers, int force) const; // Convertit un chemin poussable en chemin personnage
 
 	private:
@@ -106,7 +109,7 @@ class Solveur3 : public IA {
 		mutable std::vector<Empl> c_infos_empls;
 
 		mutable std::vector<int> c_carte_assos;
-		mutable std::map<Coord,std::pair<Coord,unsigned>> c_assos;
+		mutable std::map<Coord,std::pair<Coord,Nombre<unsigned>>> c_assos;
 };
 
 } // ia

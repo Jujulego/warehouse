@@ -166,7 +166,6 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     QImage personBas(":/tileset/perso/bas_01.png");
 
     switch (event->key()) {
-
     case Qt::Key_Left:
         dir = GAUCHE;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personGauche));
@@ -207,17 +206,12 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     }
 }
 
-
-
-
 //Slots
 void FenetreNiveau::fenMenu_open(){
 
     FenetreMenu* Menu = new FenetreMenu();
     Menu->show();
 }
-
-
 
 void FenetreNiveau::nouvellePartie_open(){
 
