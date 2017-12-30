@@ -26,6 +26,7 @@ class FenetreNiveau : public QGraphicsView {
 public:
     FenetreNiveau(std::shared_ptr<moteur::Carte> _carte);
     virtual void keyPressEvent(QKeyEvent* event);
+    void appliquer_mvt(Coord const& dir);
     void updateCarte();
 
 public slots:

@@ -183,56 +183,58 @@ void FenetreNiveau::updateCarte() {
 
 void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     Coord dir;
-    QImage personGauche(":/tileset/perso/gauche_01.png");
-    QImage personDroite(":/tileset/perso/droite_01.png");
-    QImage personHaut(":/tileset/perso/haut_01.png");
-    QImage personBas(":/tileset/perso/bas_01.png");
 
     switch (event->key()) {
     case Qt::Key_Left:
-        scene()->removeItem(m_perso);
         dir = GAUCHE;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personGauche));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Up:
-        scene()->removeItem(m_perso);
         dir = HAUT;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personHaut));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Right:
-        scene()->removeItem(m_perso);
         dir = DROITE;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personDroite));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Down:
-        scene()->removeItem(m_perso);
         dir = BAS;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personBas));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
     }
 
-    if (dir != ORIGINE) {
+    appliquer_mvt(dir);
+}
 
-        m_personnage->deplacer(dir);
-        updateCarte();
+void FenetreNiveau::appliquer_mvt(Coord const& dir) {
+    // Gardien
+    if (dir == ORIGINE) return;
 
-        if (m_carte->test_fin()) {
+    // Choix de l'image
+    QImage img;
 
-            //QMessageBox::information(this,"Victoire", "Bien joué !");
-            QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
+    if (dir == HAUT) {
+        img = QImage(":/tileset/perso/haut_01.png");
+    } else if (dir == BAS) {
+        img = QImage(":/tileset/perso/bas_01.png");
+    } else if (dir == GAUCHE) {
+        img = QImage(":/tileset/perso/gauche_01.png");
+    } else if (dir == DROITE) {
+        img = QImage(":/tileset/perso/droite_01.png");
+    }
 
-        }
+    // changement
+    scene()->removeItem(m_perso);
+
+    m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(img));
+    scene()->addItem(m_perso);
+    m_perso->setZValue(3);
+
+    // Application du mouvement
+    m_personnage->deplacer(dir);
+    updateCarte();
+
+    if (m_carte->test_fin()) {
+        QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
     }
 }
 
@@ -268,12 +270,7 @@ void FenetreNiveau::appliquer_mvt() {
 	if (m_chemin.longueur() == 0) return;
 
 	// Application du mouvement
-	m_personnage->deplacer(m_chemin.pop());
-	updateCarte();
-
-	if (m_carte->test_fin()) {
-		QMessageBox::information(this, "Victoire", "Bien joué !");
-	}
+    appliquer_mvt(m_chemin.pop());
 
 	// Fin ?
 	if (m_chemin.longueur() == 0) m_timer->stop();

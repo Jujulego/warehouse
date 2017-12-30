@@ -1,6 +1,5 @@
 QT += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
 
 CONFIG         += c++14
@@ -17,7 +16,7 @@ DISTFILES += \
     microban2.xsb
 
 RESOURCES += \
-	res/tileset/res-iso.qrc \
+    res/tileset/res-iso.qrc \
     src/qt/sound.qrc \
     images.qrc
 
