@@ -20,11 +20,11 @@
 FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
               :m_carte(_carte)
 {
-    QMediaPlayer* player = new QMediaPlayer(this);
-    // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/felices.mp3"));
-     player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/felices.mp3"));
+    /*QMediaPlayer* player = new QMediaPlayer(this);
+    // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/titre.mp3"));
+     player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/titre.mp3"));
      player->setVolume(50);
-     player->play();
+     player->play();*/
 
     //Initialisation graphics
     setDragMode(QGraphicsView::ScrollHandDrag);
@@ -65,6 +65,12 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     m_boutonQuitter->setStyleSheet("background-color: silver;");
     m_boutonQuitter->setFont(PoliceBoutonQuitter);
 
+    //Création du bouton annuler
+    m_boutonAnnulerCoup = new QPushButton("ANNULER");
+    QFont PoliceBoutonAnnulerCoup("Calibri", 10, QFont::Bold);
+    m_boutonAnnulerCoup->setStyleSheet("background-color: silver;");
+    m_boutonAnnulerCoup->setFont(PoliceBoutonAnnulerCoup);
+
     //Intégration du bouton IA dans la scène
     QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
     proxy->setWidget(m_boutonIAs);
@@ -94,6 +100,12 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy4->setPos(512, 400);
     proxy4->setZValue(3);
 
+    //Intégration du bouton annuler dans la scène
+    QGraphicsProxyWidget *proxy5 = new QGraphicsProxyWidget();
+    proxy5->setWidget(m_boutonAnnulerCoup);
+    scene()->addItem(proxy5);
+    proxy5->setPos(512, 500);
+    proxy5->setZValue(3);
 
 
     //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
@@ -105,7 +117,6 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
 
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
-
 
 
 

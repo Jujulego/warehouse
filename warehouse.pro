@@ -18,8 +18,8 @@ DISTFILES += \
 
 RESOURCES += \
 	res/tileset/res-iso.qrc \
-    src/qt/sound.qrc \
-    images.qrc
+    res/images/images.qrc
+
 
 HEADERS += src/moteur/carte.hpp \
 	src/moteur/deplacable.hpp \

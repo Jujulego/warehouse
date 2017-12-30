@@ -25,6 +25,7 @@ public slots:
     void fenMenu_open();
     void nouvellePartie_open();
 
+
 private:
     std::shared_ptr<moteur::Carte> m_carte;
 
@@ -37,6 +38,7 @@ private:
     QPushButton* m_boutonRetourMenu;
     QPushButton* m_NouvellePartie;
     QPushButton* m_boutonQuitter;
+    QPushButton* m_boutonAnnulerCoup;
 };
 
 #endif // FENETRENIVEAU_H
