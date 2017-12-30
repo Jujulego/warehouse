@@ -25,8 +25,12 @@ void charger();
 #include <QTranslator>
 #include <QString>
 
+#include "ia/chemin.hpp"
 #include "qt/fenetremenu.h"
 #include "qt/fenetreniveau.h"
+
+// Déclarations de types
+Q_DECLARE_METATYPE(ia::Chemin);
 
 int main(int argc, char* argv[]) {
     // Initialiation de Qt
@@ -39,11 +43,12 @@ int main(int argc, char* argv[]) {
     translator.load(QString("qt_") + locale, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     app.installTranslator(&translator);
 
+    // Enregistrement
+    qRegisterMetaType<ia::Chemin>();
+
     // Petite fenetre
     FenetreMenu fen;
     fen.show();
-
-
 
     return app.exec();
 }

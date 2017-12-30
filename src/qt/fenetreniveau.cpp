@@ -1,32 +1,46 @@
-#include "fenetreniveau.h"
-#include "fenetremenu.h"
+// Importations
+#include <chrono>
+
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QGraphicsProxyWidget>
+#include <QTimer>
+
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
+#include "ia/solveur3.hpp"
 #include "QPalette"
 #include <QMediaPlayer>
 
+#include "fenetreniveau.h"
+#include "fenetremenu.h"
+#include "qia.hpp"
 
-#include <QPushButton>
-#include <QGraphicsProxyWidget>
+// Namespaces
+using namespace std::literals::chrono_literals;
 
+// Macros
 #define HAUTEUR_IMAGE 64
 #define LARGEUR_IMAGE 64
 
+#define SOL_ATTENTE 250ms
+
+// Constructeur
 FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
               :m_carte(_carte)
 {
+
     /*QMediaPlayer* player = new QMediaPlayer(this);
-    // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/titre.mp3"));
-     player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/titre.mp3"));
+    // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/felices.mp3"));
+     player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/felices.mp3"));
      player->setVolume(50);
      player->play();*/
 
-    //Initialisation graphics
+	// Initialisation graphics
     setDragMode(QGraphicsView::ScrollHandDrag);
     setRenderHint(QPainter::Antialiasing, true);
     setRenderHint(QPainter::SmoothPixmapTransform, true);
@@ -35,12 +49,6 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
     //Fond de la fenêtre
     this->setStyleSheet("background-color: black;");
-
-    QImage mur(":/tileset/bloc/marron.png");
-    QImage sol(":/tileset/sol/gris.png");
-    QImage boite(":/tileset/caisse/bleue.png");
-    QImage emplacement(":/tileset/environ/empl_bleu.png");
-    QImage personnage(":/tileset/perso/bas_01.png");
 
     //Création du bouton IA
     m_boutonIAs = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
@@ -107,6 +115,8 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy5->setPos(512, 500);
     proxy5->setZValue(3);
 
+    // Initialisation du timer
+    m_timer = new QTimer(this);
 
     //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
@@ -118,8 +128,17 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
 
+	// Gestion de l'IA
+    connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
+    connect(m_timer,     SIGNAL(timeout()), this, SLOT(appliquer_mvt()));
 
 
+	// Affichage de la carte
+    QImage mur(":/tileset/bloc/marron.png");
+    QImage sol(":/tileset/sol/gris.png");
+    QImage boite(":/tileset/caisse/bleue.png");
+    QImage emplacement(":/tileset/environ/empl_bleu.png");
+    QImage personnage(":/tileset/perso/bas_01.png");
 
     for (std::shared_ptr<moteur::Immuable> obj: *m_carte){ //boucle pour parcourir la carte
         // affichage sol et mur
@@ -179,75 +198,95 @@ void FenetreNiveau::updateCarte() {
 
 void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     Coord dir;
-    QImage personGauche(":/tileset/perso/gauche_01.png");
-    QImage personDroite(":/tileset/perso/droite_01.png");
-    QImage personHaut(":/tileset/perso/haut_01.png");
-    QImage personBas(":/tileset/perso/bas_01.png");
 
     switch (event->key()) {
-
     case Qt::Key_Left:
-        scene()->removeItem(m_perso);
         dir = GAUCHE;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personGauche));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Up:
-        scene()->removeItem(m_perso);
         dir = HAUT;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personHaut));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Right:
-        scene()->removeItem(m_perso);
         dir = DROITE;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personDroite));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
 
     case Qt::Key_Down:
-        scene()->removeItem(m_perso);
         dir = BAS;
-        m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personBas));
-        scene()->addItem(m_perso);
-        m_perso->setZValue(3);
         break;
     }
 
-    if (dir != ORIGINE) {
+    appliquer_mvt(dir);
+}
 
-        m_personnage->deplacer(dir);
-        updateCarte();
+void FenetreNiveau::appliquer_mvt(Coord const& dir) {
+    // Gardien
+    if (dir == ORIGINE) return;
 
-        if (m_carte->test_fin()) {
+    // Choix de l'image
+    QImage img;
 
-            //QMessageBox::information(this,"Victoire", "Bien joué !");
-            QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
+    if (dir == HAUT) {
+        img = QImage(":/tileset/perso/haut_01.png");
+    } else if (dir == BAS) {
+        img = QImage(":/tileset/perso/bas_01.png");
+    } else if (dir == GAUCHE) {
+        img = QImage(":/tileset/perso/gauche_01.png");
+    } else if (dir == DROITE) {
+        img = QImage(":/tileset/perso/droite_01.png");
+    }
 
-        }
+    // changement
+    scene()->removeItem(m_perso);
+
+    m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(img));
+    scene()->addItem(m_perso);
+    m_perso->setZValue(3);
+
+    // Application du mouvement
+    m_personnage->deplacer(dir);
+    updateCarte();
+
+    if (m_carte->test_fin()) {
+        QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
     }
 }
 
-
-//Slots
-void FenetreNiveau::fenMenu_open(){
-
+// Slots
+void FenetreNiveau::fenMenu_open() {
     FenetreMenu* Menu = new FenetreMenu();
     Menu->show();
 }
 
-
-
-void FenetreNiveau::nouvellePartie_open(){
-
-    FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
+void FenetreNiveau::nouvellePartie_open() {
+    FenetreNiveau* carte = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
     carte->show();
-
 }
 
+void FenetreNiveau::demarer_ia() {
+	// Gardien
+	if (m_ia && m_ia->isRunning()) return;
 
+	// Lancement de l'IA
+	m_ia = new QIA(std::make_shared<ia::Solveur3>(m_carte, m_personnage), this);
+	m_ia->start();
+
+	connect(m_ia, &QIA::resultat, this, &FenetreNiveau::recv_chemin);
+}
+
+void FenetreNiveau::recv_chemin(ia::Chemin const& ch) {
+	m_chemin = ch;
+	m_timer->start(SOL_ATTENTE);
+}
+
+void FenetreNiveau::appliquer_mvt() {
+	// Gardien
+	if (m_chemin.longueur() == 0) return;
+
+	// Application du mouvement
+    appliquer_mvt(m_chemin.pop());
+
+	// Fin ?
+	if (m_chemin.longueur() == 0) m_timer->stop();
+}

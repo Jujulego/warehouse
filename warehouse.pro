@@ -1,6 +1,5 @@
 QT += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
 
 CONFIG         += c++14
@@ -17,7 +16,7 @@ DISTFILES += \
     microban2.xsb
 
 RESOURCES += \
-	res/tileset/res-iso.qrc \
+    res/tileset/res-iso.qrc \
     res/images/images.qrc
 
 
@@ -54,6 +53,7 @@ HEADERS += src/moteur/carte.hpp \
 	src/qt/fenetremenu.h \
 	src/qt/fenetreniveau.h \
 	src/qt/fenetreregles.h \
+	src/qt/qia.hpp \
 	
 SOURCES += src/moteur/carte.cpp \
 	src/moteur/deplacable.cpp \
@@ -85,4 +85,5 @@ SOURCES += src/moteur/carte.cpp \
 	src/qt/fenetremenu.cpp \
 	src/qt/fenetreniveau.cpp \
 	src/qt/fenetreregles.cpp \
+	src/qt/qia.cpp \
 	

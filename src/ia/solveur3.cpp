@@ -89,6 +89,7 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 		std::shared_ptr<Noeud> noeud;
 		unsigned dist;        // Distance parcourue
 		Nombre<unsigned> heu; // Resultat de l'heuristique
+		Coord pous;           // Dernier poussable traité
 
 		// Opérateurs
 		bool operator < (Etat const& e) const {
@@ -100,7 +101,7 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 	std::priority_queue<Etat> file;
 	HashTable historique;
 
-	file.push(Etat { std::make_shared<Noeud>(), 0, heuristique(m_carte) });
+	file.push(Etat { std::make_shared<Noeud>(), 0, heuristique(m_carte), m_obj->coord() });
 	historique.insert(reduire(m_carte));
 
 	// Stats
@@ -127,23 +128,47 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 		std::shared_ptr<Noeud> noeud = etat.noeud;
 		std::shared_ptr<moteur::Carte> noeud_carte = noeud->carte(m_carte, obj, m_obj->force());
 
-		{ auto lck = console::lock();
+/*		{ auto lck = console::lock();
 			afficher_carte(noeud_carte, 5, 20);
 			std::cout << " " << etat.heu << "      ";
-		}
+		}*/
 
-		for (Mouv mvt : mouvements(noeud_carte)) {
+		for (Mouv mvt : mouvements(noeud_carte, etat.pous)) {
 			// Copie de la carte
 			auto carte = std::make_shared<moteur::Carte>(*noeud_carte);
 			auto pous = carte->get<moteur::Poussable>(mvt.poussable->coord());
 			auto pers = carte->personnage();
 
 			// Calcul du chemin
-			Chemin chemin = conversion(carte, mvt.chemin, mvt.poussable->coord(), pers->coord(), pers->force());
+			Chemin ch = conversion(carte, mvt.chemin, mvt.poussable->coord(), pers->coord(), pers->force());
 
 			// Application du mouvement
-			for (auto dir : chemin) {
+			bool goal_cut = mvt.goal_move && (infos_empls(pous->coord()).zone == 0);
+			Chemin chemin;
+
+			for (auto dir : ch) {
 				pers->deplacer(dir);
+				chemin.ajouter(dir);
+
+//				if (goal_cut && infos_empls(pers->coord()).zone != 0) break;
+				if (goal_cut && infos_empls(pous->coord()).zone != 0) break;
+			}
+
+			if (goal_cut) {
+				// Bonne association
+				Coord c = pous->coord();
+				Coord empl = choix_empl(carte, c);
+
+				// Calcul du chemin
+				ch = Chemin();
+				if (trouver_chemin(carte, c, empl, ch, pers->force())) {
+					ch = conversion(carte, ch, pous->coord(), pers->coord(), pers->force());
+
+					for (auto dir : ch) {
+						pers->deplacer(dir);
+						chemin.ajouter(dir);
+					}
+				}
 			}
 
 			// Ajout à l'historique
@@ -175,17 +200,18 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 				return res;
 			}
 
-			{ auto lck = console::lock();
+/*			{ auto lck = console::lock();
 				afficher_carte(carte, 55, 20);
-				std::cout << " " << mvt.heuristique << " " << heu << "      ";
-//				std::cin.get();
-			}
+				std::cout << " " << mvt.heuristique << " " << heu << " " << goal_cut << "      ";
+				console::getch();
+			}*/
 
 			// Enfilage !
 			file.push(Etat {
 				std::make_shared<Noeud>(chemin, noeud),
 				etat.dist + chemin.longueur(),
-				heu
+				heu,
+				pous->coord()
 			});
 
 			++noeuds_a_traites;
@@ -610,7 +636,7 @@ Nombre<unsigned> Solveur3::distance_empl(Coord const& pous, Coord const& empl, C
 	return dist;
 }
 
-std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr<moteur::Carte> carte) const {
+std::map<Coord,std::pair<Coord,Nombre<unsigned>>> Solveur3::associations(std::shared_ptr<moteur::Carte> carte) const {
 	// Cache ?
 	std::vector<int> red_carte = reduire(carte);
 	if (!c_carte_assos.empty() && std::equal(c_carte_assos.begin(), c_carte_assos.end(), red_carte.begin())) {
@@ -693,7 +719,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 				for (auto it = pit.first; it != pit.second; ++it) {
 					if (!zone[hash(it->second.first)]) continue;
 
-					matrice[Coord(p, e)] = std::min(matrice[Coord(p, e)].val(), it->second.second);
+					matrice[Coord(p, e)] = std::min(matrice[Coord(p, e)], Nombre<unsigned>(it->second.second));
 					++nb;
 				}
 
@@ -726,7 +752,7 @@ std::map<Coord,std::pair<Coord,unsigned>> Solveur3::associations(std::shared_ptr
 
 		// Déduction du résultat
 		for (Coord sel : selection) {
-			c_assos[poussables[sel.x()]] = {emplacements[sel.y()], matrice[sel].val() / (PRIO_MAX - prios[emplacements[sel.y()]])};
+			c_assos[poussables[sel.x()]] = {emplacements[sel.y()], matrice[sel] / (PRIO_MAX - prios[emplacements[sel.y()]])};
 		}
 	}
 
@@ -737,10 +763,10 @@ Nombre<unsigned> Solveur3::heuristique(std::shared_ptr<moteur::Carte> carte) con
 	return heuristique(associations(carte));
 }
 
-Nombre<unsigned> Solveur3::heuristique(std::map<Coord,std::pair<Coord,unsigned>> const& assos) const {
+Nombre<unsigned> Solveur3::heuristique(std::map<Coord,std::pair<Coord,Nombre<unsigned>>> const& assos) const {
 	if (assos.size() == 0) return INFINI;
 
-	unsigned heu = 0;
+	Nombre<unsigned> heu = 0;
 	for (auto p : assos) {
 		heu += p.second.second;
 	}
@@ -752,7 +778,7 @@ Coord Solveur3::choix_empl(std::shared_ptr<moteur::Carte> carte, Coord const& ob
 	return choix_empl(associations(carte), obj);
 }
 
-Coord Solveur3::choix_empl(std::map<Coord,std::pair<Coord,unsigned>> const& assos, Coord const& obj) const {
+Coord Solveur3::choix_empl(std::map<Coord,std::pair<Coord,Nombre<unsigned>>> const& assos, Coord const& obj) const {
 	Coord empl(-1, -1);
 
 	for (auto p : assos) {
@@ -1010,11 +1036,10 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 	std::shared_ptr<moteur::Personnage> pers = carte->personnage();
 	std::vector<bool> z_a = zone_accessible(carte, pers->coord());
 
-	std::map<Coord,std::pair<Coord,unsigned>> assos = associations(carte);
+	std::map<Coord,std::pair<Coord,Nombre<unsigned>>> assos = associations(carte);
 	Nombre<unsigned> heu = heuristique(assos);
 
 	// Analyse par poussable
-	std::list<Mouv> goal_cuts;
 	std::list<Mouv> mvts;
 
 	for (auto pous : carte->liste<moteur::Poussable>()) {
@@ -1032,7 +1057,7 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 		// Goal cut
 		if (empl != c && z_sr[hash(empl)]) {
 			// Calcul d'un chemin
-			Mouv mvt = { Chemin(), 0, pous };
+			Mouv mvt = { Chemin(), 0, pous, true };
 
 			if (trouver_chemin(carte, c, empl, mvt.chemin, pers->force())) {
 				// Evaluation de l'heuristique
@@ -1043,13 +1068,9 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 
 				mvt.heuristique = heu - dist + ndist;
 
-				goal_cuts.push_back(mvt);
-
-				continue; // on ignore le reste
+				mvts.push_back(mvt);
 			}
 		}
-
-		if (!goal_cuts.empty()) continue;
 
 		// On retire le personnage
 		(*carte)[pers->coord()]->pop();
@@ -1098,19 +1119,38 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 		carte->set(pers->coord(), pers);
 	}
 
-	// Tris
-	if (goal_cuts.empty()) {
-		mvts.sort([] (Mouv const& m1, Mouv const& m2) {
-			return m1.heuristique < m2.heuristique;
-		});
-		return mvts;
+	// Tri
+	mvts.sort([] (Mouv const& m1, Mouv const& m2) {
+		return m1.heuristique < m2.heuristique;
+	});
 
-	} else {
-		goal_cuts.sort([] (Mouv const& m1, Mouv const& m2) {
-			return m1.heuristique < m2.heuristique;
-		});
-		return goal_cuts;
-	}
+	return mvts;
+}
+
+std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> carte, Coord const& pous) const {
+	std::list<Mouv> mvts = mouvements(carte);
+
+	// Tri
+	mvts.sort([pous] (Mouv const& m1, Mouv const& m2) {
+		int prio1 = 0;
+		int prio2 = 0;
+
+		if (m1.goal_move) {
+			prio1 = 2;
+		} else if (m1.poussable->coord() == pous) {
+			prio1 = 1;
+		}
+
+		if (m2.goal_move) {
+			prio2 = 2;
+		} else if (m2.poussable->coord() == pous) {
+			prio2 = 1;
+		}
+
+		return prio1 == prio2 ? m1.heuristique < m2.heuristique : prio1 > prio2;
+	});
+
+	return mvts;
 }
 
 Chemin Solveur3::conversion(std::shared_ptr<moteur::Carte> carte, Chemin const& chemin_pous, Coord pous, Coord pers, int force) const {

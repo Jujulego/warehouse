@@ -511,7 +511,7 @@ void DevScreen::afficher_carte() const {
 #endif
 
 	// Initialisation
-	std::map<Coord,std::pair<Coord,unsigned>> assos = m_solv3->associations(m_carte);
+	std::map<Coord,std::pair<Coord,Nombre<unsigned>>> assos = m_solv3->associations(m_carte);
 	std::vector<bool> zone = m_solv3->zone_accessible(m_carte, m_pers->coord());
 	auto ref = manip::coord(5, 9);
 	std::vector<bool> zone_sr;

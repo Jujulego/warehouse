@@ -31,6 +31,8 @@
 // Namespaces
 using namespace std::literals::chrono_literals;
 
+#define MVT_PAUSE 100ms
+
 // Constructeur
 Niveau::Niveau(std::string const& fichier)
 	: m_carte(moteur::Carte::charger(fichier)),
@@ -174,7 +176,7 @@ bool Niveau::jouer() {
 
 		if (chemin.longueur() != 0) {
 			dir = chemin.pop();
-			std::this_thread::sleep_for(250ms);
+			std::this_thread::sleep_for(MVT_PAUSE);
 
 		} else {
 			switch (console::getch(!fut_chemin.valid())) {
