@@ -128,10 +128,10 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 		std::shared_ptr<Noeud> noeud = etat.noeud;
 		std::shared_ptr<moteur::Carte> noeud_carte = noeud->carte(m_carte, obj, m_obj->force());
 
-		{ auto lck = console::lock();
+/*		{ auto lck = console::lock();
 			afficher_carte(noeud_carte, 5, 20);
 			std::cout << " " << etat.heu << "      ";
-		}
+		}*/
 
 		for (Mouv mvt : mouvements(noeud_carte, etat.pous)) {
 			// Copie de la carte
@@ -200,11 +200,11 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 				return res;
 			}
 
-			{ auto lck = console::lock();
+/*			{ auto lck = console::lock();
 				afficher_carte(carte, 55, 20);
 				std::cout << " " << mvt.heuristique << " " << heu << " " << goal_cut << "      ";
 				console::getch();
-			}
+			}*/
 
 			// Enfilage !
 			file.push(Etat {

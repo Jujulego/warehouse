@@ -1,21 +1,28 @@
 #ifndef FENETRENIVEAU_H
 #define FENETRENIVEAU_H
 
-#include <QGraphicsView>
-#include "moteur/carte.hpp"
+// Importations
 #include <memory>
 #include <map>
+
+#include <QGraphicsView>
 #include <QGraphicsPixmapItem>
-#include "moteur/personnage.hpp"
-#include "moteur/poussable.hpp"
 #include <QPushButton>
 #include <QWidget>
 #include <QApplication>
+#include <QTimer>
 
+#include "moteur/carte.hpp"
+#include "moteur/personnage.hpp"
+#include "moteur/poussable.hpp"
+#include "ia/chemin.hpp"
 
-class FenetreNiveau : public QGraphicsView{
+#include "qia.hpp"
 
+// Classe
+class FenetreNiveau : public QGraphicsView {
     Q_OBJECT
+
 public:
     FenetreNiveau(std::shared_ptr<moteur::Carte> _carte);
     virtual void keyPressEvent(QKeyEvent* event);
@@ -24,6 +31,10 @@ public:
 public slots:
     void fenMenu_open();
     void nouvellePartie_open();
+
+    void demarer_ia();
+    void recv_chemin(ia::Chemin const& ch);
+    void appliquer_mvt();
 
 private:
     std::shared_ptr<moteur::Carte> m_carte;
@@ -37,6 +48,11 @@ private:
     QPushButton* m_boutonRetourMenu;
     QPushButton* m_NouvellePartie;
     QPushButton* m_boutonQuitter;
+
+    QIA* m_ia = nullptr;
+
+    QTimer* m_timer;
+    ia::Chemin m_chemin;
 };
 
 #endif // FENETRENIVEAU_H

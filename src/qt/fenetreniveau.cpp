@@ -1,24 +1,37 @@
-#include "fenetreniveau.h"
-#include "fenetremenu.h"
+// Importations
+#include <chrono>
+
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QGraphicsProxyWidget>
+#include <QTimer>
+
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
+#include "ia/solveur3.hpp"
 
+#include "fenetreniveau.h"
+#include "fenetremenu.h"
+#include "qia.hpp"
 
-#include <QPushButton>
-#include <QGraphicsProxyWidget>
+// Namespaces
+using namespace std::literals::chrono_literals;
 
+// Macros
 #define HAUTEUR_IMAGE 64
 #define LARGEUR_IMAGE 64
 
+#define SOL_ATTENTE 250ms
+
+// Constructeur
 FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
-              :m_carte(_carte)
-{
-//Initialisation graphics
+              : m_carte(_carte) {
+
+	// Initialisation graphics
     setDragMode(QGraphicsView::ScrollHandDrag);
     setRenderHint(QPainter::Antialiasing, true);
     setRenderHint(QPainter::SmoothPixmapTransform, true);
@@ -27,12 +40,6 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
     //Fond de la fenêtre
     this->setStyleSheet("background-color: black;");
-
-    QImage mur(":/tileset/bloc/marron.png");
-    QImage sol(":/tileset/sol/gris.png");
-    QImage boite(":/tileset/caisse/bleue.png");
-    QImage emplacement(":/tileset/environ/empl_bleu.png");
-    QImage personnage(":/tileset/perso/bas_01.png");
 
     //Création du bouton IA
     m_boutonIAs = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
@@ -86,7 +93,8 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy4->setPos(512, 400);
     proxy4->setZValue(3);
 
-
+    // Initialisation du timer
+    m_timer = new QTimer(this);
 
     //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
@@ -98,9 +106,16 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
 
+	// Gestion de l'IA
+    connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
+    connect(m_timer,     SIGNAL(timeout()), this, SLOT(appliquer_mvt()));
 
-
-
+	// Affichage de la carte
+    QImage mur(":/tileset/bloc/marron.png");
+    QImage sol(":/tileset/sol/gris.png");
+    QImage boite(":/tileset/caisse/bleue.png");
+    QImage emplacement(":/tileset/environ/empl_bleu.png");
+    QImage personnage(":/tileset/perso/bas_01.png");
 
     for (std::shared_ptr<moteur::Immuable> obj: *m_carte){ //boucle pour parcourir la carte
         // affichage sol et mur
@@ -206,18 +221,45 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     }
 }
 
-//Slots
-void FenetreNiveau::fenMenu_open(){
-
+// Slots
+void FenetreNiveau::fenMenu_open() {
     FenetreMenu* Menu = new FenetreMenu();
     Menu->show();
 }
 
-void FenetreNiveau::nouvellePartie_open(){
-
-    FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
+void FenetreNiveau::nouvellePartie_open() {
+    FenetreNiveau* carte = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
     carte->show();
-
 }
 
+void FenetreNiveau::demarer_ia() {
+	// Gardien
+	if (m_ia && m_ia->isRunning()) return;
 
+	// Lancement de l'IA
+	m_ia = new QIA(std::make_shared<ia::Solveur3>(m_carte, m_personnage), this);
+	m_ia->start();
+
+	connect(m_ia, &QIA::resultat, this, &FenetreNiveau::recv_chemin);
+}
+
+void FenetreNiveau::recv_chemin(ia::Chemin const& ch) {
+	m_chemin = ch;
+	m_timer->start(SOL_ATTENTE);
+}
+
+void FenetreNiveau::appliquer_mvt() {
+	// Gardien
+	if (m_chemin.longueur() == 0) return;
+
+	// Application du mouvement
+	m_personnage->deplacer(m_chemin.pop());
+	updateCarte();
+
+	if (m_carte->test_fin()) {
+		QMessageBox::information(this, "Victoire", "Bien joué !");
+	}
+
+	// Fin ?
+	if (m_chemin.longueur() == 0) m_timer->stop();
+}

@@ -95,8 +95,11 @@ if (QT_ENABLE)
 		PUBLIC qt/fenetreniveau.cpp
 		PUBLIC qt/fenetreregles.h
 		PUBLIC qt/fenetreregles.cpp
+
+		PUBLIC qt/qia.hpp
+		PUBLIC qt/qia.cpp
 	)
 
-#	add_definitions(-DQTCREATOR)
+	add_definitions(-DQTCREATOR)
 	add_definitions(-DQT_DEPRECATED_WARNINGS)
 endif()
