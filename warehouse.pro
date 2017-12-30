@@ -1,6 +1,7 @@
 QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
 
 CONFIG         += c++14
 QMAKE_CXXFLAGS += -g3 -Wall -Wextra
@@ -16,7 +17,9 @@ DISTFILES += \
     microban2.xsb
 
 RESOURCES += \
-	res/tileset/res-iso.qrc
+	res/tileset/res-iso.qrc \
+    src/qt/sound.qrc \
+    images.qrc
 
 HEADERS += src/moteur/carte.hpp \
 	src/moteur/deplacable.hpp \

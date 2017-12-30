@@ -13,6 +13,8 @@
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
 #include "ia/solveur3.hpp"
+#include "QPalette"
+#include <QMediaPlayer>
 
 #include "fenetreniveau.h"
 #include "fenetremenu.h"
@@ -30,6 +32,12 @@ using namespace std::literals::chrono_literals;
 // Constructeur
 FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
               : m_carte(_carte) {
+
+    QMediaPlayer* player = new QMediaPlayer(this);
+    // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/felices.mp3"));
+     player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/felices.mp3"));
+     player->setVolume(50);
+     player->play();
 
 	// Initialisation graphics
     setDragMode(QGraphicsView::ScrollHandDrag);
@@ -182,6 +190,7 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
 
     switch (event->key()) {
     case Qt::Key_Left:
+        scene()->removeItem(m_perso);
         dir = GAUCHE;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personGauche));
         scene()->addItem(m_perso);
@@ -189,6 +198,7 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         break;
 
     case Qt::Key_Up:
+        scene()->removeItem(m_perso);
         dir = HAUT;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personHaut));
         scene()->addItem(m_perso);
@@ -196,6 +206,7 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         break;
 
     case Qt::Key_Right:
+        scene()->removeItem(m_perso);
         dir = DROITE;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personDroite));
         scene()->addItem(m_perso);
@@ -203,6 +214,7 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         break;
 
     case Qt::Key_Down:
+        scene()->removeItem(m_perso);
         dir = BAS;
         m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(personBas));
         scene()->addItem(m_perso);
@@ -216,7 +228,10 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
         updateCarte();
 
         if (m_carte->test_fin()) {
-            QMessageBox::information(this, "Victoire", "Bien joué !");
+
+            //QMessageBox::information(this,"Victoire", "Bien joué !");
+            QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
+
         }
     }
 }

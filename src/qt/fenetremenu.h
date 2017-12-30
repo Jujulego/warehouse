@@ -18,6 +18,7 @@ public slots:
      void fenNiveau_open();
      void fenRegles_open();
 
+
  private:
 
     QPushButton* m_boutonJouer;
