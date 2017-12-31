@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QGraphicsProxyWidget>
 #include <QTimer>
+#include <stack>
 
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
@@ -127,6 +128,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
 
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
+    QObject::connect(m_boutonAnnulerCoup, SIGNAL(clicked()), this, SLOT(annulerCoup()));
 
 	// Gestion de l'IA
     connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
@@ -245,7 +247,12 @@ void FenetreNiveau::appliquer_mvt(Coord const& dir) {
     m_perso->setZValue(3);
 
     // Application du mouvement
-    m_personnage->deplacer(dir);
+    if(m_personnage->deplacer(dir)==false){
+
+    m_pile.push(std::make_shared<moteur::Carte>(*m_carte));
+
+    }
+
     updateCarte();
 
     if (m_carte->test_fin()) {
@@ -289,4 +296,27 @@ void FenetreNiveau::appliquer_mvt() {
 
 	// Fin ?
 	if (m_chemin.longueur() == 0) m_timer->stop();
+}
+
+void FenetreNiveau::annulerCoup() {
+
+   if(m_pile.size()==0) return;
+
+   m_carte=m_pile.top();
+   m_personnage=m_carte->personnage();
+
+   std::list<std::shared_ptr<moteur::Poussable>> poussables = m_carte->liste<moteur::Poussable>();
+   auto it = poussables.begin();
+
+   for (auto p : m_poussable) {
+       m_poussable[*it] = p.second;
+       m_poussable.erase(p.first);
+
+       ++it;
+   }
+
+   updateCarte();
+   m_pile.pop();
+
+
 }

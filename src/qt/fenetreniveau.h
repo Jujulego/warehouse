@@ -4,6 +4,7 @@
 // Importations
 #include <memory>
 #include <map>
+#include <stack>
 
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
@@ -37,6 +38,7 @@ public slots:
     void demarer_ia();
     void recv_chemin(ia::Chemin const& ch);
     void appliquer_mvt();
+    void annulerCoup();
 
 
 private:
@@ -57,6 +59,9 @@ private:
 
     QTimer* m_timer;
     ia::Chemin m_chemin;
+
+    //Pile pour annuler un coup
+    std::stack<std::shared_ptr<moteur::Carte>> m_pile;
 
 };
 
