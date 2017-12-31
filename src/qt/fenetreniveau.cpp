@@ -234,7 +234,7 @@ void FenetreNiveau::appliquer_mvt(Coord const& dir) {
     updateCarte();
 
     if (m_carte->test_fin()) {
-        QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font> " );
+        QMessageBox::information( 0, "Victory !" , "<font size = 5 color = red > Well done ! </font>" );
     }
 }
 

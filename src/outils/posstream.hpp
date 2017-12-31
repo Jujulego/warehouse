@@ -78,26 +78,26 @@ class posstream {
 
 			return *this;
 		}
-		
+
 		posstream<Stream>& operator << (CoordManip const& cm) {
 			m_nb  = cm.x();
 			m_lig = cm.y();
-			
+
 			return *this;
 		}
-		
+
 		posstream<Stream>& operator << (MouvManip const& mm) {
 			m_nb  += mm.x();
 			m_lig += mm.y();
-			
+
 			return *this;
 		}
-		
+
 		posstream<Stream>& operator << (Style const& s) {
 			if (s.txt() != style::ACTUELLE) m_style.txt(s.txt());
 			if (s.fnd() != style::ACTUELLE) m_style.fnd(s.fnd());
 			m_style.effet(s.effet());
-			
+
 			return *this;
 		}
 
@@ -105,11 +105,11 @@ class posstream {
 		CoordManip& coord() {
 			return m_coord;
 		}
-		
+
 		void flush() {
 			m_flux->flush();
 		}
-		
+
 		void style(Style const& style) {
 			m_style = style;
 		}

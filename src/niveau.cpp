@@ -5,6 +5,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <stack>
 #include <string>
 #include <thread>
 
@@ -112,6 +113,15 @@ bool Niveau::jouer() {
 		std::cout << style::erreur << "Pas de personnage sur la carte ..." << style::defaut << std::endl;
 		return 0;
 	}
+
+	// Historique
+	struct Etat {
+		std::shared_ptr<moteur::Carte> carte;
+		unsigned nb_mouv;
+		unsigned nb_pous;
+	};
+
+	std::stack<Etat> historique;
 
 	// Solveurs
 	ia::Solveur  solveur( carte, pers);
@@ -267,13 +277,35 @@ bool Niveau::jouer() {
 				break;
 
 			case 'r':
+				historique.push({carte, nb_mouv, nb_push});
+
 				carte = this->carte();
 				pers  = carte->personnage();
 				solveur  = ia::Solveur( carte, pers);
 				solveur2 = ia::Solveur2(carte, pers);
+				solveur3 = ia::Solveur3(carte, pers);
 
 				nb_mouv = 0;
 				nb_push = 0;
+				{ auto lck = console::lock();
+					pushstream << manip::eff_ligne << nb_push;
+					mouvstream << manip::eff_ligne << nb_mouv;
+				}
+
+				break;
+
+			case 'z':
+				if (historique.size() == 0) break;
+
+				carte   = historique.top().carte;
+				nb_mouv = historique.top().nb_mouv;
+				nb_push = historique.top().nb_pous;
+				historique.pop();
+
+				pers = carte->personnage();
+				solveur  = ia::Solveur( carte, pers);
+				solveur2 = ia::Solveur2(carte, pers);
+				solveur3 = ia::Solveur3(carte, pers);
 				{ auto lck = console::lock();
 					pushstream << manip::eff_ligne << nb_push;
 					mouvstream << manip::eff_ligne << nb_mouv;
@@ -289,6 +321,7 @@ bool Niveau::jouer() {
 
 			// Action !
 			if (!fut_chemin.valid() && dir != Coord(0, 0)) {
+				auto old = std::make_shared<moteur::Carte>(*carte);
 				int p = 0;
 
 				if (pers->deplacer(dir, p)) {
@@ -299,6 +332,8 @@ bool Niveau::jouer() {
 					mouvstream << manip::eff_ligne << ++nb_mouv;
 
 					if (p) {
+						historique.push({ old, nb_mouv-1, nb_push });
+
 						nb_push += p;
 						pushstream << manip::eff_ligne << nb_push;
 					}

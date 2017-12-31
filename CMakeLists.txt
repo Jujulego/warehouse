@@ -56,6 +56,7 @@ if (QT_ENABLE)
 	find_package(Qt5 5.7 REQUIRED
 		COMPONENTS
 			Widgets
+			Multimedia
 	)
 endif()
 

@@ -78,6 +78,7 @@ target_link_libraries(warehouse
 if (QT_ENABLE)
 	target_link_libraries(warehouse
 		Qt5::Widgets
+		Qt5::Multimedia
 	)
 
 	set_target_properties(warehouse
@@ -100,6 +101,6 @@ if (QT_ENABLE)
 		PUBLIC qt/qia.cpp
 	)
 
-	add_definitions(-DQTCREATOR)
+#	add_definitions(-DQTCREATOR)
 	add_definitions(-DQT_DEPRECATED_WARNINGS)
 endif()
