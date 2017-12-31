@@ -247,11 +247,11 @@ void FenetreNiveau::appliquer_mvt(Coord const& dir) {
     m_perso->setZValue(3);
 
     // Application du mouvement
-    if(m_personnage->deplacer(dir)==false){
+    auto copie = std::make_shared<moteur::Carte>(*m_carte);
+    int nb_push = 0;
 
-    m_pile.push(std::make_shared<moteur::Carte>(*m_carte));
-
-    }
+    m_personnage->deplacer(dir, nb_push);
+    if (nb_push) m_pile.push(copie);
 
     updateCarte();
 
@@ -300,23 +300,28 @@ void FenetreNiveau::appliquer_mvt() {
 
 void FenetreNiveau::annulerCoup() {
 
-   if(m_pile.size()==0) return;
+   if (m_pile.size() == 0) return;
 
-   m_carte=m_pile.top();
-   m_personnage=m_carte->personnage();
+   m_carte = m_pile.top();
+   m_personnage = m_carte->personnage();
 
    std::list<std::shared_ptr<moteur::Poussable>> poussables = m_carte->liste<moteur::Poussable>();
-   auto it = poussables.begin();
+   std::list<std::shared_ptr<moteur::Poussable>> old;
 
    for (auto p : m_poussable) {
-       m_poussable[*it] = p.second;
-       m_poussable.erase(p.first);
+       old.push_back(p.first);
+   }
 
-       ++it;
+   auto pit = poussables.begin();
+   for (auto p : old) {
+       auto it = m_poussable.find(p);
+
+       m_poussable[*pit] = it->second;
+       m_poussable.erase(it);
+
+       ++pit;
    }
 
    updateCarte();
    m_pile.pop();
-
-
 }

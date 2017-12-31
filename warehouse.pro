@@ -16,9 +16,8 @@ DISTFILES += \
     microban2.xsb
 
 RESOURCES += \
-    res/tileset/res-iso.qrc \
-    res/images/images.qrc
-
+	res/tileset/res-iso.qrc \
+	res/images/images.qrc
 
 HEADERS += src/moteur/carte.hpp \
 	src/moteur/deplacable.hpp \

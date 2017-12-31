@@ -16,7 +16,8 @@ DISTFILES += \
     microban2.xsb
 
 RESOURCES += \
-	res/tileset/res-iso.qrc
+	res/tileset/res-iso.qrc \
+	res/images/images.qrc
 
 HEADERS += @HEADERS@
 SOURCES += @SOURCES@
