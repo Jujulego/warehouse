@@ -18,11 +18,17 @@ FenetreMenu::FenetreMenu()
     //Fond du menu
     this->setStyleSheet("background-color: black;");
 
+    /* QMediaPlayer* player = new QMediaPlayer(this);
+    // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/felices.mp3"));
+     player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/felices.mp3"));
+     player->setVolume(50);
+     player->play();*/
+
 
     //Pour l'image du titre
     QLabel *label = new QLabel(this);
     label->setAlignment(Qt::AlignHCenter);
-    label->setPixmap(QPixmap(":/titre/src/qt/titre.png"));
+    label->setPixmap(QPixmap(":/titre.png"));
 
 
     //Création du bouton jouer

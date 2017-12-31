@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QGraphicsProxyWidget>
 #include <QTimer>
+#include <stack>
 
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
@@ -31,13 +32,14 @@ using namespace std::literals::chrono_literals;
 
 // Constructeur
 FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
-              : m_carte(_carte) {
+              :m_carte(_carte)
+{
 
-    QMediaPlayer* player = new QMediaPlayer(this);
+    /*QMediaPlayer* player = new QMediaPlayer(this);
     // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/felices.mp3"));
      player->setMedia(QUrl("C:/Users/Nawel Lalioui/Documents/Warehouse/felices.mp3"));
      player->setVolume(50);
-     player->play();
+     player->play();*/
 
 	// Initialisation graphics
     setDragMode(QGraphicsView::ScrollHandDrag);
@@ -72,6 +74,12 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     m_boutonQuitter->setStyleSheet("background-color: silver;");
     m_boutonQuitter->setFont(PoliceBoutonQuitter);
 
+    //Création du bouton annuler
+    m_boutonAnnulerCoup = new QPushButton("ANNULER");
+    QFont PoliceBoutonAnnulerCoup("Calibri", 10, QFont::Bold);
+    m_boutonAnnulerCoup->setStyleSheet("background-color: silver;");
+    m_boutonAnnulerCoup->setFont(PoliceBoutonAnnulerCoup);
+
     //Intégration du bouton IA dans la scène
     QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
     proxy->setWidget(m_boutonIAs);
@@ -101,6 +109,13 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy4->setPos(512, 400);
     proxy4->setZValue(3);
 
+    //Intégration du bouton annuler dans la scène
+    QGraphicsProxyWidget *proxy5 = new QGraphicsProxyWidget();
+    proxy5->setWidget(m_boutonAnnulerCoup);
+    scene()->addItem(proxy5);
+    proxy5->setPos(512, 500);
+    proxy5->setZValue(3);
+
     // Initialisation du timer
     m_timer = new QTimer(this);
 
@@ -113,10 +128,12 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
 
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
+    QObject::connect(m_boutonAnnulerCoup, SIGNAL(clicked()), this, SLOT(annulerCoup()));
 
 	// Gestion de l'IA
     connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
     connect(m_timer,     SIGNAL(timeout()), this, SLOT(appliquer_mvt()));
+
 
 	// Affichage de la carte
     QImage mur(":/tileset/bloc/marron.png");
@@ -230,7 +247,12 @@ void FenetreNiveau::appliquer_mvt(Coord const& dir) {
     m_perso->setZValue(3);
 
     // Application du mouvement
-    m_personnage->deplacer(dir);
+    if(m_personnage->deplacer(dir)==false){
+
+    m_pile.push(std::make_shared<moteur::Carte>(*m_carte));
+
+    }
+
     updateCarte();
 
     if (m_carte->test_fin()) {
@@ -274,4 +296,27 @@ void FenetreNiveau::appliquer_mvt() {
 
 	// Fin ?
 	if (m_chemin.longueur() == 0) m_timer->stop();
+}
+
+void FenetreNiveau::annulerCoup() {
+
+   if(m_pile.size()==0) return;
+
+   m_carte=m_pile.top();
+   m_personnage=m_carte->personnage();
+
+   std::list<std::shared_ptr<moteur::Poussable>> poussables = m_carte->liste<moteur::Poussable>();
+   auto it = poussables.begin();
+
+   for (auto p : m_poussable) {
+       m_poussable[*it] = p.second;
+       m_poussable.erase(p.first);
+
+       ++it;
+   }
+
+   updateCarte();
+   m_pile.pop();
+
+
 }

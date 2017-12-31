@@ -4,6 +4,7 @@
 // Importations
 #include <memory>
 #include <map>
+#include <stack>
 
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
@@ -33,9 +34,12 @@ public slots:
     void fenMenu_open();
     void nouvellePartie_open();
 
+
     void demarer_ia();
     void recv_chemin(ia::Chemin const& ch);
     void appliquer_mvt();
+    void annulerCoup();
+
 
 private:
     std::shared_ptr<moteur::Carte> m_carte;
@@ -49,11 +53,16 @@ private:
     QPushButton* m_boutonRetourMenu;
     QPushButton* m_NouvellePartie;
     QPushButton* m_boutonQuitter;
+    QPushButton* m_boutonAnnulerCoup;
 
     QIA* m_ia = nullptr;
 
     QTimer* m_timer;
     ia::Chemin m_chemin;
+
+    //Pile pour annuler un coup
+    std::stack<std::shared_ptr<moteur::Carte>> m_pile;
+
 };
 
 #endif // FENETRENIVEAU_H
