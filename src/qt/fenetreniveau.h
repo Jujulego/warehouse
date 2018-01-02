@@ -53,7 +53,7 @@ private:
     QPushButton* m_boutonRetourMenu;
     QPushButton* m_NouvellePartie;
     QPushButton* m_boutonQuitter;
-    QPushButton* m_boutonAnnulerCoup;
+    //QPushButton* m_boutonAnnulerCoup;
 
     QIA* m_ia = nullptr;
 

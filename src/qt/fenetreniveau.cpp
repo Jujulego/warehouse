@@ -74,11 +74,11 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     m_boutonQuitter->setStyleSheet("background-color: silver;");
     m_boutonQuitter->setFont(PoliceBoutonQuitter);
 
-    //Création du bouton annuler
+    /*//Création du bouton annuler
     m_boutonAnnulerCoup = new QPushButton("ANNULER");
     QFont PoliceBoutonAnnulerCoup("Calibri", 10, QFont::Bold);
     m_boutonAnnulerCoup->setStyleSheet("background-color: silver;");
-    m_boutonAnnulerCoup->setFont(PoliceBoutonAnnulerCoup);
+    m_boutonAnnulerCoup->setFont(PoliceBoutonAnnulerCoup);*/
 
     //Intégration du bouton IA dans la scène
     QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
@@ -109,12 +109,12 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     proxy4->setPos(512, 400);
     proxy4->setZValue(3);
 
-    //Intégration du bouton annuler dans la scène
+    /*//Intégration du bouton annuler dans la scène
     QGraphicsProxyWidget *proxy5 = new QGraphicsProxyWidget();
     proxy5->setWidget(m_boutonAnnulerCoup);
     scene()->addItem(proxy5);
     proxy5->setPos(512, 500);
-    proxy5->setZValue(3);
+    proxy5->setZValue(3);*/
 
     // Initialisation du timer
     m_timer = new QTimer(this);
@@ -128,7 +128,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
 
     QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
-    QObject::connect(m_boutonAnnulerCoup, SIGNAL(clicked()), this, SLOT(annulerCoup()));
+    // QObject::connect(m_boutonAnnulerCoup, SIGNAL(clicked()), this, SLOT(annulerCoup()));
 
 	// Gestion de l'IA
     connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
@@ -217,6 +217,10 @@ void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Down:
         dir = BAS;
         break;
+
+    case Qt::Key_Z:
+       annulerCoup();
+       break;
     }
 
     appliquer_mvt(dir);
@@ -325,3 +329,5 @@ void FenetreNiveau::annulerCoup() {
    updateCarte();
    m_pile.pop();
 }
+
+
