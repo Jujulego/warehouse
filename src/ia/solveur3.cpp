@@ -150,7 +150,6 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 				pers->deplacer(dir);
 				chemin.ajouter(dir);
 
-//				if (goal_cut && infos_empls(pers->coord()).zone != 0) break;
 				if (goal_cut && infos_empls(pous->coord()).zone != 0) break;
 			}
 
@@ -176,7 +175,7 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 			if (!pair.second) continue; // Déjà traité !
 
 			// Ignoré si deadlock
-			if (deadlock(carte, pous, pers->coord(), pers->force())) continue;
+			if (deadlock(carte, pous->coord(), pers->coord(), pers->force())) continue;
 
 			// Ignoré si heuristique == INFINI
 			Nombre<unsigned> heu = heuristique(carte);
@@ -820,6 +819,91 @@ std::vector<unsigned char> Solveur3::poussees(std::shared_ptr<moteur::Carte> car
 	return poussees;
 }
 
+bool Solveur3::deadlock(std::shared_ptr<moteur::Carte> carte, Coord const& obj, Coord const& pers, int force) const {
+	// Gardiens
+	if (carte->get<moteur::Poussable>(obj)   == nullptr) return false;
+	if (carte->get<moteur::Emplacement>(obj) != nullptr) return false;
+
+	// Collection de l'ensemble de blocs contigus (DFS !)
+	std::stack<Coord> pile;
+	std::set<Coord> blocs;
+
+	blocs.insert(obj);
+	pile.push(obj);
+
+	while (!pile.empty()) {
+		// Dépilage
+		Coord c = pile.top();
+		pile.pop();
+
+		// Déplacement
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			Coord nc = c + dir;
+
+			// Checks
+			if (!carte->coord_valides(nc))          continue; // validité
+			if (!carte->get<moteur::Poussable>(nc)) continue; // présence d'un poussable
+
+			// Marques ?
+			if (blocs.insert(nc).second) { // Nouvel élément
+				pile.push(nc);
+			}
+		}
+	}
+
+	// Suppression des autres blocs
+	std::list<std::shared_ptr<moteur::Poussable>> autres;
+	for (auto pous : carte->liste<moteur::Poussable>()) {
+		auto it = blocs.find(pous->coord());
+
+		if (it == blocs.end()) {
+			autres.push_back(pous);
+			(*carte)[pous->coord()]->pop();
+		}
+	}
+
+	// Calcul de la zone accessible
+	std::vector<bool> za = zone_accessible(carte, pers);
+
+	// Test
+	bool resultat = !std::any_of(blocs.begin(), blocs.end(),
+		[&] (Coord const& pous) {
+			auto po = carte->get<moteur::Poussable>(pous);
+
+			(*carte)[pous]->pop();
+			std::vector<bool> zi = zone_interdite(carte);
+			carte->set(pous, po);
+
+			for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+				// Checks
+				if (!carte->coord_valides(pous - dir)) continue; // validité
+				if (!za[hash(pous - dir)])             continue; // accessibilité
+
+				if (!carte->coord_valides(pous + dir)) continue; // validité
+				if (zi[hash(pous + dir)])              continue; // pas interdite
+
+				// Mouvement possible ?
+				auto pe = carte->get<moteur::Personnage>(pers);
+				(*carte)[pers]->pop();
+				if (!carte->deplacer(pous, dir, force - po->poids(), true)) {
+					carte->set(pers, pe);
+					return true;
+				}
+				carte->set(pers, pe);
+			}
+
+			return false;
+		}
+	);
+
+	// Retour des blocs
+	for (auto pous : autres) {
+		carte->set(pous->coord(), pous);
+	}
+
+	return resultat;
+}
+
 std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte) const {
 	// Base statique
 	std::vector<Infos> const& infos = infos_cases();
@@ -1041,6 +1125,7 @@ std::list<Solveur3::Mouv> Solveur3::mouvements(std::shared_ptr<moteur::Carte> ca
 
 	// Analyse par poussable
 	std::list<Mouv> mvts;
+	if (heu.est_inf()) return mvts; // deadlock
 
 	for (auto pous : carte->liste<moteur::Poussable>()) {
 		// Récupération de l'emplacement associé

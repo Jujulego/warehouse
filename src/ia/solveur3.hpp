@@ -93,6 +93,7 @@ class Solveur3 : public IA {
 		Coord choix_empl(std::map<Coord,std::pair<Coord,Nombre<unsigned>>> const& assos, Coord const& obj) const;
 
 		std::vector<unsigned char> poussees(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;
+		bool deadlock(std::shared_ptr<moteur::Carte> carte, Coord const& obj, Coord const& pers, int force) const;
 
 		std::vector<bool> zone_interdite(std::shared_ptr<moteur::Carte> carte) const;
 		std::vector<bool> zone_sr(std::shared_ptr<moteur::Carte> carte, Coord const& obj) const;  // Par le poussable obj

@@ -594,6 +594,8 @@ void DevScreen::afficher_carte() const {
 				if (st.fnd() == style::DEFAUT_FOND) {
 					if (obj->coord() == empl) {
 						st.txt(style::VERT);
+					} else if (m_solv3->deadlock(m_carte, obj->coord(), m_pers->coord(), m_pers->force())) {
+						st.txt(style::ROUGE);
 					} else if (empl != Coord(-1, -1) && z[hash(empl)]) {
 						st.txt(style::BLEU);
 					} else {

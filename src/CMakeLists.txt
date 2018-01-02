@@ -1,3 +1,5 @@
+
+
 #
 # Ajout de l'executable
 #
@@ -89,6 +91,7 @@ if (QT_ENABLE)
 
 	target_sources(warehouse
 		PUBLIC ../res/tileset/res-iso.qrc
+		PUBLIC ../res/images/images.qrc
 
 		PUBLIC qt/fenetremenu.h
 		PUBLIC qt/fenetremenu.cpp
