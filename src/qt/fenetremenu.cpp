@@ -8,6 +8,8 @@
 #include <QMediaPlayer>
 #include <QSound>
 #include <QLabel>
+#include <QFileDialog>
+#include <QMessageBox>
 
 FenetreMenu::FenetreMenu()
 {
@@ -89,7 +91,7 @@ FenetreMenu::FenetreMenu()
     //Signal et slot pour fermer la fenêtre menu quand on ouvre la fenêtre règles
     QObject::connect(m_boutonRegles, SIGNAL(clicked()), this, SLOT(close()));
 
-    //QObject::connect(m_boutonCharger, SIGNAL(clicked()), this, SLOT());
+    QObject::connect(m_boutonCharger, SIGNAL(clicked()), this, SLOT(charger()));
 
     setLayout(layout);
 
@@ -114,6 +116,9 @@ void FenetreMenu::fenRegles_open(){
 }
 
 void FenetreMenu::charger(){
+
+    QString fichier = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", QString(), "Fichier XSB (*.xsb)");
+       QMessageBox::information(0, "Fichier", "<font size = 3 color = red > Vous avez sélectionné: \n </font>" + fichier);
 
 
 

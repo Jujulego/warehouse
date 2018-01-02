@@ -1,38 +1,16 @@
 #ifndef FENETREXSB_H
 #define FENETREXSB_H
 
-#pragma once
-
-// Importations
-#include <string>
-#include <map>
-
-#include "menu.hpp"
-#include "niveau.hpp"
+#include <qstring.h>
 
 class FenetreXSB
 {
-    public:
+public:
+    FenetreXSB(QString _fichier);
 
-    // Constructeur
-    Fenetrexsb();
-    FichierXSB(std::string nom);
+private:
 
-    // Méthodes
-    int nb_niv() const;
-    Menu as_menu() const;
-
-    std::vector<Niveau> const& niveaux() const;
-
-    private:
-    // Méthodes
-    void charger(std::string const& fichier);
-
-    // Attributs
-    std::vector<Niveau> m_niveaux;
+    QString m_fichier;
 };
 
 #endif // FENETREXSB_H
-
-
-
