@@ -52,7 +52,8 @@ HEADERS += src/moteur/carte.hpp \
 	src/qt/fenetremenu.h \
 	src/qt/fenetreniveau.h \
 	src/qt/fenetreregles.h \
-	src/qt/qia.hpp \
+	src/qt/qia.hpp
+
 	
 SOURCES += src/moteur/carte.cpp \
 	src/moteur/deplacable.cpp \
@@ -84,5 +85,6 @@ SOURCES += src/moteur/carte.cpp \
 	src/qt/fenetremenu.cpp \
 	src/qt/fenetreniveau.cpp \
 	src/qt/fenetreregles.cpp \
-	src/qt/qia.cpp \
+	src/qt/qia.cpp
+
 	

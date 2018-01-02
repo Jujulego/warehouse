@@ -17,6 +17,7 @@ public:
 public slots:
      void fenNiveau_open();
      void fenRegles_open();
+     void charger();
 
 
  private:
@@ -24,6 +25,7 @@ public slots:
     QPushButton* m_boutonJouer;
     QPushButton* m_boutonQuitter;
     QPushButton* m_boutonRegles;
+    QPushButton* m_boutonCharger;
     /*QPushButton* m_boutonIA;*/
 
 
