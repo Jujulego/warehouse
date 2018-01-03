@@ -23,12 +23,12 @@ FenetreXSB::FenetreXSB(QString _fichier)
         //Création d'un layout
         QHBoxLayout *layout = new QHBoxLayout;
 
-        m_boutonxsb = new QPushButton(QIcon(":/tileset/perso/tete_contour.png"), "LEVEL", this);
+        m_boutonxsb = new QPushButton(QIcon(":/tileset/perso/tete_contour.png"), "LEVEL");
         QFont Police("Calibri", 12, QFont::Bold);
         m_boutonxsb->setFont(Police);
         m_boutonxsb->setStyleSheet("background-color: yellow;");
         layout->addWidget(m_boutonxsb);
-           layout->setAlignment(Qt::AlignCenter);
+        setLayout(layout);
 
         QObject::connect(m_boutonxsb, &QPushButton::clicked, [=] () {
           niv.carte();
@@ -36,6 +36,8 @@ FenetreXSB::FenetreXSB(QString _fichier)
           c->show();
 
         });
+
+
 
   }
 
