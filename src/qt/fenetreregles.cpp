@@ -23,8 +23,8 @@ FenetreRegles::FenetreRegles()
 
 
     label->setAlignment(Qt::AlignCenter);
-    label->setText("THE WAREHOUSE RULES\n\n\n As a Warehouse Guardian, you must put boxes on target spots. \n You can move in all four directions,"
-                   " and push (but not pull) a single box at a time.\n Once all the boxes are stowed, the level is successful.\n The ideal is to succeed"
+    label->setText("THE WAREHOUSE RULES\n\n\n As a Warehouse Guardian, you must put boxes on target spots.  \n You can move in all four directions,"
+                   " and push (but not pull)\n  a single box at a time.\n Once all the boxes are stowed, the level is successful.\n The ideal is to succeed"
                    " with the fewest moves.");
     label->setFont(f);
     label->setStyleSheet("background-color:yellow;");
@@ -47,12 +47,17 @@ FenetreRegles::FenetreRegles()
     QFont PoliceRetourMenu("Arial", 9, QFont::Bold);
     m_boutonRetourMenu->setStyleSheet("background-color: yellow;");
     m_boutonRetourMenu->setFont(PoliceRetourMenu);
+    m_boutonRetourMenu->setFixedHeight(40);
+    m_boutonRetourMenu->setFixedWidth(200);
 
     //Intégration du bouton Retour Menu dans la scène
     layout->addWidget(m_boutonRetourMenu);
 
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(Menu_open()));
     QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
+
+
+    setLayout(layout);
 
 
 }

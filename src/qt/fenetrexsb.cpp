@@ -38,6 +38,9 @@ FenetreXSB::FenetreXSB(QString _fichier)
 
         });
 
+        //Slot pour fermer fenêtre des niveaux quand on clique sur un niveau
+        QObject::connect(m_boutonxsb, SIGNAL(clicked()), this, SLOT(close()));
+
 
   }
 

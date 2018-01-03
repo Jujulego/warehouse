@@ -18,6 +18,7 @@ public slots:
 
 private:
      QPushButton* m_boutonRetourMenu;
+     QPushButton* m_boutonQuitter;
 
 };
 

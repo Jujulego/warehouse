@@ -94,6 +94,10 @@ FenetreMenu::FenetreMenu()
 
     QObject::connect(m_boutonCharger, SIGNAL(clicked()), this, SLOT(charger()));
 
+    //Signal et slot pour fermer la fenêtre menu quand on ouvre la fenêtre load file
+    QObject::connect(m_boutonCharger, SIGNAL(clicked()), this, SLOT(close()));
+
+
     setLayout(layout);
 
 

@@ -8,6 +8,7 @@
 #include <QGraphicsProxyWidget>
 #include <QTimer>
 #include <stack>
+#include <QVBoxLayout>
 
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
@@ -51,6 +52,13 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     //Fond de la fenêtre
     this->setStyleSheet("background-color: black;");
 
+    //Pour que les boutons ne s'affichent pas sur la carte au début
+    this->showFullScreen();
+
+    //Création layout
+    QVBoxLayout *layout = new QVBoxLayout;
+
+
     //Création du bouton IA
     m_boutonIAs = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
     QFont PoliceIA("Calibri", 10, QFont::Bold);
@@ -74,40 +82,51 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     m_boutonQuitter->setStyleSheet("background-color: silver;");
     m_boutonQuitter->setFont(PoliceBoutonQuitter);
 
-    /*//Création du bouton annuler
-    m_boutonAnnulerCoup = new QPushButton("ANNULER");
-    QFont PoliceBoutonAnnulerCoup("Calibri", 10, QFont::Bold);
-    m_boutonAnnulerCoup->setStyleSheet("background-color: silver;");
-    m_boutonAnnulerCoup->setFont(PoliceBoutonAnnulerCoup);*/
-
     //Intégration du bouton IA dans la scène
-    QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
+    /*QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
     proxy->setWidget(m_boutonIAs);
     scene()->addItem(proxy);
-    m_boutonIAs->setStyleSheet("background-color: red;");
     proxy->setPos(512, 200);
-    proxy->setZValue(3);
+    proxy->setZValue(3);*/
+    m_boutonIAs->setStyleSheet("background-color: red;");
+    m_boutonIAs->setFixedHeight(40);
+    m_boutonIAs->setFixedWidth(200);
 
     //Intégration du bouton Retour Menu dans la scène
-    QGraphicsProxyWidget *proxy2 = new QGraphicsProxyWidget();
+    /*QGraphicsProxyWidget *proxy2 = new QGraphicsProxyWidget();
     proxy2->setWidget(m_boutonRetourMenu);
     scene()->addItem(proxy2);
     proxy2->setPos(512, 100);
-    proxy2->setZValue(3);
+    proxy2->setZValue(3);*/
+    m_boutonRetourMenu->setFixedHeight(40);
+    m_boutonRetourMenu->setFixedWidth(200);
+
+
+
+    //Position
+    layout->setAlignment(Qt::AlignRight);
+
+
+    setLayout(layout);
 
     //Intégration du bouton nouvelle partie dans la scène
-    QGraphicsProxyWidget *proxy3 = new QGraphicsProxyWidget();
+    /*QGraphicsProxyWidget *proxy3 = new QGraphicsProxyWidget();
     proxy3->setWidget(m_NouvellePartie);
     scene()->addItem(proxy3);
     proxy3->setPos(512, 300);
-    proxy3->setZValue(3);
+    proxy3->setZValue(3);*/
+    m_NouvellePartie->setFixedHeight(40);
+    m_boutonIAs->setFixedWidth(200);
 
     //Intégration du bouton quitter dans la scène
-    QGraphicsProxyWidget *proxy4 = new QGraphicsProxyWidget();
+    /*QGraphicsProxyWidget *proxy4 = new QGraphicsProxyWidget();
     proxy4->setWidget(m_boutonQuitter);
     scene()->addItem(proxy4);
     proxy4->setPos(512, 400);
-    proxy4->setZValue(3);
+    proxy4->setZValue(3);*/
+    m_boutonQuitter->setFixedHeight(40);
+    m_boutonQuitter->setFixedWidth(200);
+
 
     /*//Intégration du bouton annuler dans la scène
     QGraphicsProxyWidget *proxy5 = new QGraphicsProxyWidget();
@@ -115,6 +134,19 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     scene()->addItem(proxy5);
     proxy5->setPos(512, 500);
     proxy5->setZValue(3);*/
+
+    //ajout des boutons au layout
+    layout->setSpacing(60);
+    layout->addWidget(m_boutonRetourMenu);
+    layout->addWidget(m_NouvellePartie);
+    layout->addWidget(m_boutonIAs);
+    layout->addWidget(m_boutonQuitter);
+
+
+    //Position
+    layout->setAlignment(Qt::AlignRight|Qt::AlignCenter);
+    setLayout(layout);
+
 
     // Initialisation du timer
     m_timer = new QTimer(this);
@@ -132,7 +164,7 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
 	// Gestion de l'IA
     connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
-    connect(m_timer,     SIGNAL(timeout()), this, SLOT(appliquer_mvt()));
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(appliquer_mvt()));
 
 
 	// Affichage de la carte
