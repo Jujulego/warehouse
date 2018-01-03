@@ -119,12 +119,9 @@ void FenetreMenu::fenRegles_open(){
 void FenetreMenu::charger(){
 
     QString fichier = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", QString(), "Fichier XSB (*.xsb)");
-    QMessageBox::information(0, "Fichier", "<font size = 3 color = red > Vous avez sélectionné: \n </font>" + fichier);
+    //QMessageBox::information(0, "Fichier", "<font size = 3 color = red > Vous avez sélectionné: \n </font>" + fichier);
     FenetreXSB* fen = new FenetreXSB(fichier);
-
-
-
-
+    fen->show();
 }
 
 

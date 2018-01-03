@@ -4,7 +4,7 @@
 #include <qstring.h>
 #include <QPushButton>
 
-class FenetreXSB
+class FenetreXSB : public QWidget
 {
 public:
     FenetreXSB(QString _fichier);
