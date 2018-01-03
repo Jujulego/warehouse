@@ -3,7 +3,7 @@
 #include "fenetreniveau.h"
 #include <QString>
 #include <QPushButton>
-#include <QHBoxLayout>
+#include <QvBoxLayout>
 
 FenetreXSB::FenetreXSB(QString _fichier)
            :m_fichier(_fichier) {
@@ -13,22 +13,23 @@ FenetreXSB::FenetreXSB(QString _fichier)
     setMinimumSize(600, 400);
     //Titre de la fenêtre
     setWindowTitle("LEVELS");
-    //Fond du menu
+    //Fond
     this->setStyleSheet("background-color: black;");
 
     FichierXSB fichierxsb(_fichier.toStdString());
 
-    for (auto niv : fichierxsb.niveaux()) {
+    QVBoxLayout *layout = new QVBoxLayout;
+     layout->setAlignment(Qt::AlignCenter);
 
-        //Création d'un layout
-        QHBoxLayout *layout = new QHBoxLayout;
+     for (auto niv : fichierxsb.niveaux()) {
 
         m_boutonxsb = new QPushButton(QIcon(":/tileset/perso/tete_contour.png"), "LEVEL");
-        QFont Police("Calibri", 12, QFont::Bold);
+        QFont Police("Calibri", 8, QFont::Bold);
         m_boutonxsb->setFont(Police);
         m_boutonxsb->setStyleSheet("background-color: yellow;");
         layout->addWidget(m_boutonxsb);
         setLayout(layout);
+
 
         QObject::connect(m_boutonxsb, &QPushButton::clicked, [=] () {
           niv.carte();
@@ -36,7 +37,6 @@ FenetreXSB::FenetreXSB(QString _fichier)
           c->show();
 
         });
-
 
 
   }
