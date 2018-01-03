@@ -140,3 +140,5 @@ Menu FichierXSB::as_menu() const {
 std::vector<Niveau> const& FichierXSB::niveaux() const {
 	return m_niveaux;
 }
+
+
