@@ -2,6 +2,7 @@
 #define FENETREXSB_H
 
 #include <qstring.h>
+#include <QPushButton>
 
 class FenetreXSB
 {
@@ -11,6 +12,7 @@ public:
 private:
 
     QString m_fichier;
+    QPushButton* m_boutonxsb;
 };
 
 #endif // FENETREXSB_H
