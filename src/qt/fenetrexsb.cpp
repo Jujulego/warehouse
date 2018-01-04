@@ -1,48 +1,50 @@
+// Importations
 #include "fenetrexsb.h"
 #include "fichierxsb.hpp"
 #include "fenetreniveau.h"
+
 #include <QString>
 #include <QPushButton>
-#include <QvBoxLayout>
+#include <QGridLayout>
 
-FenetreXSB::FenetreXSB(QString _fichier)
-           :m_fichier(_fichier) {
+// Macros
+#define MAX_COL 30
 
-
-    //Taille de la fenêtre
+// Constructeur
+FenetreXSB::FenetreXSB(QString fichier) {
+    // Taille de la fenêtre
     setMinimumSize(600, 400);
-    //Titre de la fenêtre
-    setWindowTitle("LEVELS");
-    //Fond
-    this->setStyleSheet("background-color: black;");
+    setWindowTitle(QString("LEVELS : ") + fichier);
+    setStyleSheet("background-color: black;");
 
-    FichierXSB fichierxsb(_fichier.toStdString());
+	// Chargement du fichier
+    FichierXSB fichierxsb(fichier.toStdString());
 
-    QVBoxLayout *layout = new QVBoxLayout;
-     layout->setAlignment(Qt::AlignCenter);
+    QGridLayout *layout = new QGridLayout;
+    QFont police("Calibri", 10, QFont::Bold);
 
-     for (auto niv : fichierxsb.niveaux()) {
+    int i = 0;
 
-        m_boutonxsb = new QPushButton(QIcon(":/tileset/perso/tete_contour.png"), "LEVEL");
-        QFont Police("Calibri", 8, QFont::Bold);
-        m_boutonxsb->setFont(Police);
-        m_boutonxsb->setStyleSheet("background-color: yellow;");
-        layout->addWidget(m_boutonxsb);
-        setLayout(layout);
+    for (auto niv : fichierxsb.niveaux()) {
+        QPushButton* boutonxsb = new QPushButton(
+        	QIcon(":/tileset/perso/tete_contour.png"),
+        	QString("LEVEL ") + QString::number(i + 1)
+        );
+        boutonxsb->setStyleSheet("background-color: yellow;");
+        boutonxsb->setFont(police);
 
+        layout->addWidget(boutonxsb, i % MAX_COL, i / MAX_COL);
 
-        QObject::connect(m_boutonxsb, &QPushButton::clicked, [=] () {
-          niv.carte();
-          FenetreNiveau* c  = new FenetreNiveau(niv.carte());
-          c->show();
-
+        // Connections
+        connect(boutonxsb, SIGNAL(clicked()), this, SLOT(close()));
+        connect(boutonxsb, &QPushButton::clicked, [niv] () {
+            FenetreNiveau* c  = new FenetreNiveau(niv.carte());
+            c->showMaximized();
         });
 
-        //Slot pour fermer fenêtre des niveaux quand on clique sur un niveau
-        QObject::connect(m_boutonxsb, SIGNAL(clicked()), this, SLOT(close()));
+        i++;
+    }
 
-
-  }
-
+    setLayout(layout);
 }
 

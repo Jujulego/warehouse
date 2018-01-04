@@ -23,9 +23,13 @@ FenetreRegles::FenetreRegles()
 
 
     label->setAlignment(Qt::AlignCenter);
-    label->setText("THE WAREHOUSE RULES\n\n\n As a Warehouse Guardian, you must put boxes on target spots.  \n You can move in all four directions,"
-                   " and push (but not pull)\n  a single box at a time.\n Once all the boxes are stowed, the level is successful.\n The ideal is to succeed"
-                   " with the fewest moves.");
+    label->setText("THE WAREHOUSE RULES\n"
+                   "\n"
+                   "\n"
+                   "As a Warehouse Guardian, you must put boxes on target spots.\n"
+                   "You can move in all four directions, and push (but not pull) a single box at a time.\n"
+                   "Once all the boxes are stored, the level is successful.\n"
+                   "The ideal is to succeed with the fewest moves.");
     label->setFont(f);
     label->setStyleSheet("background-color:yellow;");
     label2->setAlignment(Qt::AlignLeft);

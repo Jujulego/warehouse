@@ -20,3 +20,7 @@ void QIA::run() {
 
 	emit resultat(chemin);
 }
+
+void QIA::interrompre() {
+    m_ia->interrompre();
+}

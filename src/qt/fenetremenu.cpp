@@ -60,11 +60,6 @@ FenetreMenu::FenetreMenu()
     m_boutonRegles->setStyleSheet("background-color: yellow;");
     layout->addWidget(m_boutonRegles);
 
-
-    /*//Création du bouton IA
-    m_boutonIA = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
-    layout->addWidget(m_boutonIA);*/
-
     //Création du bouton charger
     m_boutonCharger = new QPushButton(QIcon(":/file.PNG"), "LOAD FILE");
     QFont Police4("Calibri", 12, QFont::Bold);
@@ -105,23 +100,17 @@ FenetreMenu::FenetreMenu()
 
 //Fonction pour ouvrir une fenêtre contenant la carte
 void FenetreMenu::fenNiveau_open(){
-
     FenetreNiveau* carte  = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
-    carte->show();
-
-
+    carte->showMaximized();
 }
 
 //Fonction pour ouvrir une fenêtre contenant les règles
 void FenetreMenu::fenRegles_open(){
     FenetreRegles* regles = new FenetreRegles();
     regles->show();
-
-
 }
 
 void FenetreMenu::charger(){
-
     QString fichier = QFileDialog::getOpenFileName(this, "Ouvrir un fichier", QString(), "Fichier XSB (*.xsb)");
     //QMessageBox::information(0, "Fichier", "<font size = 3 color = red > Vous avez sélectionné: \n </font>" + fichier);
     FenetreXSB* fen = new FenetreXSB(fichier);

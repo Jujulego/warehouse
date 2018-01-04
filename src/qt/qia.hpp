@@ -20,6 +20,9 @@ class QIA : public QThread {
 		// Constructeur
 		QIA(std::shared_ptr<ia::IA> ia, QObject* parent = nullptr);
 
+        // Méthodes
+        void interrompre();
+
 	signals:
 		// Signaux
 		void resultat(ia::Chemin const&);

@@ -128,10 +128,10 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 		std::shared_ptr<Noeud> noeud = etat.noeud;
 		std::shared_ptr<moteur::Carte> noeud_carte = noeud->carte(m_carte, obj, m_obj->force());
 
-/*		{ auto lck = console::lock();
+		{ auto lck = console::lock();
 			afficher_carte(noeud_carte, 5, 20);
 			std::cout << " " << etat.heu << "      ";
-		}*/
+		}
 
 		for (Mouv mvt : mouvements(noeud_carte, etat.pous)) {
 			// Copie de la carte
@@ -181,6 +181,12 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 			Nombre<unsigned> heu = heuristique(carte);
 			if (heu == INFINI) continue;
 
+			{ auto lck = console::lock();
+				afficher_carte(carte, 55, 20);
+				std::cout << " " << mvt.heuristique << " " << heu << " " << goal_cut << "      ";
+//				console::getch();
+			}
+
 			// Fini ?
 			if (carte->test_fin()) {
 				auto lock = console::lock();
@@ -198,12 +204,6 @@ Chemin Solveur3::resoudre(posstream<std::ostream>& stream) {
 
 				return res;
 			}
-
-/*			{ auto lck = console::lock();
-				afficher_carte(carte, 55, 20);
-				std::cout << " " << mvt.heuristique << " " << heu << " " << goal_cut << "      ";
-				console::getch();
-			}*/
 
 			// Enfilage !
 			file.push(Etat {
@@ -824,6 +824,10 @@ bool Solveur3::deadlock(std::shared_ptr<moteur::Carte> carte, Coord const& obj, 
 	if (carte->get<moteur::Poussable>(obj)   == nullptr) return false;
 	if (carte->get<moteur::Emplacement>(obj) != nullptr) return false;
 
+	// Algo précédent
+	bool r = IA::deadlock(carte, carte->get<moteur::Poussable>(obj), pers, force);
+	if (r) return r;
+
 	// Collection de l'ensemble de blocs contigus (DFS !)
 	std::stack<Coord> pile;
 	std::set<Coord> blocs;
@@ -837,7 +841,7 @@ bool Solveur3::deadlock(std::shared_ptr<moteur::Carte> carte, Coord const& obj, 
 		pile.pop();
 
 		// Déplacement
-		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE, HAUT + GAUCHE, HAUT + DROITE, BAS + GAUCHE, BAS + DROITE}) {
 			Coord nc = c + dir;
 
 			// Checks
@@ -951,6 +955,42 @@ std::vector<bool> Solveur3::zone_interdite(std::shared_ptr<moteur::Carte> carte)
 							break;
 						}
 					}
+				}
+			}
+		}
+
+		// Directions
+		Coord p = pous->coord();
+
+		for (auto dir : {HAUT, BAS, GAUCHE, DROITE}) {
+			Coord m = p + dir;
+
+			// Checks
+			if (!carte->coord_valides(m))  continue; // validité
+			if ((*carte)[m]->accessible()) continue; // ya un mur ?
+//			if (!carte->get<moteur::Obstacle>(m)) continue; // ya un mur ?
+
+			// Décalage
+			for (auto d : {HAUT, BAS, GAUCHE, DROITE}) {
+				// Sélection des directions perpendiculaires
+				if (dir ==  d) continue;
+				if (dir == -d) continue;
+
+				Coord np = p + d;
+				Coord nm = m + d;
+
+				// Checks
+				if (!carte->coord_valides(nm))   continue; // validité
+				if ((*carte)[nm]->accessible()) continue; // ya un mur ?
+//				if (!carte->get<moteur::Obstacle>(nm)) continue; // ya un mur ?
+
+				if (!carte->coord_valides(np))  continue; // validité
+				if (!(*carte)[np]->accessible()) continue; // c'est accessible ?
+
+				if (infos[hash(np)].intersection) {
+					intersections.push(np);
+				} else {
+					zone[hash(np)] = true;
 				}
 			}
 		}

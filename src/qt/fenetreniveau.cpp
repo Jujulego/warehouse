@@ -1,5 +1,6 @@
 // Importations
 #include <chrono>
+#include <stack>
 
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
@@ -7,16 +8,16 @@
 #include <QPushButton>
 #include <QGraphicsProxyWidget>
 #include <QTimer>
-#include <stack>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QPalette>
+#include <QMediaPlayer>
 
 #include "moteur/obstacle.hpp"
 #include "moteur/poussable.hpp"
 #include "moteur/emplacement.hpp"
 #include "moteur/personnage.hpp"
 #include "ia/solveur3.hpp"
-#include "QPalette"
-#include <QMediaPlayer>
 
 #include "fenetreniveau.h"
 #include "fenetremenu.h"
@@ -26,15 +27,20 @@
 using namespace std::literals::chrono_literals;
 
 // Macros
-#define HAUTEUR_IMAGE 64
-#define LARGEUR_IMAGE 64
+#ifdef __gnu_linux__
+# define ECHELLE 0.5
+#else
+# define ECHELLE 1
+#endif
+
+#define HAUTEUR_IMAGE (64 * ECHELLE)
+#define LARGEUR_IMAGE (64 * ECHELLE)
 
 #define SOL_ATTENTE 250ms
 
 // Constructeur
 FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
-              :m_carte(_carte)
-{
+              : m_carte(_carte), m_carte_sauv(std::make_shared<moteur::Carte>(*_carte)) {
 
     /*QMediaPlayer* player = new QMediaPlayer(this);
     // player->setMedia(QUrl::fromLocalFile("C:/Users/Nawel Lalioui/Documents/felices.mp3"));
@@ -42,130 +48,82 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
      player->setVolume(50);
      player->play();*/
 
-	// Initialisation graphics
-    setDragMode(QGraphicsView::ScrollHandDrag);
-    setRenderHint(QPainter::Antialiasing, true);
-    setRenderHint(QPainter::SmoothPixmapTransform, true);
+    // Paramétrage de la fenêtre
+    setStyleSheet("background-color: black;");
     setWindowTitle("LET'S PLAY !");
-    setScene(new QGraphicsScene(this)); //création de la scène
+    grabKeyboard();
 
-    //Fond de la fenêtre
-    this->setStyleSheet("background-color: black;");
+	// Initialisation graphics
+    m_view = new QGraphicsView();
+    m_view->setDragMode(QGraphicsView::ScrollHandDrag);
+    m_view->setRenderHint(QPainter::Antialiasing, true);
+    m_view->setRenderHint(QPainter::SmoothPixmapTransform, true);
+    m_view->setScene(new QGraphicsScene(this)); //création de la scène
 
-    //Pour que les boutons ne s'affichent pas sur la carte au début
-    this->showFullScreen();
+    // Préparation font
+    QFont police("Calibri", 10, QFont::Bold);
 
-    //Création layout
-    QVBoxLayout *layout = new QVBoxLayout;
-
-
-    //Création du bouton IA
+    // Création du bouton IA
     m_boutonIAs = new QPushButton(QIcon(":/tileset/environ/empl_bleu.png"), "AIs");
-    QFont PoliceIA("Calibri", 10, QFont::Bold);
-    m_boutonIAs->setFont(PoliceIA);
+    m_boutonIAs->setFixedSize(200, 40);
 
-    //Création du bouton retour menu
+    m_boutonIAs->setFont(police);
+    m_boutonIAs->setStyleSheet("background-color: red;");
+
+    // Gestion de l'IA
+    connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
+
+    // Création du bouton retour menu
     m_boutonRetourMenu = new QPushButton("MAIN MENU");
-    QFont PoliceRetourMenu("Calibri", 9, QFont::Bold);
-    m_boutonRetourMenu->setStyleSheet("background-color: silver;");
-    m_boutonRetourMenu->setFont(PoliceRetourMenu);
+    m_boutonRetourMenu->setFixedSize(200, 40);
 
-    //Création du bouton nouvelle partie
-    m_NouvellePartie = new QPushButton("NEW GAME");
-    QFont PoliceNouvellePartie("Calibri", 10, QFont::Bold);
-    m_NouvellePartie->setStyleSheet("background-color: green;");
-    m_NouvellePartie->setFont(PoliceNouvellePartie);
+    m_boutonRetourMenu->setFont(police);
+    m_boutonRetourMenu->setStyleSheet("background-color: silver;");
+
+    // Fermeture de la fenêtre niveau et réouverture du menu quand on clicke sur le bouton Retour menu
+    connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
+    connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
+
+    // Création du bouton nouvelle partie
+    m_boutonNouvellePartie = new QPushButton("NEW GAME");
+    m_boutonNouvellePartie->setFixedSize(200, 40);
+
+    m_boutonNouvellePartie->setFont(police);
+    m_boutonNouvellePartie->setStyleSheet("background-color: green;");
+
+    // Recommencer la partie
+    connect(m_boutonNouvellePartie, SIGNAL(clicked()), this, SLOT(recommencer()));
 
     //Création du bouton quitter
     m_boutonQuitter = new QPushButton("QUIT");
-    QFont PoliceBoutonQuitter("Calibri", 10, QFont::Bold);
+    m_boutonQuitter->setFixedSize(200, 40);
+
+    m_boutonQuitter->setFont(police);
     m_boutonQuitter->setStyleSheet("background-color: silver;");
-    m_boutonQuitter->setFont(PoliceBoutonQuitter);
 
-    //Intégration du bouton IA dans la scène
-    /*QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget();
-    proxy->setWidget(m_boutonIAs);
-    scene()->addItem(proxy);
-    proxy->setPos(512, 200);
-    proxy->setZValue(3);*/
-    m_boutonIAs->setStyleSheet("background-color: red;");
-    m_boutonIAs->setFixedHeight(40);
-    m_boutonIAs->setFixedWidth(200);
+    // Arrêt de l'application
+    connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
 
-    //Intégration du bouton Retour Menu dans la scène
-    /*QGraphicsProxyWidget *proxy2 = new QGraphicsProxyWidget();
-    proxy2->setWidget(m_boutonRetourMenu);
-    scene()->addItem(proxy2);
-    proxy2->setPos(512, 100);
-    proxy2->setZValue(3);*/
-    m_boutonRetourMenu->setFixedHeight(40);
-    m_boutonRetourMenu->setFixedWidth(200);
+    // Création des layout
+    QVBoxLayout* vlayout = new QVBoxLayout;
+    vlayout->setAlignment(Qt::AlignRight | Qt::AlignCenter);
+    vlayout->setSpacing(60);
 
+    vlayout->addWidget(m_boutonRetourMenu);
+    vlayout->addWidget(m_boutonNouvellePartie);
+    vlayout->addWidget(m_boutonIAs);
+    vlayout->addWidget(m_boutonQuitter);
 
+    QHBoxLayout* hlayout = new QHBoxLayout;
+    hlayout->addWidget(m_view);
+    hlayout->addLayout(vlayout);
 
-    //Position
-    layout->setAlignment(Qt::AlignRight);
-
-
-    setLayout(layout);
-
-    //Intégration du bouton nouvelle partie dans la scène
-    /*QGraphicsProxyWidget *proxy3 = new QGraphicsProxyWidget();
-    proxy3->setWidget(m_NouvellePartie);
-    scene()->addItem(proxy3);
-    proxy3->setPos(512, 300);
-    proxy3->setZValue(3);*/
-    m_NouvellePartie->setFixedHeight(40);
-    m_boutonIAs->setFixedWidth(200);
-
-    //Intégration du bouton quitter dans la scène
-    /*QGraphicsProxyWidget *proxy4 = new QGraphicsProxyWidget();
-    proxy4->setWidget(m_boutonQuitter);
-    scene()->addItem(proxy4);
-    proxy4->setPos(512, 400);
-    proxy4->setZValue(3);*/
-    m_boutonQuitter->setFixedHeight(40);
-    m_boutonQuitter->setFixedWidth(200);
-
-
-    /*//Intégration du bouton annuler dans la scène
-    QGraphicsProxyWidget *proxy5 = new QGraphicsProxyWidget();
-    proxy5->setWidget(m_boutonAnnulerCoup);
-    scene()->addItem(proxy5);
-    proxy5->setPos(512, 500);
-    proxy5->setZValue(3);*/
-
-    //ajout des boutons au layout
-    layout->setSpacing(60);
-    layout->addWidget(m_boutonRetourMenu);
-    layout->addWidget(m_NouvellePartie);
-    layout->addWidget(m_boutonIAs);
-    layout->addWidget(m_boutonQuitter);
-
-
-    //Position
-    layout->setAlignment(Qt::AlignRight|Qt::AlignCenter);
-    setLayout(layout);
-
+    setLayout(hlayout);
 
     // Initialisation du timer
     m_timer = new QTimer(this);
 
-    //Signaux et slots pour fermer la fenêtre niveau et réouvrir le menu quand on clicke sur le bouton Retour menu
-    QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(fenMenu_open()));
-    QObject::connect(m_boutonRetourMenu, SIGNAL(clicked()), this, SLOT(close()));
-    //Pour recommencer la partie
-    QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(nouvellePartie_open()));
-    //Pour que lorsqu'on commence une nouvelle partie la fenêtre précédente se ferme
-    QObject::connect(m_NouvellePartie, SIGNAL(clicked()), this, SLOT(close()));
-
-    QObject::connect(m_boutonQuitter, SIGNAL(clicked()), qApp, SLOT(quit()));
-    // QObject::connect(m_boutonAnnulerCoup, SIGNAL(clicked()), this, SLOT(annulerCoup()));
-
-	// Gestion de l'IA
-    connect(m_boutonIAs, SIGNAL(clicked()), this, SLOT(demarer_ia()));
     connect(m_timer, SIGNAL(timeout()), this, SLOT(appliquer_mvt()));
-
 
 	// Affichage de la carte
     QImage mur(":/tileset/bloc/marron.png");
@@ -177,23 +135,26 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
     for (std::shared_ptr<moteur::Immuable> obj: *m_carte){ //boucle pour parcourir la carte
         // affichage sol et mur
         QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(sol));
-        scene()->addItem(item);
+        m_view->scene()->addItem(item);
         item->setPos(obj->coord().x()*LARGEUR_IMAGE,obj->coord().y()*HAUTEUR_IMAGE);
+        item->setScale(ECHELLE);
         item->setZValue(1);
 
         if (std::dynamic_pointer_cast<moteur::Obstacle>(obj)){ //vérifie s'il s'agit d'un obstacle et pas d'un emplacement ou autre
-             item = new QGraphicsPixmapItem(QPixmap::fromImage(mur)); //si c'est bien un obstacle la méthode renvoie le pointeur inchangé
-             scene()->addItem(item);
-             item->setPos(obj->coord().x()*LARGEUR_IMAGE,obj->coord().y()*HAUTEUR_IMAGE);
-             item->setZValue(2);
+            item = new QGraphicsPixmapItem(QPixmap::fromImage(mur)); //si c'est bien un obstacle la méthode renvoie le pointeur inchangé
+            m_view->scene()->addItem(item);
+            item->setPos(obj->coord().x()*LARGEUR_IMAGE,obj->coord().y()*HAUTEUR_IMAGE);
+            item->setScale(ECHELLE);
+            item->setZValue(2);
         }
 
         // affichage emplacements
         if (std::dynamic_pointer_cast<moteur::Emplacement>(obj)){
-             item = new QGraphicsPixmapItem(QPixmap::fromImage(emplacement));
-             scene()->addItem(item);
-             item->setPos(obj->coord().x()*LARGEUR_IMAGE,obj->coord().y()*HAUTEUR_IMAGE);
-             item->setZValue(2);
+            item = new QGraphicsPixmapItem(QPixmap::fromImage(emplacement));
+            m_view->scene()->addItem(item);
+            item->setPos(obj->coord().x()*LARGEUR_IMAGE,obj->coord().y()*HAUTEUR_IMAGE);
+            item->setScale(ECHELLE);
+            item->setZValue(2);
         }
 
         // affichage déplaçables
@@ -201,8 +162,9 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
 
         if (std::dynamic_pointer_cast<moteur::Poussable>(dobj)) {  //vérifie si c'est un poussable
             item = new QGraphicsPixmapItem(QPixmap::fromImage(boite));
-            scene()->addItem(item);
+            m_view->scene()->addItem(item);
             item->setPos(obj->coord().x()*LARGEUR_IMAGE,obj->coord().y()*HAUTEUR_IMAGE);
+            item->setScale(ECHELLE);
             item->setZValue(3);
 
             m_poussable[std::dynamic_pointer_cast<moteur::Poussable>(dobj)] = item; //clé = valeur
@@ -211,8 +173,9 @@ FenetreNiveau::FenetreNiveau(std::shared_ptr<moteur::Carte> _carte)
         //affichage personnage
         if (std::dynamic_pointer_cast<moteur::Personnage>(dobj)) { //vérifie si c'est un personnage
             item = new QGraphicsPixmapItem(QPixmap::fromImage(personnage));
-            scene()->addItem(item);
+            m_view->scene()->addItem(item);
             item->setPos(obj->coord().x()*LARGEUR_IMAGE,obj->coord().y()*HAUTEUR_IMAGE);
+            item->setScale(ECHELLE);
             item->setZValue(3);
 
             //on stocke !
@@ -228,6 +191,29 @@ void FenetreNiveau::updateCarte() {
     for (auto p : m_poussable) {
         p.second->setPos(p.first->coord().x()*LARGEUR_IMAGE,p.first->coord().y()*HAUTEUR_IMAGE);
     }
+}
+
+void FenetreNiveau::updatePointers() {
+    m_personnage = m_carte->personnage();
+
+    std::list<std::shared_ptr<moteur::Poussable>> poussables = m_carte->liste<moteur::Poussable>();
+    std::list<std::shared_ptr<moteur::Poussable>> old;
+
+    for (auto p : m_poussable) {
+        old.push_back(p.first);
+    }
+
+    auto pit = poussables.begin();
+    for (auto p : old) {
+        auto it = m_poussable.find(p);
+
+        m_poussable[*pit] = it->second;
+        m_poussable.erase(it);
+
+        ++pit;
+    }
+
+    updateCarte();
 }
 
 void FenetreNiveau::keyPressEvent(QKeyEvent* event) {
@@ -276,10 +262,11 @@ void FenetreNiveau::appliquer_mvt(Coord const& dir) {
     }
 
     // changement
-    scene()->removeItem(m_perso);
+    m_view->scene()->removeItem(m_perso);
 
     m_perso = new QGraphicsPixmapItem(QPixmap::fromImage(img));
-    scene()->addItem(m_perso);
+    m_view->scene()->addItem(m_perso);
+    m_perso->setScale(ECHELLE);
     m_perso->setZValue(3);
 
     // Application du mouvement
@@ -287,7 +274,7 @@ void FenetreNiveau::appliquer_mvt(Coord const& dir) {
     int nb_push = 0;
 
     m_personnage->deplacer(dir, nb_push);
-    if (nb_push) m_pile.push(copie);
+    if (nb_push) m_historique.push(copie);
 
     updateCarte();
 
@@ -298,13 +285,18 @@ void FenetreNiveau::appliquer_mvt(Coord const& dir) {
 
 // Slots
 void FenetreNiveau::fenMenu_open() {
+    if (m_ia && m_ia->isRunning()) m_ia->interrompre();
+
     FenetreMenu* Menu = new FenetreMenu();
     Menu->show();
 }
 
-void FenetreNiveau::nouvellePartie_open() {
-    FenetreNiveau* carte = new FenetreNiveau(moteur::Carte::charger("../warehouse/carte.txt"));
-    carte->show();
+void FenetreNiveau::recommencer() {
+    if (m_ia && m_ia->isRunning()) m_ia->interrompre();
+
+    // Retour au début !
+    m_carte = std::make_shared<moteur::Carte>(*m_carte_sauv);
+    updatePointers();
 }
 
 void FenetreNiveau::demarer_ia() {
@@ -335,31 +327,11 @@ void FenetreNiveau::appliquer_mvt() {
 }
 
 void FenetreNiveau::annulerCoup() {
+    if (m_historique.size() == 0) return;
 
-   if (m_pile.size() == 0) return;
-
-   m_carte = m_pile.top();
-   m_personnage = m_carte->personnage();
-
-   std::list<std::shared_ptr<moteur::Poussable>> poussables = m_carte->liste<moteur::Poussable>();
-   std::list<std::shared_ptr<moteur::Poussable>> old;
-
-   for (auto p : m_poussable) {
-       old.push_back(p.first);
-   }
-
-   auto pit = poussables.begin();
-   for (auto p : old) {
-       auto it = m_poussable.find(p);
-
-       m_poussable[*pit] = it->second;
-       m_poussable.erase(it);
-
-       ++pit;
-   }
-
-   updateCarte();
-   m_pile.pop();
+    m_carte = m_historique.top();
+    updatePointers();
+    m_historique.pop();
 }
 
 

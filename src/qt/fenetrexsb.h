@@ -4,15 +4,9 @@
 #include <qstring.h>
 #include <QPushButton>
 
-class FenetreXSB : public QWidget
-{
+class FenetreXSB : public QWidget {
 public:
-    FenetreXSB(QString _fichier);
-
-private:
-
-    QString m_fichier;
-    QPushButton* m_boutonxsb;
+    FenetreXSB(QString fichier);
 };
 
 #endif // FENETREXSB_H
